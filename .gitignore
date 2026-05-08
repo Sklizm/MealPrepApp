@@ -1,0 +1,8 @@
+App/
+.claude/
+Vault/.obsidian/workspace*.json
+Vault/.obsidian/cache
+Vault/.trash/
+*.bak
+*.swp
+.DS_Store
