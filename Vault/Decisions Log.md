@@ -95,6 +95,64 @@ keep the original entry and add a follow-up entry that supersedes it.
 
 ---
 
+## 2026-05-11 — Meal-slot is a FK to Categories, not a separate enum
+**Decision**: `dbo.MealPlanEntries.CategoryID` is a regular FK to `dbo.Categories`. The DB accepts any of the 6 categories (Breakfast/Lunch/Dinner/Snack/Dessert/Drink) as a meal slot; the weekly UI just chooses to render 4 columns.
+**Why**: Adding a separate `MealSlot NVARCHAR CHECK IN (...)` column would have created a parallel taxonomy that overlaps Categories by 4 names but excludes Dessert and Drink — confusing and not really useful. Reusing Categories keeps the schema simple and lets a "Dessert" plan entry coexist naturally.
+**How to apply**: The UI is responsible for which categories show up as columns in the weekly view. The DB makes no such judgment. If the app later decides to surface a 5th column for Desserts, no schema change is needed.
+
+---
+
+## 2026-05-11 — Shopping list is computed, not stored
+**Decision**: `sp_GetShoppingList(@UserID, @StartDate, @EndDate)` is a pure read proc — no `ShoppingList` or `ShoppingListItem` table. The proc joins `MealPlanEntries → Recipes → RecipeIngredients` for the date range, scales by serving count, LEFT JOINs `UserPantry`, and returns ingredient lines with `NeededQty`, `OnHandQty`, `ToBuyQty`.
+**Why**: A stored shopping list goes stale the moment a plan entry or a pantry stock changes. Computing on demand means the list is always current and there's no sync logic to maintain. For an offline single-user desktop app the perf cost is irrelevant.
+**Trade-off**: Manual ad-hoc additions ("buy toilet paper even though no recipe needs it") aren't possible. If they're ever needed, add a `ManualShoppingItems` table and UNION it in.
+**How to apply**: Don't add caching or materialization for this without a measured reason.
+
+---
+
+## 2026-05-11 — Servings scaling in the shopping list
+**Decision**: Ingredient demand is computed as `ri.Quantity * ISNULL(mpe.Servings, 1) / NULLIF(r.Servings, 0)`. Planning a 4-serving recipe for 6 servings scales every ingredient by 1.5×.
+**Why**: A recipe-level Servings count is meaningless unless the planner can override it. Otherwise the shopping list always reflects one canonical batch size, which doesn't match real cooking.
+**Edge cases**: `NULLIF(r.Servings, 0)` guards a recipe with `Servings = 0` or `NULL` — the row drops out of the result via the `> 0` filter at the end. Treating it as 1 via `ISNULL` on the planning side covers the common case of "use the recipe's default".
+
+---
+
+## 2026-05-11 — Pantry is unit-exact (no conversion in v1)
+**Decision**: `UserPantry` has `UQ (UserID, IngredientID, UnitID)` and the shopping list joins on the exact tuple. "500 g flour" and "2 cups flour" are tracked as two separate rows and don't combine.
+**Why**: Cross-unit conversion (weight ↔ volume) needs density tables and ingredient-specific math. Way out of v1 scope, and 95% of practical pantry use is unit-consistent anyway.
+**Reversibility**: A v2 conversion layer could fold the UQ to `(UserID, IngredientID)` after introducing canonical units per ingredient + a conversion function. The schema doesn't lock us out.
+
+---
+
+## 2026-05-11 — Pantry add is an upsert (MERGE), not an insert
+**Decision**: `sp_AddPantryItem` MERGEs against `(UserID, IngredientID, UnitID)`. If the row exists, `Quantity += @Quantity, UpdatedAt = SYSUTCDATETIME()`; else insert.
+**Why**: Matches the user mental model — "I bought 500 g more flour" is a single action, not "find my flour row, read its quantity, add 500, write it back". Also avoids race conditions inside a single user (one MERGE is atomic; read-modify-write isn't).
+**How to apply**: Use `sp_UpdatePantryQuantity` (absolute set) for "user edited the number in the UI"; use `sp_AddPantryItem` for "user added more stock".
+
+---
+
+## 2026-05-11 — Cascade rules for new tables
+**Decision**:
+- `MealPlanEntries.RecipeID` → `ON DELETE CASCADE` (a planned entry without a recipe is nonsense).
+- `MealPlanEntries.UserID` → RESTRICT (consistent with Recipes — deleting a user with plan entries is an explicit operation).
+- `MealPlanEntries.CategoryID` → RESTRICT (Categories are seeded, never deleted in practice).
+- `RecipeFavorites.UserID` and `.RecipeID` → both CASCADE. Safe because `Recipes.UserID` is RESTRICT, so no multi-cascade-path error.
+- `UserPantry.UserID` → CASCADE; `UserPantry.IngredientID` and `.UnitID` → RESTRICT.
+**Why**: Same principle as Phase 1 — cascade only when the child has no meaning without the parent.
+
+---
+
+## 2026-05-11 — EXEC parameters must be variables, not expressions
+**Decision**: When the audit details for a proc are computed via CASE, assign to a local variable first:
+```sql
+DECLARE @Details NVARCHAR(500) = CASE WHEN @x = 1 THEN N'on' ELSE N'off' END;
+EXEC dbo.sp_WriteAudit ..., @Details = @Details;
+```
+**Why**: T-SQL rejects `EXEC ... @param = CASE WHEN ... END` with Msg 156. `EXEC` parameters accept constants, variables, NULL, DEFAULT — not arbitrary expressions.
+**How to apply**: If you find yourself writing `@param = (somefunc(x))` or `@param = ISNULL(...)` in an EXEC, hoist it to a `DECLARE @v = expr; EXEC ... @param = @v;` pattern.
+
+---
+
 ## 2026-05-11 — Ingredient seed shape (~40 common items, MERGE keyed on Name, unit by abbreviation)
 **Decision**: `seeds/ingredients_seed.sql` seeds ~40 common ingredients. Idempotent via `MERGE` on `Name`. `DefaultUnitID` is resolved via `LEFT JOIN dbo.Units ON Abbreviation = ...` rather than hardcoded unit IDs.
 **Why**: The list needs to demo well (empty dropdowns kill the app's first impression), be re-runnable without dup or churn, and survive any future renumbering of Units. Abbreviation lookup means the seed file reads like the actual data, not like a foreign-key puzzle. `LEFT JOIN` (not `JOIN`) means a missing/renamed unit leaves `DefaultUnitID` NULL rather than dropping the ingredient.

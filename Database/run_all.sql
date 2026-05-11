@@ -28,12 +28,22 @@
 -- ===== Phase 2.5: FK indexes + RowVersion on Recipes =====
 :r 10_phase25_additions.sql
 
--- ===== Phase 2: stored-proc API =====
+-- ===== Phase 3: meal planning, favorites, pantry =====
+:r 11_meal_plan.sql
+:r 12_favorites.sql
+:r 13_pantry.sql
+
+-- ===== Phase 2 + 3: stored-proc API =====
 :r procs/01_users.sql
 :r procs/02_recipes_write.sql
 :r procs/03_recipes_read.sql
 :r procs/04_ingredients.sql
 :r procs/05_lookups.sql
+:r procs/06_meal_plan.sql
+:r procs/07_favorites.sql
+:r procs/08_pantry.sql
+:r procs/09_shopping_list.sql
+:r procs/10_dashboard.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql
