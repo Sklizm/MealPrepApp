@@ -23,6 +23,7 @@ BEGIN
         r.Servings,
         r.CreatedAt,
         r.UpdatedAt,
+        r.RowVersion,
         r.UserID,
         u.Username   AS AuthorUsername,
         r.CategoryID,
@@ -146,6 +147,9 @@ BEGIN
     IF @Listed = 0
         RETURN;
 
+    -- One pass over RecipeIngredients per recipe (GROUP BY + LEFT JOIN to the TVP),
+    -- instead of two CROSS APPLY subqueries. LEFT JOIN lets us tally matches
+    -- inside SUM without a subquery (SQL Server forbids subqueries inside aggregates).
     SELECT
         r.RecipeID,
         r.Title,
@@ -153,23 +157,15 @@ BEGIN
         u.Username      AS AuthorUsername,
         r.CategoryID,
         c.Name          AS CategoryName,
-        matched.MatchedCount    AS MatchedIngredients,
-        total.TotalCount        AS TotalIngredients
+        SUM(CASE WHEN m.ID IS NOT NULL THEN 1 ELSE 0 END) AS MatchedIngredients,
+        COUNT(*)                                          AS TotalIngredients
     FROM dbo.Recipes r
-    JOIN dbo.Users u      ON u.UserID     = r.UserID
-    LEFT JOIN dbo.Categories c ON c.CategoryID = r.CategoryID
-    CROSS APPLY (
-        SELECT COUNT(*) AS MatchedCount
-        FROM dbo.RecipeIngredients ri
-        WHERE ri.RecipeID = r.RecipeID
-          AND ri.IngredientID IN (SELECT ID FROM @IngredientIDs)
-    ) matched
-    CROSS APPLY (
-        SELECT COUNT(*) AS TotalCount
-        FROM dbo.RecipeIngredients ri
-        WHERE ri.RecipeID = r.RecipeID
-    ) total
-    WHERE matched.MatchedCount >= @MinMatchCount
-    ORDER BY matched.MatchedCount DESC, total.TotalCount ASC, r.RecipeID;
+    JOIN dbo.RecipeIngredients ri ON ri.RecipeID  = r.RecipeID
+    LEFT JOIN @IngredientIDs m    ON m.ID         = ri.IngredientID
+    JOIN dbo.Users u              ON u.UserID     = r.UserID
+    LEFT JOIN dbo.Categories c    ON c.CategoryID = r.CategoryID
+    GROUP BY r.RecipeID, r.Title, r.UserID, u.Username, r.CategoryID, c.Name
+    HAVING SUM(CASE WHEN m.ID IS NOT NULL THEN 1 ELSE 0 END) >= @MinMatchCount
+    ORDER BY MatchedIngredients DESC, TotalIngredients ASC, r.RecipeID;
 END
 GO

@@ -19,10 +19,14 @@
 -- ===== Phase 1: seeds =====
 :r seeds/units_seed.sql
 :r seeds/categories_seed.sql
+:r seeds/ingredients_seed.sql
 
 -- ===== Phase 2: security state + audit =====
 :r 07_users_security.sql
 :r 08_audit_log.sql
+
+-- ===== Phase 2.5: FK indexes + RowVersion on Recipes =====
+:r 10_phase25_additions.sql
 
 -- ===== Phase 2: stored-proc API =====
 :r procs/01_users.sql

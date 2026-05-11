@@ -95,6 +95,41 @@ keep the original entry and add a follow-up entry that supersedes it.
 
 ---
 
+## 2026-05-11 — Ingredient seed shape (~40 common items, MERGE keyed on Name, unit by abbreviation)
+**Decision**: `seeds/ingredients_seed.sql` seeds ~40 common ingredients. Idempotent via `MERGE` on `Name`. `DefaultUnitID` is resolved via `LEFT JOIN dbo.Units ON Abbreviation = ...` rather than hardcoded unit IDs.
+**Why**: The list needs to demo well (empty dropdowns kill the app's first impression), be re-runnable without dup or churn, and survive any future renumbering of Units. Abbreviation lookup means the seed file reads like the actual data, not like a foreign-key puzzle. `LEFT JOIN` (not `JOIN`) means a missing/renamed unit leaves `DefaultUnitID` NULL rather than dropping the ingredient.
+**How to apply**: Adding more ingredients = append to the `VALUES` block. Renaming a unit abbreviation in `units_seed.sql` requires updating the matching column in the ingredients seed.
+
+---
+
+## 2026-05-11 — Optimistic concurrency on Recipes via ROWVERSION
+**Decision**: `dbo.Recipes` gets a `RowVersion ROWVERSION NOT NULL` column. `sp_GetRecipeFull` returns it; `sp_UpdateRecipe` requires it as `@RowVersion BINARY(8)` and `THROW 50004` if it doesn't match the current row.
+**Why**: Even though v1 is essentially single-user, the .NET app would otherwise have no defence against a second tab's stale save clobbering the first tab's changes. `ROWVERSION` is auto-maintained by SQL Server (no app or trigger involvement), so the cost is one extra parameter on update and one extra column on read. Good practica material — it surfaces a real production concern with minimal complexity.
+**How to apply**: Any new mutating proc on Recipes should accept and check `@RowVersion`. Error 50004 is now reserved for stale-row conflicts across the API.
+
+---
+
+## 2026-05-11 — sp_FindRecipesByIngredients rewrite: GROUP BY + LEFT JOIN to TVP
+**Decision**: The two `CROSS APPLY` subqueries are replaced by one `GROUP BY r.RecipeID` over `JOIN dbo.RecipeIngredients ri` + `LEFT JOIN @IngredientIDs m ON m.ID = ri.IngredientID`. `MatchedIngredients = SUM(CASE WHEN m.ID IS NOT NULL THEN 1 ELSE 0 END)`, `TotalIngredients = COUNT(*)`.
+**Why**: The original recomputed two aggregates per recipe row via CROSS APPLY — a single pass with GROUP BY is faster and clearer. The LEFT JOIN form is the only way to do this in T-SQL: SQL Server rejects subqueries inside aggregate functions (Msg 130, "Cannot perform an aggregate function on an expression containing an aggregate or a subquery"), so `SUM(CASE WHEN x IN (SELECT ...))` is not legal.
+**How to apply**: Any "count matches against a TVP" pattern should LEFT JOIN the TVP, not subquery against it inside an aggregate. Output shape of the proc is unchanged — callers don't need to know.
+
+---
+
+## 2026-05-11 — FK columns must be explicitly indexed
+**Decision**: Added `IX_Ingredients_DefaultUnitID` and `IX_RecipeIngredients_UnitID`. The other FK columns were already covered (either by `IX_*` indexes or as leading columns of `UQ_*` / composite indexes).
+**Why**: SQL Server does NOT auto-create an index for an FK column (only for the referenced PK). Without an index, the RESTRICT check on `DELETE FROM dbo.Units WHERE UnitID = X` scans the referencing table. Cheap to add, and a defensible answer to "why these indexes?" if asked.
+**How to apply**: Any future FK addition needs a matching `IX_<Table>_<Column>` unless the column is already the leading column of another index.
+
+---
+
+## 2026-05-11 — Rebuild step: clean container target dir before docker cp
+**Decision**: The full rebuild sequence is now: `docker exec -u 0 MealPrepDB rm -rf /tmp/Database` → `docker cp Database MealPrepDB:/tmp/Database` → `sqlcmd ... -i run_all.sql`.
+**Why**: `docker cp Database MealPrepDB:/tmp/Database` copies INTO the existing `/tmp/Database/` (producing `/tmp/Database/Database/...`) when the target already exists. Symptom: the build "succeeds" against the stale outer copy and no new objects appear. The `-u 0` is needed because the existing files are owned by uid 1000 inside the container.
+**How to apply**: Always clean before copying. If a future build report looks suspiciously clean (no rows affected for new seeds, etc.), check `/tmp/Database/` layout first.
+
+---
+
 ## 2026-05-07 — Password history pruning needs a deterministic tiebreak
 **Decision**: Both the "is this in the last 5 hashes?" check and the pruning `ROW_NUMBER()` order by `ChangedAt DESC, PasswordHistoryID DESC`. Not just `ChangedAt DESC`.
 **Why**: `ChangedAt` is `DATETIME2(0)` (whole seconds). Multiple password changes in the same second have identical timestamps, so ordering by timestamp alone is non-deterministic and pruning can delete the wrong row. `PasswordHistoryID` is `INT IDENTITY` so it always grows monotonically — perfect tiebreak.

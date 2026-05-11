@@ -77,3 +77,25 @@ BEGIN
     ORDER BY i.Name;
 END
 GO
+
+-- ===== sp_GetIngredientUsage =====
+-- Returns how many RecipeIngredient rows reference this ingredient.
+-- App calls this before attempting a delete: if RecipeCount > 0, the
+-- delete would be blocked by FK RESTRICT, so show a useful message instead.
+-- Returns no rows for a non-existent IngredientID (caller can treat as 0).
+
+CREATE OR ALTER PROCEDURE dbo.sp_GetIngredientUsage
+    @IngredientID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        i.IngredientID,
+        i.Name,
+        COUNT(ri.RecipeIngredientID) AS RecipeCount
+    FROM dbo.Ingredients i
+    LEFT JOIN dbo.RecipeIngredients ri ON ri.IngredientID = i.IngredientID
+    WHERE i.IngredientID = @IngredientID
+    GROUP BY i.IngredientID, i.Name;
+END
+GO

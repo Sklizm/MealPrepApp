@@ -20,8 +20,8 @@ Eight tables in `MealPrepDB` (six core + two security/audit). Build order is dep
 - [[Users]] — accounts (Username, Email, PasswordHash) + security state (LastLoginAt, FailedLoginCount, LockedUntil)
 - [[Units]] — measurement units (g, kg, ml, cup, …) with type (weight/volume/count)
 - [[Categories]] — recipe categories (Breakfast, Lunch, …)
-- [[Ingredients]] — global ingredient list with optional default unit
-- [[Recipes]] — owned by a user, optionally categorized
+- [[Ingredients]] — global ingredient list with optional default unit; seeded with ~44 common items
+- [[Recipes]] — owned by a user, optionally categorized; carries a `RowVersion` for optimistic concurrency
 - [[RecipeIngredients]] — junction: recipe ↔ ingredient with quantity + unit
 - **PasswordHistory** — recent password hashes per user (last 5 retained); cascade from Users
 - **AuditLog** — append-only log of state-changing actions; written by every mutating proc
@@ -34,7 +34,7 @@ The .NET app does not query tables directly. It connects as the low-privilege `m
 | Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword` |
 | Recipes (write) | `sp_CreateRecipe`, `sp_UpdateRecipe`, `sp_DeleteRecipe` |
 | Recipes (read) | `sp_GetRecipeFull`, `sp_GetRecipes`, `sp_SearchRecipesByTitle`, `sp_FindRecipesByIngredients` |
-| Ingredients | `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients` |
+| Ingredients | `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients`, `sp_GetIngredientUsage` |
 | Lookups | `sp_GetUnits`, `sp_GetCategories` |
 | Internal | `sp_WriteAudit` (called from mutating procs) |
 
@@ -67,5 +67,12 @@ Run `Database/run_all.sql` end-to-end (idempotent) — the master script `:r`-in
 **Phase 2 (security state, audit, API, login)**
 4. `07_users_security.sql` — augments `Users`, creates `PasswordHistory`
 5. `08_audit_log.sql` — `AuditLog` table + `IntList` TVP + `sp_WriteAudit`
-6. `procs/01_users.sql` … `procs/05_lookups.sql` — the stored proc API
-7. `09_app_role.sql` — login + role + grants (run last; depends on procs and TVP existing). Requires `-v AppPassword="..."`.
+6. `10_phase25_additions.sql` — Phase 2.5: FK index gaps + `RowVersion` on Recipes (must run before the procs that reference `RowVersion`)
+7. `procs/01_users.sql` … `procs/05_lookups.sql` — the stored proc API (includes `sp_GetIngredientUsage`; `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP)
+8. `09_app_role.sql` — login + role + grants (run last; depends on procs and TVP existing). Requires `-v AppPassword="..."`.
+
+**Error codes raised by procs**
+- `50001` — password reused
+- `50002` — not authorized
+- `50003` — not found
+- `50004` — stale row (optimistic concurrency conflict)

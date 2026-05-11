@@ -74,9 +74,15 @@ END
 GO
 
 -- ===== sp_UpdateRecipe =====
--- Updates a recipe owned by @UserID. THROWs 50002 if not the owner.
+-- Updates a recipe owned by @UserID.
+--   THROW 50002 — not the owner
+--   THROW 50003 — recipe not found
+--   THROW 50004 — stale row (someone else updated since you loaded it)
 -- If @IngredientsJson is NULL, ingredients are left untouched.
 -- If @IngredientsJson is supplied (even '[]'), the ingredient list is replaced.
+--
+-- @RowVersion is the token returned from sp_GetRecipeFull; pass it back here
+-- so we can detect lost-update conflicts. The column is SQL-Server-maintained.
 
 CREATE OR ALTER PROCEDURE dbo.sp_UpdateRecipe
     @RecipeID         INT,
@@ -88,7 +94,8 @@ CREATE OR ALTER PROCEDURE dbo.sp_UpdateRecipe
     @PrepTimeMinutes  INT            = NULL,
     @CookTimeMinutes  INT            = NULL,
     @Servings         INT            = NULL,
-    @IngredientsJson  NVARCHAR(MAX)  = NULL
+    @IngredientsJson  NVARCHAR(MAX)  = NULL,
+    @RowVersion       BINARY(8)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -97,13 +104,21 @@ BEGIN
     BEGIN TRY
         BEGIN TRAN;
 
-        DECLARE @OwnerID INT = (SELECT UserID FROM dbo.Recipes WHERE RecipeID = @RecipeID);
+        DECLARE @OwnerID    INT,
+                @CurrentRV  BINARY(8);
+
+        SELECT @OwnerID = UserID, @CurrentRV = RowVersion
+        FROM dbo.Recipes
+        WHERE RecipeID = @RecipeID;
 
         IF @OwnerID IS NULL
             THROW 50003, N'Recipe not found', 1;
 
         IF @OwnerID <> @UserID
             THROW 50002, N'Not authorized to modify this recipe', 1;
+
+        IF @CurrentRV <> @RowVersion
+            THROW 50004, N'Stale row — recipe was modified by another session', 1;
 
         UPDATE dbo.Recipes
         SET CategoryID      = @CategoryID,

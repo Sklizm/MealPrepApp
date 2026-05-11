@@ -7,14 +7,14 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Refresh DataGrip and confirm the 8 tables + 18 procs + `IntList` type all show up
-- [ ] Decide what (if anything) to seed for [[Ingredients]] (currently empty)
+- [ ] Refresh DataGrip and confirm the 8 tables + 19 procs + `IntList` type + new `RowVersion` column all show up
 - [ ] Wire the .NET app to connect as `mealprep_app` (not `sa`) — connection string goes in `App/`'s config
 
 ## Soon
 - [ ] Decide on EF Core vs Dapper (the proc API works with either; defer until the app side begins)
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
+- [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
 - [ ] Meal plans / weekly schedule tables
@@ -25,6 +25,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] Phase 2.5 — DB polish: ingredients seeded (~44), FK index gaps closed, `RowVersion` on Recipes for optimistic concurrency (THROW 50004), `sp_FindRecipesByIngredients` rewritten as single GROUP BY + LEFT JOIN to TVP, new `sp_GetIngredientUsage`
 - [x] Phase 2 — App API + security layer: 18 stored procs, `mealprep_app` low-priv login, `DENY` on direct DML, audit log, password history, lockout (5/15min)
 - [x] End-to-end `run_all.sql` runs clean and idempotent
 - [x] Verified app login can EXEC procs but cannot SELECT/INSERT/UPDATE/DELETE tables directly (ownership chaining covers mutations)
