@@ -7,12 +7,11 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Refresh DataGrip and confirm the 11 tables + 33 procs + `IntList` type all show up
+- [ ] Margarita: revise the Canva mockup per Phase 4 design spec (11 new screens, 10 cleanup items, 4 cross-cutting components — see `Vault/Sessions/2026-05-11 - Phase 4 design and ingredient categories.md`)
+- [ ] Refresh DataGrip and confirm the 12 tables + 38 procs + `IntList` type all show up
 - [ ] Wire the .NET app to connect as `mealprep_app` (not `sa`) — connection string goes in `App/`'s config (WPF + MVVM + Dapper)
 
 ## Soon
-- [ ] Clean up the app design (remove `aaa` Canva artifacts; pick one nav model; draw editor/detail/empty/error screens; specify `Rapoarte`)
-- [ ] Decide on EF Core vs Dapper (the proc API works with either; Dapper is the cleaner fit)
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
@@ -26,6 +25,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] Phase 4 — Design completion + DB additions: locked auth/nav/click/calendar/categorii/rapoarte/iesire/plan-shortcut decisions; added `IngredientCategories` table + FK + 8-category seed + backfill of 44 ingredients; added `sp_GetUserProfile` (safe read), `sp_GetIngredientCategories`, `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`; extended `sp_GetIngredients` with optional category filter
 - [x] Phase 3 — Meal planning + pantry + shopping list: `MealPlanEntries`, `RecipeFavorites`, `UserPantry`, 14 new procs (plan/unplan/weekly/monthly, favorites toggle, pantry MERGE upsert, computed shopping list with servings scaling, dashboard counts + recents)
 - [x] Phase 2.5 — DB polish: ingredients seeded (~44), FK index gaps closed, `RowVersion` on Recipes for optimistic concurrency (THROW 50004), `sp_FindRecipesByIngredients` rewritten as single GROUP BY + LEFT JOIN to TVP, new `sp_GetIngredientUsage`
 - [x] Phase 2 — App API + security layer: 18 stored procs, `mealprep_app` low-priv login, `DENY` on direct DML, audit log, password history, lockout (5/15min)

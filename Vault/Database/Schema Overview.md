@@ -4,7 +4,7 @@ tags: [database, schema]
 
 # Schema Overview
 
-Eleven tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for meal planning). Build order is dependency order:
+Twelve tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for meal planning + one Phase 4 for ingredient categorization). Build order is dependency order:
 
 ```
 [[Users]]                  [[Units]]            [[Categories]]
@@ -28,22 +28,24 @@ Eleven tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for
 - [[MealPlanEntries]] — recipes scheduled to a date + meal slot (Category) per user
 - [[RecipeFavorites]] — composite-PK join table for "user has favorited this recipe"
 - [[UserPantry]] — current stock per user, per ingredient+unit (no cross-unit conversion in v1)
+- [[IngredientCategories]] — Phase 4 lookup powering the Ingrediente sidebar; nullable FK from [[Ingredients]]
 
 ## API surface (Phase 2)
 The .NET app does not query tables directly. It connects as the low-privilege `mealprep_app` SQL login and calls stored procs in `Database/procs/`:
 
 | Area | Procs |
 |---|---|
-| Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword` |
+| Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_GetUserProfile`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword` |
 | Recipes (write) | `sp_CreateRecipe`, `sp_UpdateRecipe`, `sp_DeleteRecipe` |
 | Recipes (read) | `sp_GetRecipeFull`, `sp_GetRecipes`, `sp_SearchRecipesByTitle`, `sp_FindRecipesByIngredients` |
 | Ingredients | `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients`, `sp_GetIngredientUsage` |
-| Lookups | `sp_GetUnits`, `sp_GetCategories` |
+| Lookups | `sp_GetUnits`, `sp_GetCategories`, `sp_GetIngredientCategories` |
 | Meal plan | `sp_PlanMeal`, `sp_UpdatePlannedMeal`, `sp_UnplanMeal`, `sp_GetWeeklyPlan`, `sp_GetMonthlyPlan` |
 | Favorites | `sp_ToggleFavorite`, `sp_GetFavoriteRecipes` |
 | Pantry | `sp_AddPantryItem`, `sp_UpdatePantryQuantity`, `sp_RemovePantryItem`, `sp_GetPantry` |
 | Shopping list | `sp_GetShoppingList` (computed, joins planned meals minus pantry) |
 | Dashboard | `sp_GetDashboardCounts`, `sp_GetRecentRecipes` |
+| Reports | `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients` |
 | Internal | `sp_WriteAudit` (called from mutating procs) |
 
 The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an ingredient ID list.
@@ -82,11 +84,15 @@ Run `Database/run_all.sql` end-to-end (idempotent) — the master script `:r`-in
 8. `12_favorites.sql` — `RecipeFavorites`
 9. `13_pantry.sql` — `UserPantry`
 
-**Stored proc API (Phase 2 + 3)**
-10. `procs/01_users.sql` … `procs/10_dashboard.sql` — full API. `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP; `sp_AddPantryItem` is a MERGE upsert; `sp_GetShoppingList` is computed (no table).
+**Phase 4 (ingredient categorization + reports)**
+10. `14_ingredient_categories.sql` — `IngredientCategories` table + nullable FK column on `Ingredients`
+11. `seeds/ingredient_categories_seed.sql` — 8 categories + backfill of shipped Ingredients
+
+**Stored proc API (Phase 2 + 3 + 4)**
+12. `procs/01_users.sql` … `procs/11_reports.sql` — full API. `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP; `sp_AddPantryItem` is a MERGE upsert; `sp_GetShoppingList` is computed (no table); `sp_GetUserProfile` is the safe profile read (no PasswordHash exposed); `sp_GetIngredients` accepts optional `@IngredientCategoryID`.
 
 **App login + role (run last)**
-11. `09_app_role.sql` — login + role + grants. Requires `-v AppPassword="..."`.
+13. `09_app_role.sql` — login + role + grants. Requires `-v AppPassword="..."`.
 
 **Error codes raised by procs**
 - `50001` — password reused

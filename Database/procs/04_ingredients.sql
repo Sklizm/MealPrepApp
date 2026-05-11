@@ -38,10 +38,12 @@ END
 GO
 
 -- ===== sp_GetIngredients =====
--- Full ingredient list with default unit info, sorted by name.
--- Used to populate dropdowns/autocomplete.
+-- Full ingredient list with default unit + category info, sorted by name.
+-- Optional @IngredientCategoryID filter — NULL means "no filter, return all".
+-- Used to populate dropdowns/autocomplete and the Ingrediente list view.
 
 CREATE OR ALTER PROCEDURE dbo.sp_GetIngredients
+    @IngredientCategoryID INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -50,9 +52,14 @@ BEGIN
         i.Name,
         i.DefaultUnitID,
         u.Name         AS DefaultUnitName,
-        u.Abbreviation AS DefaultUnitAbbreviation
+        u.Abbreviation AS DefaultUnitAbbreviation,
+        i.IngredientCategoryID,
+        ic.Name        AS IngredientCategoryName
     FROM dbo.Ingredients i
-    LEFT JOIN dbo.Units u ON u.UnitID = i.DefaultUnitID
+    LEFT JOIN dbo.Units u                ON u.UnitID                = i.DefaultUnitID
+    LEFT JOIN dbo.IngredientCategories ic ON ic.IngredientCategoryID = i.IngredientCategoryID
+    WHERE @IngredientCategoryID IS NULL
+       OR i.IngredientCategoryID = @IngredientCategoryID
     ORDER BY i.Name;
 END
 GO

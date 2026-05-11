@@ -28,3 +28,16 @@ BEGIN
     ORDER BY Name;
 END
 GO
+
+-- ===== sp_GetIngredientCategories =====
+-- Lookup for the Ingrediente sidebar grouping.
+
+CREATE OR ALTER PROCEDURE dbo.sp_GetIngredientCategories
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT IngredientCategoryID, Name
+    FROM dbo.IngredientCategories
+    ORDER BY Name;
+END
+GO

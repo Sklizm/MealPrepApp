@@ -95,6 +95,27 @@ keep the original entry and add a follow-up entry that supersedes it.
 
 ---
 
+## 2026-05-11 — IngredientCategories augments (not replaces) the global Ingredients pool
+**Decision**: Added `dbo.IngredientCategories` (8 seeded rows) and a nullable `Ingredients.IngredientCategoryID` FK. The original "Ingredients are global (no UserID)" decision still holds — every user shares one ingredient pool. The category is a *display grouping*, not a privacy boundary.
+**Why**: The app's Ingrediente sidebar has a "Categorii" entry; without a real grouping it would be a UI lie. Categorization is also a defensible practica answer ("how would you let users browse 200 ingredients?").
+**How to apply**: New ingredients can ship with `IngredientCategoryID = NULL` (uncategorized → falls under "Altele" if the UI groups by category and renders NULL as Altele). The seed file backfills sensible values for the 44 shipped ingredients. Adding a new category is one row in the seed + a new code path in the UI grouping.
+
+---
+
+## 2026-05-11 — `sp_GetUserProfile` is the safe profile read; `sp_GetUserForLogin` stays login-only
+**Decision**: New proc `sp_GetUserProfile(@UserID)` returns `UserID, Username, Email, CreatedAt, LastLoginAt` — no `PasswordHash`, no `FailedLoginCount`, no `LockedUntil`. The Profile screen calls this; `sp_GetUserForLogin` remains reserved for the login flow.
+**Why**: `sp_GetUserForLogin` was originally designed to return the data the login flow needs to verify the password (including the hash). Reusing it for the Profile screen would leak the hash into a screen that has no business carrying it. Two procs with single, clear purposes is cheaper than auditing every caller.
+**How to apply**: Any new "show me this user" screen should call `sp_GetUserProfile`. Only the login flow should ever read `PasswordHash`.
+
+---
+
+## 2026-05-11 — Design specification lives outside the repo
+**Decision**: The design spec (Part A of Phase 4's plan) is handed to Margarita for the Canva mockups. It's referenced from `Vault/Sessions/2026-05-11 - Phase 4 design and ingredient categories.md` and the plan file, but the actual mockups aren't checked into this repo.
+**Why**: This repo is the DB half. App design owns its own artifact (Canva file). Keeping them separate avoids the repo becoming the source of truth for two different deliverables maintained by two different people.
+**How to apply**: When Margarita revises the mockups, the SoT is whichever Canva file she last saved. The plan file's Part A is a snapshot of the design intent at the moment of decision, not a living spec.
+
+---
+
 ## 2026-05-11 — Meal-slot is a FK to Categories, not a separate enum
 **Decision**: `dbo.MealPlanEntries.CategoryID` is a regular FK to `dbo.Categories`. The DB accepts any of the 6 categories (Breakfast/Lunch/Dinner/Snack/Dessert/Drink) as a meal slot; the weekly UI just chooses to render 4 columns.
 **Why**: Adding a separate `MealSlot NVARCHAR CHECK IN (...)` column would have created a parallel taxonomy that overlaps Categories by 4 names but excludes Dessert and Drink — confusing and not really useful. Reusing Categories keeps the schema simple and lets a "Dessert" plan entry coexist naturally.

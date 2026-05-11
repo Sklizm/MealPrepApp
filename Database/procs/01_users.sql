@@ -152,6 +152,27 @@ BEGIN
 END
 GO
 
+-- ===== sp_GetUserProfile =====
+-- Safe read of user data for the Profile screen — never returns PasswordHash
+-- or any of the lockout state. The app uses this; sp_GetUserForLogin stays
+-- reserved for the login flow specifically.
+
+CREATE OR ALTER PROCEDURE dbo.sp_GetUserProfile
+    @UserID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        UserID,
+        Username,
+        Email,
+        CreatedAt,
+        LastLoginAt
+    FROM dbo.Users
+    WHERE UserID = @UserID;
+END
+GO
+
 -- ===== sp_ChangePassword =====
 -- Rejects reuse of the last @HistoryDepth passwords (default 5).
 -- THROW 50001 on reuse so the app can show a friendly error.

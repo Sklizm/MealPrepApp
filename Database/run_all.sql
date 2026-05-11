@@ -33,7 +33,11 @@
 :r 12_favorites.sql
 :r 13_pantry.sql
 
--- ===== Phase 2 + 3: stored-proc API =====
+-- ===== Phase 4: ingredient categories =====
+:r 14_ingredient_categories.sql
+:r seeds/ingredient_categories_seed.sql
+
+-- ===== Phase 2 + 3 + 4: stored-proc API =====
 :r procs/01_users.sql
 :r procs/02_recipes_write.sql
 :r procs/03_recipes_read.sql
@@ -44,6 +48,7 @@
 :r procs/08_pantry.sql
 :r procs/09_shopping_list.sql
 :r procs/10_dashboard.sql
+:r procs/11_reports.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

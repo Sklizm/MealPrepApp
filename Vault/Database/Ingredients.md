@@ -18,6 +18,9 @@ For v1, ingredients are shared across all users. "Salt" is "Salt" — no need fo
 to have their own. If we ever need user-private ingredients, add a nullable `UserID`
 column later (NULL = global).
 
+## IngredientCategoryID (Phase 4 add)
+Nullable FK to [[IngredientCategories]]. Powers the "Categorii" sidebar in the app's Ingrediente tab. NULL is allowed (user-added ingredients can sit uncategorized). Seeded shipped ingredients are all assigned a category via the seed-file UPDATE.
+
 ## DefaultUnitID
 Optional hint — when adding this ingredient to a recipe, pre-fill this unit. The actual
 unit is stored per-recipe in [[RecipeIngredients]] so a user can override.
