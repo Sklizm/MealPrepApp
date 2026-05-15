@@ -8,7 +8,7 @@ The .NET app (WPF + MVVM + Dapper) is owned outside this repo. This repo is the 
 
 - **12 tables** — 6 core (Users, Units, Categories, Ingredients, Recipes, RecipeIngredients) + 2 for security/auditing (PasswordHistory, AuditLog) + 3 for meal planning (MealPlanEntries, RecipeFavorites, UserPantry) + 1 lookup (IngredientCategories).
 - **38 stored procedures** — the only API surface the app sees. Covers register/login, password change with history check, recipe CRUD with optimistic concurrency, paged search, find-recipes-by-ingredients, weekly/monthly meal plan reads, favorites toggle, pantry upsert, computed shopping list, dashboard counts, monthly reports, and lookup reads.
-- **44 seeded ingredients** across 8 categories so the app demo isn't staring at an empty list on first launch.
+- **44 seeded ingredients** (in Romanian, no diacritics) across 8 categories so the app demo isn't staring at an empty list on first launch.
 - **Lockout policy** — 5 failed logins in a row → 15-minute lockout. Last 5 password hashes retained per user; reuse is rejected.
 - **Optimistic concurrency** on Recipes — `RowVersion` column, `sp_UpdateRecipe` requires `@RowVersion` and `THROW 50004` on stale row.
 - **Audit log** — every mutating proc writes a row in the same transaction.
@@ -46,15 +46,17 @@ docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<your-sa-password>" \
   -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-Build the schema (idempotent — safe to re-run; pass the password you want for the `mealprep_app` login):
+Build the schema (idempotent — safe to re-run):
 
 ```bash
 docker exec -u 0 MealPrepDB rm -rf /tmp/Database
 docker cp Database MealPrepDB:/tmp/Database
 docker exec -w /tmp/Database MealPrepDB /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(docker exec MealPrepDB printenv SA_PASSWORD)" \
-  -C -b -i run_all.sql -v AppPassword="<app-login-password>"
+  -C -b -i run_all.sql
 ```
+
+First-time bring-up only: `09_app_role.sql` needs the password for the `mealprep_app` login. Either edit the `:setvar AppPassword ""` line in that file to your chosen password before the first run, or delete that line and add `-v AppPassword="<your-password>"` to the sqlcmd command above. On rebuilds the login already exists at the server level, so the password is unused and no flag is needed.
 
 Notes:
 - The `rm -rf /tmp/Database` step is needed if you've copied before — `docker cp` nests the copy inside the existing dir otherwise. Run as root inside the container (`-u 0`) because the existing files are owned by uid 1000.

@@ -29,7 +29,9 @@ unit is stored per-recipe in [[RecipeIngredients]] so a user can override.
 - `IX_Ingredients_DefaultUnitID` — FK column index (added Phase 2.5).
 
 ## Seed
-`Database/seeds/ingredients_seed.sql` ships ~44 common items (pantry / oils / dairy / produce / proteins / herbs). `MERGE` keyed on `Name`, with `DefaultUnitID` resolved via `LEFT JOIN dbo.Units ON Abbreviation = ...`.
+`Database/seeds/ingredients_seed.sql` ships 44 common items (pantry / oils / dairy / produce / proteins / herbs). `MERGE` keyed on `Name`, with `DefaultUnitID` resolved via `LEFT JOIN dbo.Units ON Abbreviation = ...`.
+
+Names are in Romanian without diacritics (`Faina`, `Branza`, `Smantana`, `Piept de pui`, etc.) to match the convention used in [[IngredientCategories]]. An English build of the app should add a localization layer rather than a parallel English seed — see the 2026-05-15 entry in [[Decisions Log]].
 
 ## Procs
 - `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients` — basic CRUD-ish surface.

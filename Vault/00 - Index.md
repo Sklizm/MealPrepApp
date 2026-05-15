@@ -28,6 +28,7 @@ Open the graph view to see how everything connects.
 
 ## Design
 - [[Design/App Design Spec]]
+- [[Design/App Design Spec-ro]] — versiune romana (pentru raportul de practica)
 
 ## Sessions
 - [[Sessions/2026-05-07 - Kickoff]]
@@ -35,6 +36,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-11 - Phase 2.5 - DB polish]]
 - [[Sessions/2026-05-11 - Phase 3 - Meal planning and pantry]]
 - [[Sessions/2026-05-11 - Phase 4 design and ingredient categories]]
+- [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

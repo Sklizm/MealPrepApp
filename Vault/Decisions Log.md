@@ -213,3 +213,18 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: Both the "is this in the last 5 hashes?" check and the pruning `ROW_NUMBER()` order by `ChangedAt DESC, PasswordHistoryID DESC`. Not just `ChangedAt DESC`.
 **Why**: `ChangedAt` is `DATETIME2(0)` (whole seconds). Multiple password changes in the same second have identical timestamps, so ordering by timestamp alone is non-deterministic and pruning can delete the wrong row. `PasswordHistoryID` is `INT IDENTITY` so it always grows monotonically — perfect tiebreak.
 **How to apply**: Any `ORDER BY <timestamp>` over rows that can be created in rapid succession needs an IDENTITY tiebreak. Worth remembering for any future "recent N" query.
+
+---
+
+## 2026-05-15 — Ingredient names live in Romanian in the seed, not English
+**Decision**: `seeds/ingredients_seed.sql` ships ingredient names in Romanian, written without diacritics (`Faina`, `Branza`, `Smantana`) to match the convention already used in [[IngredientCategories]]. No parallel English seed.
+**Why**: The app ships in Romanian; a Romanian DB demo means a Romanian seed. Keeping an English copy as a sibling seed would let the two drift, and the `MERGE` is keyed on `Name` so any seed-time language swap is non-trivial (existing rows don't rename — they'd just sit alongside new ones).
+**Reversibility / how to apply**: An English-language build of the app should add a localization layer (resource files in the app, or a `Translations` table keyed on `IngredientID`) rather than fork the seed. The seed is the canonical Romanian copy.
+
+---
+
+## 2026-05-15 — `AppPassword` defaults to empty inside `09_app_role.sql` (supersedes the 2026-05-07 run-time variable decision for rebuilds)
+**Decision**: `09_app_role.sql` now declares `:setvar AppPassword ""` near the top so sqlcmd's preprocessor doesn't error on undefined variable. The `CREATE LOGIN ... WITH PASSWORD = N'$(AppPassword)'` line only fires when the login is missing, so on rebuilds the empty default is unused.
+**Why**: The 2026-05-07 decision ("App login password supplied at run time, not stored in the file") is still correct in spirit, but its operational consequence — every rebuild needs `-v AppPassword=...` even though the login already exists and the value is discarded — was friction with no payoff. The login persists at the server level across `DROP DATABASE MealPrepDB`, so the *create* path is essentially first-run-only.
+**Gotcha**: A `:setvar` in a script overrides `-v` from the command line, so the documented first-run path (`sqlcmd ... -v AppPassword="..."`) now also requires either editing the `:setvar` line in place or deleting it. The header comment of `09_app_role.sql` spells both paths out.
+**How to apply**: Rebuilds → just run `run_all.sql`, no flag. First-time bring-up on a fresh server → edit `:setvar AppPassword ""` to the chosen password (or delete the line and use `-v`).

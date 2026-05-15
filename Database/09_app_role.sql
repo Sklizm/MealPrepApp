@@ -4,12 +4,20 @@
 -- UPDATE/DELETE on tables is explicitly DENIED. This makes SQL injection
 -- structurally impossible from the app side.
 --
--- Run with:
---   sqlcmd ... -v AppPassword="<your_chosen_password>" -i 09_app_role.sql
--- The password must satisfy SQL Server policy (length + complexity).
+-- First-time setup (login does not yet exist):
+--   Either edit the :setvar AppPassword line below to your chosen password,
+--   or delete that line and run with:
+--     sqlcmd ... -v AppPassword="<your_chosen_password>" -i 09_app_role.sql
+--   The password must satisfy SQL Server policy (length + complexity).
+--
+-- Rebuilds (login already exists at the server level): no action needed —
+-- the CREATE LOGIN branch is skipped, so the empty default below is unused.
+-- Note: a :setvar in the script overrides any -v from the command line, so
+-- removing the line is required if you want to supply the password via -v.
 
-:setvar AppLogin mealprep_app
-:setvar AppRole  mealprep_app_role
+:setvar AppLogin    mealprep_app
+:setvar AppRole     mealprep_app_role
+:setvar AppPassword ""
 
 USE master;
 GO
