@@ -43,6 +43,9 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+                        <Button Content="Adauga la plan" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
+                                Command="{Binding DataContext.AddToPlanCommand,
+                                          RelativeSource={RelativeSource AncestorType=UserControl}}" />
                         <Button Content="Editeaza" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"
                                 Command="{Binding DataContext.EditCommand,
                                           RelativeSource={RelativeSource AncestorType=UserControl}}" />

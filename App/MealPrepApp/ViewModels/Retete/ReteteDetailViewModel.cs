@@ -5,6 +5,8 @@ using MealPrepApp.Data;
 using MealPrepApp.Data.Repositories;
 using MealPrepApp.Models;
 using MealPrepApp.Services;
+using MealPrepApp.ViewModels.Planificare;
+using MealPrepApp.Views.Planificare;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MealPrepApp.ViewModels.Retete;
@@ -124,6 +126,28 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>Opens the shared plan-meal modal pre-filled with this recipe; the slot defaults
+    /// to the recipe's own category (or Breakfast if it has none).</summary>
+    [RelayCommand]
+    private async Task AddToPlan()
+    {
+        if (Recipe is null)
+            return;
+
+        var recipe = new RecipeListItem
+        {
+            RecipeID = Recipe.RecipeID,
+            Title = Recipe.Title,
+            CategoryID = Recipe.CategoryID,
+            CategoryName = Recipe.CategoryName,
+            Servings = Recipe.Servings,
+        };
+
+        var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
+        await vm.InitForAddAsync(DateTime.Today, Recipe.CategoryID ?? MealSlots.DefaultSlotId, recipe);
+        _dialog.ShowDialog<PlanMealDialog>(vm);
     }
 
     [RelayCommand]
