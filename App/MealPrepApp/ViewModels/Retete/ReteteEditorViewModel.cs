@@ -177,6 +177,19 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             return;
         }
 
+        // The DB allows an ingredient only once per recipe (UQ_RecipeIngredients_Recipe_Ingr).
+        // Catch a repeated ingredient here with a clear message instead of letting the save
+        // fail with a raw duplicate-key error (rows are all IsComplete, so SelectedIngredient is set).
+        var duplicate = IngredientRows
+            .GroupBy(r => r.SelectedIngredient!.IngredientID)
+            .FirstOrDefault(g => g.Count() > 1);
+        if (duplicate is not null)
+        {
+            var name = duplicate.First().SelectedIngredient!.Name;
+            ErrorMessage = $"Ingredientul \"{name}\" apare de mai multe ori. Combina-l intr-un singur rand.";
+            return;
+        }
+
         var inputs = IngredientRows.Select(r => r.ToInput()).ToList();
         var categoryId = SelectedCategory?.CategoryID;
         var userId = _session.CurrentUserId;
