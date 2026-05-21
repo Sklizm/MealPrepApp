@@ -40,7 +40,7 @@ DataGrip is the user's normal GUI client; sqlcmd is the scriptable path Claude s
 
 ## Schema architecture
 
-Database name: `MealPrepDB`. Six core tables, intentionally minimal v1 scope (no meal plans, shopping lists, nutrition, ratings, photos — see `Vault/Decisions Log.md`).
+Database name: `MealPrepDB`. 12 tables: six core (Users, Units, Categories, Ingredients, Recipes, RecipeIngredients) plus security/audit (PasswordHistory, AuditLog), meal planning (MealPlanEntries, RecipeFavorites, UserPantry), and a lookup (IngredientCategories). The build order below covers the six core tables; the rest are added in `11_`–`14_` and the security/audit scripts. Rationale for every table lives in `Vault/Decisions Log.md`.
 
 Build order (also encoded in `Database/run_all.sql`):
 

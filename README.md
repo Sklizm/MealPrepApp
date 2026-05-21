@@ -1,10 +1,29 @@
-# MealPrepDB
+# MealPrep — recipe tracking & meal planning
 
-SQL Server database for a meal-prep / recipe-tracking + meal-planning app. Built as a school practica project. Runs in Docker, exposes a stored-proc API, and uses a least-privilege SQL login so the .NET app cannot touch tables directly.
+A full meal-prep / recipe-tracking + meal-planning application, built as a school practica project. Two halves, both in this repo:
 
-The .NET app (WPF + MVVM + Dapper) is owned outside this repo. This repo is the database half. The companion app design spec lives at [`Vault/Design/App Design Spec.md`](Vault/Design/App%20Design%20Spec.md).
+- **The app** — a Windows desktop client (WPF + MVVM + Dapper, .NET 10), Romanian-language UI, with a cream/olive design system.
+- **The database** — SQL Server running in Docker, exposing a stored-proc-only API behind a least-privilege login so the app can never touch tables directly.
 
-## What's in it
+The app talks to the database exclusively through stored procedures, authenticated as the low-privilege `mealprep_app` login. The companion design spec lives at [`Vault/Design/App Design Spec.md`](Vault/Design/App%20Design%20Spec.md).
+
+## The app (`App/MealPrepApp/`)
+
+WPF on **.NET 10** (`net10.0-windows`), MVVM via **CommunityToolkit.Mvvm**, data access via **Dapper** over **Microsoft.Data.SqlClient**, DI through **Microsoft.Extensions.DependencyInjection**, config from `appsettings.json` + a gitignored `appsettings.Local.json` (holds the app password). Excel export via **ClosedXML**; password hashing via **BCrypt.Net**.
+
+Screens (Romanian UI):
+
+- **Autentificare** — register, login, change password. Lockout + password-history rules enforced server-side.
+- **Acasă** — dashboard with KPI tiles and recent recipes.
+- **Rețete** — recipe list, detail, and editor (ingredients entered as a list, optimistic-concurrency-safe save).
+- **Ingrediente** — ingredient list (flat or grouped by category) with live as-you-type search, ingredient add; **Frigider** (pantry) add/edit/remove; **Listă de cumpărături** (computed shopping list with date range, Excel export, and print).
+- **Planificare** / **Rapoarte** — meal-plan calendar and reports (DB procs ready; UI in progress).
+
+**Design system** — a single cream / olive / dark-brown theme in `Themes/Colors.xaml` + `Themes/Styles.xaml`: chrome-less windows (`WindowChrome`), a styled `MessageDialog` replacing `MessageBox`, and themed date pickers, menus, tooltips, and scrollbars. `appsettings.Local.json`, `bin`/`obj`, and source-snapshot zips stay out of git.
+
+Build + run on Windows with the .NET 10 SDK installed: create `appsettings.Local.json` from the committed template with the real `mealprep_app` password, point the connection string at the running SQL Server, then `dotnet run` (or open the solution in Visual Studio).
+
+## The database — what's in it
 
 - **12 tables** — 6 core (Users, Units, Categories, Ingredients, Recipes, RecipeIngredients) + 2 for security/auditing (PasswordHistory, AuditLog) + 3 for meal planning (MealPlanEntries, RecipeFavorites, UserPantry) + 1 lookup (IngredientCategories).
 - **38 stored procedures** — the only API surface the app sees. Covers register/login, password change with history check, recipe CRUD with optimistic concurrency, paged search, find-recipes-by-ingredients, weekly/monthly meal plan reads, favorites toggle, pantry upsert, computed shopping list, dashboard counts, monthly reports, and lookup reads.
@@ -17,6 +36,10 @@ The .NET app (WPF + MVVM + Dapper) is owned outside this repo. This repo is the 
 ## Repo layout
 
 ```
+App/
+├── MealPrepApp/                  WPF .NET 10 client (Views, ViewModels, Data, Services, Themes)
+└── legacy-winforms/              earlier WinForms prototype, kept for reference
+
 Database/
 ├── 00_create_database.sql        Phase 1: schema
 ├── 01_users.sql … 06_recipe_ingredients.sql
@@ -111,7 +134,7 @@ Custom error codes raised by procs:
 Load-bearing decisions, all recorded with full rationale in [`Vault/Decisions Log.md`](Vault/Decisions%20Log.md):
 
 - **Stored-proc-only API** — the app has zero direct table access. Makes SQL injection structurally impossible from the app side.
-- **Hard delete, not soft** — v1 scope; no `IsDeleted` flags.
+- **Hard delete, not soft** — no `IsDeleted` flags; rows are removed outright.
 - **Cascade is rare on purpose** — only `Recipes → RecipeIngredients`, `Recipes → MealPlanEntries`, `Users → PasswordHistory`, `Users/Recipes → RecipeFavorites`, `Users → UserPantry`. Deleting a user with recipes is blocked, deliberately.
 - **All timestamps UTC** via `SYSUTCDATETIME()`. Display conversion is the app's job.
 - **`NVARCHAR` everywhere** (Unicode), never `VARCHAR`.
@@ -120,8 +143,4 @@ Load-bearing decisions, all recorded with full rationale in [`Vault/Decisions Lo
 - **Optimistic concurrency on Recipes** — `RowVersion` token round-trip via `sp_GetRecipeFull` → `sp_UpdateRecipe`; raises 50004 if stale.
 - **Categories = meal slots** — `MealPlanEntries.CategoryID` is a FK to `Categories`; the planner's weekly view renders 4 of the 6 categories as columns. UI choice, not a DB constraint.
 - **Shopping list is computed**, not stored — `sp_GetShoppingList` joins planned meals through recipe ingredients with servings scaling, minus pantry on hand.
-- **Pantry is unit-exact** — `(UserID, IngredientID, UnitID)` is the upsert key. No cross-unit conversion in v1.
-
-## Out of scope for v1
-
-`IsArchived` / soft delete, recipe images, price-per-serving, recipe ratings, recipe sharing between users, meal plans for groups, nutrition tracking, manual shopping list additions, cross-unit conversion (weight ↔ volume), full-text search, temporal tables, email verification.
+- **Pantry is unit-exact** — `(UserID, IngredientID, UnitID)` is the upsert key. No cross-unit conversion.
