@@ -22,6 +22,11 @@ public sealed class AppDbException : Exception
     {
         ErrorNumber = inner.Number;
         IsKnown = DbExceptionMapper.IsKnown(inner.Number);
-        FriendlyMessage = DbExceptionMapper.ToFriendlyMessage(inner.Number);
+
+        // Mapped errors get their clean Romanian message. Anything we did NOT anticipate
+        // still hits the generic fallback, so append the raw SQL code there — that way an
+        // unexpected failure tells us exactly which error it was instead of being opaque.
+        var friendly = DbExceptionMapper.ToFriendlyMessage(inner.Number);
+        FriendlyMessage = IsKnown ? friendly : $"{friendly} (cod {inner.Number})";
     }
 }
