@@ -6,10 +6,12 @@
         xmlns:authvm="clr-namespace:MealPrepApp.ViewModels.Auth"
         xmlns:retetevm="clr-namespace:MealPrepApp.ViewModels.Retete"
         xmlns:ingvm="clr-namespace:MealPrepApp.ViewModels.Ingrediente"
+        xmlns:planvm="clr-namespace:MealPrepApp.ViewModels.Planificare"
         xmlns:views="clr-namespace:MealPrepApp.Views"
         xmlns:auth="clr-namespace:MealPrepApp.Views.Auth"
         xmlns:retete="clr-namespace:MealPrepApp.Views.Retete"
         xmlns:ingrediente="clr-namespace:MealPrepApp.Views.Ingrediente"
+        xmlns:planificare="clr-namespace:MealPrepApp.Views.Planificare"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="Planificator de Retete si Mese"
         Width="1040" Height="700"
@@ -118,6 +120,9 @@
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type ingvm:IngredienteRootViewModel}">
                     <ingrediente:IngredienteRootView />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type planvm:PlanificareRootViewModel}">
+                    <planificare:PlanificareRootView />
                 </DataTemplate>
             </ContentControl.Resources>
         </ContentControl>

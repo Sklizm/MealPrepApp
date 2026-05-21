@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MealPrepApp.Services;
 using MealPrepApp.ViewModels.Auth;
 using MealPrepApp.ViewModels.Ingrediente;
+using MealPrepApp.ViewModels.Planificare;
 using MealPrepApp.ViewModels.Retete;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -75,7 +76,7 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     {
         ActiveTab = "Planificare";
         StatusText = "Sectiunea Planificare";
-        await _navigation.NavigateToAsync(new PlaceholderViewModel("Planificare"));
+        await _navigation.NavigateToAsync<PlanificareRootViewModel>();
     }
 
     [RelayCommand]

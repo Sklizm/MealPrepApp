@@ -5,6 +5,7 @@ using MealPrepApp.Services;
 using MealPrepApp.ViewModels;
 using MealPrepApp.ViewModels.Auth;
 using MealPrepApp.ViewModels.Ingrediente;
+using MealPrepApp.ViewModels.Planificare;
 using MealPrepApp.ViewModels.Retete;
 using MealPrepApp.ViewModels.Shell;
 using MealPrepApp.Views;
@@ -84,6 +85,10 @@ public partial class App : Application
         services.AddTransient<FrigiderViewModel>();
         services.AddTransient<PantryItemDialogViewModel>();
         services.AddTransient<ShoppingListViewModel>();
+        services.AddTransient<PlanificareRootViewModel>();
+        services.AddTransient<PlanificareMonthlyViewModel>();
+        services.AddTransient<PlanificareWeeklyViewModel>();
+        services.AddTransient<PlanMealDialogViewModel>();
 
         // Windows / Views
         services.AddTransient<LoginWindow>();
