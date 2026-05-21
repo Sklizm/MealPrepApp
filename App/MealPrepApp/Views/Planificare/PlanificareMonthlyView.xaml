@@ -1,0 +1,160 @@
+<UserControl x:Class="MealPrepApp.Views.Planificare.PlanificareMonthlyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Planificare"
+             d:DataContext="{d:DesignInstance vm:PlanificareMonthlyViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.Resources>
+        <!-- Flat clickable day cell — the "add on this day" surface. Dims for adjacent-month days. -->
+        <Style x:Key="DayCellButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="MinHeight" Value="78" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{StaticResource Cream2Brush}"
+                                BorderBrush="{StaticResource DividerBrush}" BorderThickness="0.5"
+                                Padding="4">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource MossLightBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                    <Setter Property="Opacity" Value="0.45" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- The day-number pill, highlighted when the cell is today -->
+        <Style x:Key="DayNumberPill" TargetType="Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Padding" Value="5,1" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsToday}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SidebarBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- A planned-meal chip, coloured by meal slot (CategoryID 1–4) -->
+        <Style x:Key="MealChipButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+            <Setter Property="Tag" Value="{StaticResource MossBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Tag}" CornerRadius="3" Padding="5,2">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Foreground="{StaticResource CreamBrush}"
+                                       FontSize="{StaticResource FontSizeSmall}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.85" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CategoryID}" Value="1">
+                    <Setter Property="Tag" Value="{StaticResource MealBreakfastBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryID}" Value="2">
+                    <Setter Property="Tag" Value="{StaticResource MealLunchBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryID}" Value="3">
+                    <Setter Property="Tag" Value="{StaticResource MealDinnerBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryID}" Value="4">
+                    <Setter Property="Tag" Value="{StaticResource MealSnackBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20,4,20,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Month navigation -->
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+            <Button DockPanel.Dock="Left" Content="◀" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding PrevMonthCommand}" />
+            <Button DockPanel.Dock="Left" Content="Azi" Style="{StaticResource SecondaryButton}"
+                    Margin="8,0,0,0" Command="{Binding TodayCommand}" />
+            <Button DockPanel.Dock="Right" Content="▶" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding NextMonthCommand}" />
+            <TextBlock Text="{Binding MonthLabel}" Style="{StaticResource BodyText}"
+                       FontWeight="Bold" FontSize="{StaticResource FontSizeAction}"
+                       VerticalAlignment="Center" Margin="20,0,0,0" />
+        </DockPanel>
+
+        <!-- Weekday headers (Mon-first) -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding WeekdayHeaders}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="7" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" Style="{StaticResource SmallMutedText}"
+                               HorizontalAlignment="Center" Margin="0,0,0,4" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 6×7 day grid -->
+        <ItemsControl Grid.Row="2" ItemsSource="{Binding Days}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="6" Columns="7" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Style="{StaticResource DayCellButton}"
+                            Command="{Binding DataContext.AddOnDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}">
+                        <StackPanel>
+                            <Border Style="{StaticResource DayNumberPill}">
+                                <TextBlock Text="{Binding DayNumber}" Style="{StaticResource BodyText}" />
+                            </Border>
+                            <ItemsControl ItemsSource="{Binding Entries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource MealChipButton}"
+                                                Content="{Binding RecipeTitle}"
+                                                Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>
