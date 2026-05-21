@@ -7,9 +7,8 @@ tags: [todo]
 Lista de verificare in desfasurare. Bifeaza pe masura ce sunt facute. Cele mai recente in partea de sus a fiecarei sectiuni.
 
 ## Acum
-- [ ] Margarita: revizuieste macheta Canva conform specificatiei de design din Faza 4 (11 ecrane noi, 10 elemente de curatare, 4 componente transversale — vezi `Vault/Sessions/2026-05-11 - Faza 4 design si categorii de ingrediente-ro.md`)
-- [ ] Reimprospateaza DataGrip si confirma ca cele 12 tabele + 38 proceduri + tipul `IntList` apar
-- [ ] Conecteaza aplicatia .NET ca `mealprep_app` (nu `sa`) — connection string-ul merge in config-ul `App/` (WPF + MVVM + Dapper)
+- [ ] Faza G (Planificare) — UI calendar de planificare mese peste procedurile `MealPlanEntries` existente
+- [ ] Faza H (Rapoarte + slefuire) — ecrane dashboard/rapoarte (`sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`)
 
 ## Curand
 - [ ] Optional: adauga view-uri de comoditate pentru explorare ad-hoc in DataGrip (doar citire, grant-uri de rol separate daca sunt expuse aplicatiei)
@@ -25,6 +24,13 @@ Lista de verificare in desfasurare. Bifeaza pe masura ce sunt facute. Cele mai r
 - [ ] Ingrediente private per utilizator (adauga UserID nullable la [[Ingredients-ro]])
 
 ## Facute
+- [x] **Restilizare UI confirmata pe PC-ul Margaritei + un VM de Windows 11** — dropdown-uri/cautare-live, ferestre fara chrome nativ (`WindowChrome`), `MessageDialog` stilizat (Info/Confirm/Error), DatePicker/Calendar/Menu/ToolTip/ScrollBar tematizate prin stiluri implicite globale — vezi [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome-ro]]
+- [x] **`App/` commit-uit in git** — proiectul nu mai e doar DB; `.gitignore` radacina + `CLAUDE.md` actualizate; `appsettings.Local.json`/`bin`/`obj`/`App/*.zip` raman afara; `bgIsolation` revocat la implicit
+- [x] Faza F (Ingrediente / Frigider / Lista cumparaturi) confirmata ca functioneaza pe PC-ul Margaritei
+- [x] Margarita: revizuieste macheta Canva conform specificatiei de design din Faza 4
+- [x] Reimprospateaza DataGrip si confirma ca cele 12 tabele + 38 proceduri + tipul `IntList` apar
+- [x] Fazele A–E ale aplicatiei WPF (Schelet/Infra, Modele/Date, Auth, Shell/Acasa, Retete) confirmate ca functioneaza pe PC-ul Margaritei — vezi [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built-ro]]
+- [x] Conectat aplicatia .NET ca `mealprep_app` (nu `sa`); connection string-ul sta in `appsettings.Local.json` (in `.gitignore`)
 - [x] Seed-ul de ingrediente tradus in romana (fara diacritice, urmand conventia din IngredientCategories); JOIN-ul de backfill al categoriilor actualizat; `AppPassword` are default gol in `09_app_role.sql` astfel incat rebuild-urile nu mai au nevoie de `-v AppPassword=...`. Rebuild curat verificat — vezi [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default-ro]]
 - [x] Faza 4 — Finalizare design + adaugari DB: blocate deciziile pentru auth/navigare/click/calendar/categorii/rapoarte/iesire/scurtatura-plan; adaugat tabel `IngredientCategories` + FK + seed cu 8 categorii + backfill al celor 44 de ingrediente; adaugate `sp_GetUserProfile` (citire sigura), `sp_GetIngredientCategories`, `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`; extins `sp_GetIngredients` cu filtru opțional pe categorie
 - [x] Faza 3 — Planificare mese + camara + lista de cumparaturi: `MealPlanEntries`, `RecipeFavorites`, `UserPantry`, 14 proceduri noi (plan/unplan/saptamanal/lunar, toggle favorite, upsert pantry via MERGE, lista de cumparaturi calculata cu scalare portii, contoare dashboard + retete recente)

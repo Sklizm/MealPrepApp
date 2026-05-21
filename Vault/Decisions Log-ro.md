@@ -228,3 +228,63 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **De ce**: Decizia din 2026-05-07 ("Parola login-ului aplicatiei este furnizata la runtime, nu stocata in fisier") este in continuare corecta in spirit, dar consecinta operationala — fiecare rebuild are nevoie de `-v AppPassword=...` desi login-ul exista deja iar valoarea este aruncata — era frictiune fara castig. Login-ul persista la nivel de server peste `DROP DATABASE MealPrepDB`, deci calea de *create* este in esenta doar pentru prima rulare.
 **Capcana**: Un `:setvar` intr-un script suprascrie `-v` din linia de comanda, deci calea documentata pentru prima rulare (`sqlcmd ... -v AppPassword="..."`) cere acum fie editarea liniei `:setvar` direct, fie stergerea ei. Comentariul de header din `09_app_role.sql` explica ambele cai.
 **Cum se aplica**: Rebuild → ruleaza `run_all.sql`, fara flag. Prima setare pe un server proaspat → editeaza `:setvar AppPassword ""` la parola aleasa (sau sterge linia si foloseste `-v`).
+
+---
+
+## 2026-05-18 — `sp_AddIngredient` nu poate seta categoria; dialogul de adaugare ingredient renunta la selectorul de categorie
+**Decizie**: Dialogul de adaugare ingredient (`IngredientAddDialog`) prezinta doar Nume + Unitate implicita. Ingredientele noi ajung in grupul "Fara categorie" pana cand o procedura viitoare accepta un parametru `IngredientCategoryID`.
+**De ce**: `Ingredients` are o coloana `IngredientCategoryID` (adaugata in `14_ingredient_categories.sql`), iar `sp_GetIngredients` o intoarce, dar `sp_AddIngredient` nu o accepta — deci "dropdown-ul de categorie" din specificatie nu poate persista nimic. Afisarea unui selector nefunctional ar fi UX mai prost decat scoaterea lui.
+**Aplicare**: Cand polish-ul are nevoie de categorii editabile, extinde `sp_AddIngredient` sa primeasca `@IngredientCategoryID INT = NULL` (si adauga o `sp_UpdateIngredientCategory` paralela daca backfill-ul randurilor existente e necesar). Apoi reintrodu selectorul in `IngredientAddDialogViewModel`.
+
+---
+
+## 2026-05-18 — Pattern pentru deschidere dialog: constructor fara parametri + `IDialogService.ShowDialog<TWindow>(vm)`
+**Decizie**: Dialogurile modale adaugate in Faza F (`IngredientAddDialog`, `PantryItemDialog`) au constructori fara parametri si leaga VM-ul prin `DataContext`. `IDialogService.ShowDialog<TWindow>(viewModel)` este singurul punct de intrare — instantieaza fereastra, seteaza `DataContext = vm`, seteaza `Owner` la fereastra activa si apeleaza `ShowDialog()`. Dialogurile se inchid singure prin emiterea unui eveniment `SaveSucceeded` din VM, gestionat in code-behind pentru a seta `DialogResult = true`.
+**De ce**: `ChangePasswordDialog` existent este construit cu DI (constructorul ii primeste VM-ul) pentru ca shell-ul detine fluxul de deschidere. Dialogurile din Faza F sunt deschise din VM-uri de lista (`IngredienteListViewModel`, `FrigiderViewModel`), nu din shell, asa ca trecerea prin `IDialogService` pastreaza acele VM-uri testabile si evita raspandirea apelurilor `App.Services.GetRequiredService`. VM-ul ramane rezolvat prin DI de catre apelant (deci dependentele se injecteaza); fereastra in sine nu trebuie sa stie de DI.
+**Aplicare**: Dialogurile noi din Fazele G/H sa urmeze acelasi pattern, exceptie controalele brute (ex. `PasswordBox`) ale caror valori nu pot fi legate direct — acelea pastreaza forma VM-in-ctor.
+
+---
+
+## 2026-05-18 — Izolare dezactivata pentru sesiunile de background in acest repo (`.claude/settings.json`)
+**Decizie**: `.claude/settings.json` seteaza `{"worktree": {"bgIsolation": "none"}}`. Sesiunile Claude Code de background pot acum edita direct `App/MealPrepApp/` in loc sa fie rutate printr-un worktree.
+**De ce**: Garda implicita `bgIsolation: "worktree"` a harness-ului creeaza un worktree git izolat inainte de a permite editari. Dar `App/` este in `.gitignore` — worktree-urile contin doar fisiere urmarite, deci worktree-ul ar porni fara niciun cod existent al aplicatiei. Orice editare bg ar ajunge intr-un shell gol fara context.
+**Aplicare**: Daca/cand `App/` devine urmarit in git (ex. cand placeholder-ul WinForms este in sfarsit eliminat si sursa WPF este commit-uita), revoca setarea astfel incat sesiunile bg sa-si recapete garda de izolare. Pana atunci ramane oprita.
+
+---
+
+## 2026-05-18 (mai tarziu) — `sp_AddIngredient` extinsa cu `@IngredientCategoryID`; dialogul recapata selectorul de categorie
+**Decizie**: `sp_AddIngredient` primeste acum un al treilea parametru optional `@IngredientCategoryID INT = NULL` si il insereaza in `dbo.Ingredients`. `IngredientRepository.AddIngredientAsync` il transmite mai departe; `IngredientAddDialog` reintroduce dropdown-ul de categorie.
+**De ce**: Decizia anterioara din aceeasi zi de a scoate selectorul era un workaround pentru o limitare v1 a procedurii, nu o decizie de design. Extinderea procedurii este o schimbare single-column, non-breaking (parametrul nou este optional, default NULL) — strict mai bine decat sa expediem un dialog care ignora silentios categoria.
+**Reversibilitate**: Inlocuieste intrarea anterioara din 2026-05-18. Schimbarea de procedura este idempotenta (`CREATE OR ALTER`) si deja aplicata pe containerul rulant; smoke test-ul a confirmat ca un insert cu `@IngredientCategoryID = 8 (Altele)` ajunge corect.
+**Aplicare**: Daca se adauga vreodata `sp_UpdateIngredient` (pentru editare ingrediente existente), potriveste aceasta semnatura: `(@IngredientID, @Name, @DefaultUnitID, @IngredientCategoryID)`.
+
+---
+
+## 2026-05-21 — Ferestre fara chrome nativ via `System.Windows.Shell.WindowChrome`
+**Decizie**: Toate cele cinci ferestre (`LoginWindow`, `ShellWindow`, `ChangePasswordDialog`, `IngredientAddDialog`, `PantryItemDialog`) seteaza `WindowStyle="None"` si folosesc un bloc `<shell:WindowChrome>` (`CaptionHeight="44"`) ca sa suprime bara de titlu nativa Windows, pastrand drag/snap/resize de la OS. Banda de header inchisa de 44px existenta devine zona de drag a OS-ului; butoanele de caption din ea sunt marcate `shell:WindowChrome.IsHitTestVisibleInChrome="True"` ca sa primeasca click-uri. Dialogurile au doar × inchidere; `LoginWindow` are ─ minimizare + ×; `ShellWindow` are ─ ▢/❐ maximizare-restaurare + ×.
+**De ce**: Header-ul inchis personalizat se randa *sub* bara de titlu nativa Windows — un dublu-header vizibil. `WindowChrome` este inclus in `PresentationFramework` (fara dependinta in plus) si este modul standard WPF de a detine intreaga suprafata a ferestrei fara a pierde managementul de ferestre al OS-ului.
+**Capcana**: Orice element clicabil din zona de caption este altfel inghitit de zona de drag — fiecare buton de caption are nevoie de `IsHitTestVisibleInChrome="True"`. `ResizeBorderThickness` trebuie sa fie nenul (6) pe ferestrele redimensionabile altfel marginile nu redimensioneaza la drag; dialogurile il pastreaza la 0.
+**Aplicare**: Ferestrele noi urmeaza acelasi bloc. Stilurile de buton de caption sunt in `Themes/Styles.xaml` (`WindowChromeButton` 46×44 cu hover `#33FFFFFF`, `WindowCloseButton` cu hover `DangerBrush`).
+
+---
+
+## 2026-05-21 — `MessageDialog` inlocuieste `MessageBox`; `DialogService` deleaga la el
+**Decizie**: Un singur `Views/Shared/MessageDialog.xaml` (+ `.cs`) stilizat inlocuieste fiecare `MessageBox.Show`. Are aceeasi structura header-inchis / continut / footer-Cream2 ca celelalte dialoguri si un enum `MessageDialogKind`: **Info** (un OK), **Confirm** (Da/Nu, intoarce true la Da), **Error** (header rosu `DangerBrush` + glif ⚠, un OK). `DialogService.Confirm/ShowError/ShowInfo` sunt acum delegatoare pe o linie; interfata `IDialogService` este neschimbata deci niciun apelant nu s-a schimbat.
+**De ce**: `MessageBox` brut este chrome nativ Windows nestilizabil — strica paleta crem/oliv in momentul in care apare orice confirmare/eroare. Centralizarea pe un singur dialog inseamna ca stilul de eroare (rosu + ⚠) este consecvent si modificarile viitoare se fac intr-un singur loc.
+**Capcana**: Titlul/mesajul sunt atribuite prin controale denumite (`HeaderText.Text`, `MessageBody.Text`) in fabrica statica `Show()` **dupa** `InitializeComponent`, NU prin binding-uri la proprietati CLR ale ferestrei — acele proprietati CLR se evalueaza dupa ce ruleaza initializatorul de obiect, deci binding-urile s-ar randa goale.
+**Aplicare**: Nu mai apela niciodata `MessageBox.Show` — ruteaza prin `IDialogService`. Variantele noi extind enum-ul + switch-ul `Configure()`.
+
+---
+
+## 2026-05-21 — Chrome-ul nativ stilizat prin stiluri implicite globale (fara cheie)
+**Decizie**: `DatePicker`/`Calendar`/`CalendarItem`/`CalendarDayButton`/`CalendarButton`, `Menu`/`MenuItem`, `ToolTip` si `ScrollBar` (+ partile thumb/repeat-button) sunt restilizate in `Themes/Styles.xaml` ca stiluri **implicite** (TargetType fara `x:Key`) astfel incat fiecare instanta din toata aplicatia mosteneste paleta automat — fara editari la callsite. Ambele campuri de data din `ShoppingListView`, meniul de utilizator din `ShellWindow`, fiecare tooltip si fiecare scrollbar de `ScrollViewer`/`DataGrid` le preiau gratuit.
+**De ce**: Aceste controale lasau sa transpara chrome-ul implicit albastru/gri Windows. Stilurile implicite le stilizeaza peste tot dintr-o data si pastreaza ecranele noi consecvente fara cablare per-control.
+**Capcana**: `CalendarButton` (selectorul de luna/an) **nu** are `IsSelected` — aceea e doar pe `CalendarDayButton`; foloseste `HasSelectedDays` pentru evidentierea lui (altfel eroare de compilare XAML). Template-ul implicit `CalendarItem` trebuie suprascris complet altfel chrome-ul nativ Aero tot incadreaza grila de zile. `SaveFileDialog` si `PrintDialog` sunt native OS si **nu** pot fi restilizate — limitare documentata, in afara scopului.
+**Aplicare**: Pastreaza controalele noi stilizate fara cheie unde se vrea un aspect global; foloseste un stil cu cheie doar pentru variante punctuale.
+
+---
+
+## 2026-05-21 — Izolarea sesiunilor de background reactivata acum ca `App/` este urmarit (revoca opt-out-ul din 2026-05-18)
+**Decizie**: `App/` este acum commit-uit in git (115 fisiere; `appsettings.Local.json`, `bin`/`obj` si `App/*.zip` raman ignorate). Cu aplicatia urmarita, motivul din 2026-05-18 pentru `bgIsolation: "none"` nu mai e valabil — un worktree contine acum sursa aplicatiei — deci setarea este revocata la valoarea implicita a harness-ului.
+**De ce**: Acea intrare spunea explicit sa se revoce "daca/cand `App/` devine urmarit in git." Tocmai s-a intamplat, deci sesiunile bg isi recapata garda de izolare.
+**Aplicare**: `.claude/` este in `.gitignore`, deci asta e o schimbare doar pe masina locala; oglindeste-o pe orice alta masina care avea opt-out-ul.

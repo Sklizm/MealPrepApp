@@ -34,7 +34,7 @@ stocata per reteta in [[RecipeIngredients-ro]] astfel incat un utilizator poate 
 Numele sunt in romana fara diacritice (`Faina`, `Branza`, `Smantana`, `Piept de pui` etc.) pentru a se potrivi cu conventia folosita in [[IngredientCategories-ro]]. O versiune in engleza a aplicatiei ar trebui sa adauge un strat de localizare in loc de un seed paralel in engleza — vezi intrarea din 2026-05-15 in [[Decisions Log-ro]].
 
 ## Proceduri
-- `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients` — suprafata de baza tip CRUD.
+- `sp_AddIngredient(@Name, @DefaultUnitID = NULL, @IngredientCategoryID = NULL)`, `sp_GetIngredients`, `sp_SearchIngredients` — suprafata de baza tip CRUD. Parametrul de categorie pe `sp_AddIngredient` a fost adaugat 2026-05-18 (follow-up Faza F); vezi [[Decisions Log-ro]].
 - `sp_GetIngredientUsage` (Faza 2.5) — `RecipeCount` pentru un ingredient. Aplicatia o apeleaza inainte de o incercare de stergere; daca > 0, FK-ul ar bloca oricum stergerea, deci aplicatia afiseaza un mesaj util in schimb.
 
 ## Folosit de

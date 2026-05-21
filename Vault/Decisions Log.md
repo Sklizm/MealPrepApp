@@ -228,3 +228,63 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Why**: The 2026-05-07 decision ("App login password supplied at run time, not stored in the file") is still correct in spirit, but its operational consequence — every rebuild needs `-v AppPassword=...` even though the login already exists and the value is discarded — was friction with no payoff. The login persists at the server level across `DROP DATABASE MealPrepDB`, so the *create* path is essentially first-run-only.
 **Gotcha**: A `:setvar` in a script overrides `-v` from the command line, so the documented first-run path (`sqlcmd ... -v AppPassword="..."`) now also requires either editing the `:setvar` line in place or deleting it. The header comment of `09_app_role.sql` spells both paths out.
 **How to apply**: Rebuilds → just run `run_all.sql`, no flag. First-time bring-up on a fresh server → edit `:setvar AppPassword ""` to the chosen password (or delete the line and use `-v`).
+
+---
+
+## 2026-05-18 — `sp_AddIngredient` cannot set category; Ingredient add dialog drops the picker
+**Decision**: The Ingredient add dialog (`IngredientAddDialog`) presents only Name + DefaultUnit. New ingredients land in the "Fara categorie" group until a future proc accepts an `IngredientCategoryID` parameter.
+**Why**: `Ingredients` has an `IngredientCategoryID` column (added in `14_ingredient_categories.sql`), and `sp_GetIngredients` returns it, but `sp_AddIngredient` does not accept it — so the design spec's intended "category dropdown" can't actually persist a category. Showing a non-functional picker would be worse UX than dropping it.
+**How to apply**: When polish work needs editable categories, extend `sp_AddIngredient` to take `@IngredientCategoryID INT = NULL` (and add a parallel `sp_UpdateIngredientCategory` if backfill of existing rows is needed). Then re-add the picker in `IngredientAddDialogViewModel`.
+
+---
+
+## 2026-05-18 — Dialog-opening pattern: parameterless ctor + `IDialogService.ShowDialog<TWindow>(vm)`
+**Decision**: Modal dialogs added in Phase F (`IngredientAddDialog`, `PantryItemDialog`) have parameterless constructors and bind the VM via `DataContext`. `IDialogService.ShowDialog<TWindow>(viewModel)` is the only entry point — it instantiates the window, sets `DataContext = vm`, sets `Owner` to the active window, and calls `ShowDialog()`. Dialogs close themselves by raising a `SaveSucceeded` event from the VM, handled in code-behind to set `DialogResult = true`.
+**Why**: The existing `ChangePasswordDialog` was DI-constructed (its ctor takes the VM) because the shell window code-behind owns the open flow. Phase F dialogs are opened from list VMs (`IngredienteListViewModel`, `FrigiderViewModel`), not the shell, so funneling through `IDialogService` keeps those VMs testable and avoids spreading `App.Services.GetRequiredService` calls. The VM is still DI-resolved by the caller (so dependencies inject); the Window itself doesn't need to know about DI.
+**How to apply**: New modal dialogs in Phases G/H should follow the same pattern unless they host raw controls (e.g. `PasswordBox`) whose values can't be bound directly — those keep the VM-in-ctor flavor.
+
+---
+
+## 2026-05-18 — Background-session isolation disabled for this repo (`.claude/settings.json`)
+**Decision**: `.claude/settings.json` sets `{"worktree": {"bgIsolation": "none"}}`. Background Claude Code sessions can now edit `App/MealPrepApp/` directly instead of being routed through a worktree.
+**Why**: The harness's default `bgIsolation: "worktree"` creates an isolated git worktree before allowing edits. But `App/` is gitignored — worktrees only carry tracked files, so the worktree would start without any existing app code. Any bg edit would land in an empty shell with no surrounding context.
+**How to apply**: If/when `App/` becomes git-tracked (e.g. when the WinForms placeholder is finally removed and the WPF source is committed), revert this setting so bg sessions get back their isolation guard. Until then it stays off.
+
+---
+
+## 2026-05-18 (later) — `sp_AddIngredient` extended with `@IngredientCategoryID`; dialog regains the category picker
+**Decision**: `sp_AddIngredient` now takes a third optional parameter `@IngredientCategoryID INT = NULL` and inserts it into `dbo.Ingredients`. `IngredientRepository.AddIngredientAsync` passes it through; `IngredientAddDialog` re-adds the category dropdown.
+**Why**: The earlier same-day decision to drop the picker was a workaround for a v1 proc limitation, not a design choice. Extending the proc is a single-column, non-breaking change (new parameter is optional, defaults to NULL) — strictly better than shipping a dialog that silently ignores category.
+**Reversibility**: Supersedes the earlier 2026-05-18 entry. The proc change is idempotent (`CREATE OR ALTER`) and already applied to the running container; smoke test confirmed an insert with `@IngredientCategoryID = 8 (Altele)` lands correctly.
+**How to apply**: If `sp_UpdateIngredient` is ever added (for editing existing ingredients), match this signature: `(@IngredientID, @Name, @DefaultUnitID, @IngredientCategoryID)`.
+
+---
+
+## 2026-05-21 — Chrome-less windows via `System.Windows.Shell.WindowChrome`
+**Decision**: All five windows (`LoginWindow`, `ShellWindow`, `ChangePasswordDialog`, `IngredientAddDialog`, `PantryItemDialog`) set `WindowStyle="None"` and use a `<shell:WindowChrome>` block (`CaptionHeight="44"`) to suppress the native Windows title bar while keeping OS drag/snap/resize. The existing dark 44px header strip becomes the OS drag region; custom caption buttons inside it are marked `shell:WindowChrome.IsHitTestVisibleInChrome="True"` so they receive clicks. Dialogs get only a × close; `LoginWindow` gets ─ minimize + ×; `ShellWindow` gets ─ ▢/❐ maximize-restore + ×.
+**Why**: The custom dark header was rendering *below* the native Windows title bar — a visible double-header. `WindowChrome` is built into `PresentationFramework` (no extra dependency) and is the standard WPF way to own the whole window surface without losing OS window management.
+**Gotcha**: Anything clickable in the caption region is otherwise swallowed by the drag area — every caption button needs `IsHitTestVisibleInChrome="True"`. `ResizeBorderThickness` must be non-zero (6) on resizable windows or the edges won't drag-resize; dialogs keep it at 0.
+**How to apply**: New windows follow the same block. Caption-button styles live in `Themes/Styles.xaml` (`WindowChromeButton` 46×44 with `#33FFFFFF` hover, `WindowCloseButton` with `DangerBrush` hover).
+
+---
+
+## 2026-05-21 — `MessageDialog` replaces `MessageBox`; `DialogService` delegates to it
+**Decision**: A single styled `Views/Shared/MessageDialog.xaml` (+ `.cs`) replaces every `MessageBox.Show`. It has the same dark-header / content / Cream2-footer chrome as the other dialogs and a `MessageDialogKind` enum: **Info** (one OK), **Confirm** (Da/Nu, returns true on Da), **Error** (`DangerBrush` red header + ⚠ glyph, one OK). `DialogService.Confirm/ShowError/ShowInfo` are now one-line delegators; the `IDialogService` interface is unchanged so no callers changed.
+**Why**: Raw `MessageBox` is unstyleable native Windows chrome — it broke the cream/olive palette the moment any confirm/error fired. Centralising on one dialog means error styling (red + ⚠) is consistent and future tweaks happen in one place.
+**Gotcha**: Title/message are assigned via named controls (`HeaderText.Text`, `MessageBody.Text`) in the static `Show()` factory **after** `InitializeComponent`, NOT via bindings to CLR window properties — those CLR props evaluate after the object initializer runs, so bindings would render empty.
+**How to apply**: Never call `MessageBox.Show` again — route through `IDialogService`. New variants extend the enum + `Configure()` switch.
+
+---
+
+## 2026-05-21 — Native chrome themed via global implicit (keyless) styles
+**Decision**: `DatePicker`/`Calendar`/`CalendarItem`/`CalendarDayButton`/`CalendarButton`, `Menu`/`MenuItem`, `ToolTip`, and `ScrollBar` (+ thumb/repeat-button parts) are restyled in `Themes/Styles.xaml` as **implicit** styles (TargetType with no `x:Key`) so every instance app-wide inherits the palette automatically — no callsite edits. Both `ShoppingListView` date fields, the `ShellWindow` user menu, every tooltip, and every `ScrollViewer`/`DataGrid` scrollbar pick them up for free.
+**Why**: These controls leaked default blue/gray Windows chrome. Implicit styles theme them everywhere at once and keep new screens consistent without per-control wiring.
+**Gotcha**: `CalendarButton` (month/year picker) has **no** `IsSelected` — that's `CalendarDayButton` only; use `HasSelectedDays` for its highlight (XAML compile error otherwise). The default `CalendarItem` template must be fully overridden or the native Aero chrome still frames the day grid. `SaveFileDialog` and `PrintDialog` are OS-native and **cannot** be restyled — documented limitation, out of scope.
+**How to apply**: Keep new controls keyless-styled where an app-wide look is wanted; use a keyed style only for one-off variants.
+
+---
+
+## 2026-05-21 — Background-session isolation re-enabled now that `App/` is tracked (reverts the 2026-05-18 opt-out)
+**Decision**: `App/` is now committed to git (115 files; `appsettings.Local.json`, `bin`/`obj`, and `App/*.zip` stay ignored). With the app tracked, the 2026-05-18 reason for `bgIsolation: "none"` no longer holds — a worktree now carries the app source — so the setting is reverted to the harness default.
+**Why**: That entry explicitly said to revert "if/when `App/` becomes git-tracked." It just did, so bg sessions get their isolation guard back.
+**How to apply**: `.claude/` is gitignored, so this is a local-machine change only; mirror it on any other machine that had the opt-out.

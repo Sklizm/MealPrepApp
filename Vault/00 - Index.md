@@ -37,6 +37,8 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-11 - Phase 3 - Meal planning and pantry]]
 - [[Sessions/2026-05-11 - Phase 4 design and ingredient categories]]
 - [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default]]
+- [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built]]
+- [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

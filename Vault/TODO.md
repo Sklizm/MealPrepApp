@@ -7,9 +7,8 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Margarita: revise the Canva mockup per Phase 4 design spec (11 new screens, 10 cleanup items, 4 cross-cutting components — see `Vault/Sessions/2026-05-11 - Phase 4 design and ingredient categories.md`)
-- [ ] Refresh DataGrip and confirm the 12 tables + 38 procs + `IntList` type all show up
-- [ ] Wire the .NET app to connect as `mealprep_app` (not `sa`) — connection string goes in `App/`'s config (WPF + MVVM + Dapper)
+- [ ] Phase G (Planificare) — meal-plan calendar UI on top of the existing `MealPlanEntries` procs
+- [ ] Phase H (Rapoarte + polish) — dashboard/reports screens (`sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`)
 
 ## Soon
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
@@ -18,13 +17,20 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
 - [ ] Meal plans / weekly schedule tables
-- [ ] Shopping list generation
+- [ ] Shx`opping list generation
 - [ ] Nutrition tracking (calories, macros per ingredient)
-- [ ] Recipe ratings / favorites
+- [x] Recipe ratings / favorites
 - [ ] Photos / image attachments
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **UI restyle confirmed on Rita's PC + a Windows 11 VM** — dropdowns/live-search, chrome-less windows (`WindowChrome`), styled `MessageDialog` (Info/Confirm/Error), themed DatePicker/Calendar/Menu/ToolTip/ScrollBar via global implicit styles — see [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome]]
+- [x] **`App/` committed to git** — project is no longer DB-only; root `.gitignore` + `CLAUDE.md` updated; `appsettings.Local.json`/`bin`/`obj`/`App/*.zip` stay out; `bgIsolation` reverted to default
+- [x] Phase F (Ingrediente / Frigider / Lista cumparaturi) confirmed working on Rita's PC
+- [x] Margarita: revise the Canva mockup per Phase 4 design spec
+- [x] Refresh DataGrip and confirm the 12 tables + 38 procs + `IntList` type all show up
+- [x] Phases A–E of the WPF app (Skeleton/Infra, Models/Data, Auth, Shell/Acasa, Retete) confirmed working on Rita's PC — see [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built]]
+- [x] Wired the .NET app to connect as `mealprep_app` (not `sa`); connection string lives in `appsettings.Local.json` (gitignored)
 - [x] Ingredients seed translated to Romanian (no diacritics, matching the IngredientCategories convention); ingredient-category backfill JOIN updated; `AppPassword` defaults to empty in `09_app_role.sql` so rebuilds no longer need `-v AppPassword=...`. Clean rebuild verified — see [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default]]
 - [x] Phase 4 — Design completion + DB additions: locked auth/nav/click/calendar/categorii/rapoarte/iesire/plan-shortcut decisions; added `IngredientCategories` table + FK + 8-category seed + backfill of 44 ingredients; added `sp_GetUserProfile` (safe read), `sp_GetIngredientCategories`, `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`; extended `sp_GetIngredients` with optional category filter
 - [x] Phase 3 — Meal planning + pantry + shopping list: `MealPlanEntries`, `RecipeFavorites`, `UserPantry`, 14 new procs (plan/unplan/weekly/monthly, favorites toggle, pantry MERGE upsert, computed shopping list with servings scaling, dashboard counts + recents)

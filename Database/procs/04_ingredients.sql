@@ -3,11 +3,13 @@ GO
 
 -- ===== sp_AddIngredient =====
 -- Adds a global ingredient. Errors on duplicate Name (UQ constraint).
+-- @IngredientCategoryID is optional; NULL leaves the ingredient ungrouped.
 -- Returns: new IngredientID.
 
 CREATE OR ALTER PROCEDURE dbo.sp_AddIngredient
-    @Name           NVARCHAR(100),
-    @DefaultUnitID  INT = NULL
+    @Name                  NVARCHAR(100),
+    @DefaultUnitID         INT = NULL,
+    @IngredientCategoryID  INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -16,8 +18,8 @@ BEGIN
     BEGIN TRY
         BEGIN TRAN;
 
-        INSERT INTO dbo.Ingredients (Name, DefaultUnitID)
-        VALUES (@Name, @DefaultUnitID);
+        INSERT INTO dbo.Ingredients (Name, DefaultUnitID, IngredientCategoryID)
+        VALUES (@Name, @DefaultUnitID, @IngredientCategoryID);
 
         DECLARE @NewID INT = SCOPE_IDENTITY();
 

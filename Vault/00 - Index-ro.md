@@ -36,6 +36,8 @@ Aceasta este intrarea pentru raportul de practica — toate documentele legate s
 - [[Sessions/2026-05-11 - Phase 3 - Meal planning and pantry-ro]]
 - [[Sessions/2026-05-11 - Phase 4 design and ingredient categories-ro]]
 - [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default-ro]]
+- [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built-ro]]
+- [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome-ro]]
 
 ## Nota pentru raportul de practica
 Acest vault este sursa de adevar pentru deciziile, schema si istoricul sesiunilor din spatele proiectului. Versiunile in engleza traiesc alaturi de fiecare `-ro` (acelasi nume, fara sufix) si sunt sincronizate cu codul SQL. Daca exista vreodata o discordanta intre vault si SQL, **codul SQL este autoritar** — versiunile in romana sunt traduceri ale notelor de proiect, nu un proiect paralel.
