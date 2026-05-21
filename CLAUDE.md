@@ -2,12 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Repo split
+## Repo layout
 
-Two workstreams; only one is in scope right now.
+The whole meal-prep project lives here — database and app together.
 
-- `Database/` — **Codrin's responsibility.** T-SQL for SQL Server in a Docker container. This is where all current work happens.
-- `App/` — placeholder for a future .NET (Visual Studio) app. **Not Codrin's responsibility.** Don't write C#/EF code here unless explicitly asked.
+- `Database/` — T-SQL for SQL Server in a Docker container. The schema, stored procs, and seeds.
+- `App/` — WPF .NET app (`MealPrepApp/`) that talks to the database via the `mealprep_app` proc-only login. `legacy-winforms/` is the earlier WinForms prototype, kept for reference. `appsettings.Local.json` holds the app password and is gitignored — never commit it.
 - `Vault/` — Obsidian vault that is the **explicit cross-session source of truth**. Read it at the start of any new session and update it at the end (see "Resume protocol" below).
 
 ## Running the database

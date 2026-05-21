@@ -1,0 +1,201 @@
+<UserControl x:Class="MealPrepApp.Views.Retete.ReteteListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Retete"
+             xmlns:models="clr-namespace:MealPrepApp.Models"
+             d:DataContext="{d:DesignInstance vm:ReteteListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.Resources>
+        <!-- Sidebar entry: Toate / Favorite / Recente -->
+        <Style x:Key="SideNavRadio" TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeMenu}" />
+            <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd" Background="Transparent" Padding="20,10">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       FontFamily="{TemplateBinding FontFamily}"
+                                       FontSize="{TemplateBinding FontSize}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource MossBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Recipe card -->
+        <Style x:Key="RecipeCard" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="240" />
+            <Setter Property="Margin" Value="0,0,16,16" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{StaticResource Cream2Brush}"
+                                CornerRadius="8" Padding="16">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource SidebarBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource DarkBrush}">
+            <StackPanel Margin="0,16,0,0">
+                <RadioButton Content="Toate" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
+                             Command="{Binding ShowToateCommand}"
+                             IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Toate}" />
+                <RadioButton Content="Favorite" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
+                             Command="{Binding ShowFavoriteCommand}"
+                             IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Favorite}" />
+                <RadioButton Content="Recente" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
+                             Command="{Binding ShowRecenteCommand}"
+                             IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Recente}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Main area -->
+        <Grid Grid.Column="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Retete" Style="{StaticResource TitleText}"
+                           VerticalAlignment="Center" Margin="0,0,24,0" />
+
+                <TextBox Grid.Column="1" Style="{StaticResource AppSearchBox}"
+                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                         Tag="{Binding ClearSearchCommand}"
+                         VerticalAlignment="Center" MaxWidth="320" HorizontalAlignment="Left" />
+
+                <ComboBox Grid.Column="2" Style="{StaticResource AppComboBox}"
+                          ItemsSource="{Binding Categories}" DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedCategory}"
+                          VerticalAlignment="Center" Width="170" Margin="8,0,0,0" />
+
+                <Button Grid.Column="3" Content="+ Adauga reteta" Style="{StaticResource PrimaryButton}"
+                        Command="{Binding CreateRecipeCommand}" Margin="8,0,0,0" />
+            </Grid>
+
+            <!-- Error slot -->
+            <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                       TextWrapping="Wrap" Margin="0,0,0,8"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+            <!-- Cards / empty state -->
+            <Grid Grid.Row="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding Recipes.Count, Converter={StaticResource NonEmptyToVisibility}}">
+                    <ItemsControl ItemsSource="{Binding Recipes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:RecipeListItem}">
+                                <Button Style="{StaticResource RecipeCard}"
+                                        Command="{Binding DataContext.OpenRecipeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Title + delete -->
+                                        <Grid Grid.Row="0">
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource SectionHeaderText}"
+                                                       TextWrapping="Wrap" Margin="0,0,24,0" />
+                                            <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    Width="22" Height="22" Padding="0" FontSize="11"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Foreground="{StaticResource DangerBrush}" Cursor="Hand"
+                                                    ToolTip="Sterge reteta"
+                                                    Command="{Binding DataContext.DeleteRecipeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+
+                                        <!-- Category badge -->
+                                        <Border Grid.Row="1" Background="{StaticResource MossBrush}" CornerRadius="3"
+                                                Padding="6,2" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                Visibility="{Binding CategoryName, Converter={StaticResource NotNullToVisibility}}">
+                                            <TextBlock Text="{Binding CategoryName}" Foreground="{StaticResource CreamBrush}"
+                                                       FontSize="{StaticResource FontSizeSmall}" />
+                                        </Border>
+
+                                        <!-- Times + servings -->
+                                        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                                            <TextBlock Style="{StaticResource SmallMutedText}"
+                                                       Text="{Binding PrepTimeMinutes, StringFormat='Preparare: {0} min', TargetNullValue='Preparare: —'}" />
+                                            <TextBlock Style="{StaticResource SmallMutedText}"
+                                                       Text="{Binding CookTimeMinutes, StringFormat='Gatire: {0} min', TargetNullValue='Gatire: —'}" />
+                                            <TextBlock Style="{StaticResource SmallMutedText}"
+                                                       Text="{Binding Servings, StringFormat='Portii: {0}', TargetNullValue='Portii: —'}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Empty state -->
+                <Border Style="{StaticResource Card}" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Visibility="{Binding Recipes.Count, Converter={StaticResource EmptyToVisibility}}">
+                    <StackPanel Margin="16" HorizontalAlignment="Center">
+                        <TextBlock Text="Nicio reteta" Style="{StaticResource SectionHeaderText}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Adauga prima ta reteta pentru a incepe."
+                                   Style="{StaticResource SmallMutedText}" Margin="0,6,0,0"
+                                   HorizontalAlignment="Center" />
+                        <Button Content="+ Adauga reteta" Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Center" Margin="0,14,0,0"
+                                Command="{Binding CreateRecipeCommand}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

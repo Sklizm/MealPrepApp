@@ -1,5 +1,16 @@
-App/
 .claude/
+
+# .NET build output (covers App/ and any future project)
+bin/
+obj/
+.vs/
+
+# Local connection string — contains the mealprep_app password, never commit
+appsettings.Local.json
+
+# Source snapshot zips used to ship to the VM — redundant with tracked source
+App/*.zip
+
 Vault/.obsidian/workspace*.json
 Vault/.obsidian/cache
 Vault/.trash/

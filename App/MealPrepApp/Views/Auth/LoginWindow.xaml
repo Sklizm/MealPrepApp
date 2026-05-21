@@ -1,0 +1,58 @@
+<Window x:Class="MealPrepApp.Views.Auth.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="MealPrepApp"
+        Width="440" Height="560"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        WindowStyle="None"
+        Background="{StaticResource CreamBrush}"
+        FontFamily="{StaticResource AppFontFamily}">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="44" GlassFrameThickness="0"
+                            ResizeBorderThickness="0" CornerRadius="0" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top chrome strip — draggable region + window buttons -->
+        <Border Grid.Row="0" Background="{StaticResource DarkBrush}">
+            <Grid>
+                <TextBlock Text="MealPrepApp"
+                           Foreground="{StaticResource CreamBrush}"
+                           FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="16,0,0,0" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="─" Style="{StaticResource WindowChromeButton}"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="OnMinimizeClick" />
+                    <Button Content="✕" Style="{StaticResource WindowCloseButton}"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="OnCloseClick" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="{StaticResource DarkBrush}" Height="124">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Planificator de Retete si Mese"
+                           Foreground="{StaticResource CreamBrush}"
+                           FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Organizeaza-ti retetele si mesele"
+                           Foreground="{StaticResource MossLightBrush}"
+                           FontSize="{StaticResource FontSizeSmall}"
+                           HorizontalAlignment="Center" Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+
+        <ContentControl Grid.Row="2" x:Name="Host" Margin="32,28" />
+    </Grid>
+</Window>

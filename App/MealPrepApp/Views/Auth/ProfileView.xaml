@@ -1,0 +1,45 @@
+<UserControl x:Class="MealPrepApp.Views.Auth.ProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Auth"
+             d:DataContext="{d:DesignInstance vm:ProfileViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="32">
+        <StackPanel MaxWidth="460" HorizontalAlignment="Left">
+            <TextBlock Text="Profil" Style="{StaticResource TitleText}" Margin="0,0,0,20" />
+
+            <Border Style="{StaticResource Card}" DataContext="{Binding Profile}">
+                <StackPanel>
+                    <TextBlock Text="Nume utilizator" Style="{StaticResource SmallMutedText}" />
+                    <TextBlock Text="{Binding Username}" Style="{StaticResource BodyText}" Margin="0,2,0,12" />
+
+                    <TextBlock Text="Email" Style="{StaticResource SmallMutedText}" />
+                    <TextBlock Text="{Binding Email}" Style="{StaticResource BodyText}" Margin="0,2,0,12" />
+
+                    <TextBlock Text="Cont creat" Style="{StaticResource SmallMutedText}" />
+                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                               Style="{StaticResource BodyText}" Margin="0,2,0,12" />
+
+                    <TextBlock Text="Ultima conectare" Style="{StaticResource SmallMutedText}" />
+                    <TextBlock Text="{Binding LastLoginAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}', TargetNullValue='—'}"
+                               Style="{StaticResource BodyText}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="0,12,0,0"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <Button Content="Schimba parola" Style="{StaticResource SecondaryButton}"
+                        Command="{Binding ChangePasswordCommand}" />
+                <Button Content="Iesi din cont" Style="{StaticResource DangerButton}"
+                        Margin="12,0,0,0" Command="{Binding SignOutCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,19 @@
+<UserControl x:Class="MealPrepApp.Views.PlaceholderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Shell"
+             d:DataContext="{d:DesignInstance vm:PlaceholderViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420">
+            <TextBlock Text="{Binding SectionName}" Style="{StaticResource TitleText}"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Message}" Style="{StaticResource SmallMutedText}"
+                       TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0" />
+        </StackPanel>
+    </Grid>
+</UserControl>

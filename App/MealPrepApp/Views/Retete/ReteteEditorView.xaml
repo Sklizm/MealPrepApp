@@ -1,0 +1,154 @@
+<UserControl x:Class="MealPrepApp.Views.Retete.ReteteEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Retete"
+             d:DataContext="{d:DesignInstance vm:ReteteEditorViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding ScreenTitle}" Style="{StaticResource TitleText}"
+                   Margin="0,0,0,16" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+
+                <!-- Title -->
+                <TextBlock Text="Titlu *" Style="{StaticResource SmallMutedText}" />
+                <TextBox Style="{StaticResource AppTextBox}" Margin="0,2,0,12"
+                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Category -->
+                <TextBlock Text="Categorie" Style="{StaticResource SmallMutedText}" />
+                <ComboBox Style="{StaticResource AppComboBox}" Margin="0,2,0,12"
+                          Width="260" HorizontalAlignment="Left"
+                          ItemsSource="{Binding Categories}" DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedCategory}" />
+
+                <!-- Times + servings -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Text="Preparare (min)" Style="{StaticResource SmallMutedText}" />
+                        <TextBox Style="{StaticResource AppTextBox}" Width="120" HorizontalAlignment="Left"
+                                 Margin="0,2,0,0"
+                                 Text="{Binding PrepTimeMinutes, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                        <TextBlock Text="Gatire (min)" Style="{StaticResource SmallMutedText}" />
+                        <TextBox Style="{StaticResource AppTextBox}" Width="120" HorizontalAlignment="Left"
+                                 Margin="0,2,0,0"
+                                 Text="{Binding CookTimeMinutes, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Portii" Style="{StaticResource SmallMutedText}" />
+                        <TextBox Style="{StaticResource AppTextBox}" Width="120" HorizontalAlignment="Left"
+                                 Margin="0,2,0,0"
+                                 Text="{Binding Servings, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Description -->
+                <TextBlock Text="Descriere" Style="{StaticResource SmallMutedText}" />
+                <TextBox Style="{StaticResource AppTextBox}" Margin="0,2,0,12"
+                         AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" MaxLength="500"
+                         VerticalContentAlignment="Top"
+                         Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Instructions -->
+                <TextBlock Text="Instructiuni *" Style="{StaticResource SmallMutedText}" />
+                <TextBox Style="{StaticResource AppTextBox}" Margin="0,2,0,16"
+                         AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"
+                         VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"
+                         Text="{Binding Instructions, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Ingredients -->
+                <Grid Margin="0,0,0,6">
+                    <TextBlock Text="Ingrediente" Style="{StaticResource SectionHeaderText}"
+                               VerticalAlignment="Center" />
+                    <Button Content="+ Adauga ingredient" Style="{StaticResource SecondaryButton}"
+                            HorizontalAlignment="Right" Command="{Binding AddIngredientRowCommand}" />
+                </Grid>
+
+                <!-- Ingredient table header -->
+                <Grid Margin="0,4,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="32" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ingredient" Style="{StaticResource SmallMutedText}" />
+                    <TextBlock Grid.Column="1" Text="Unitate" Style="{StaticResource SmallMutedText}" Margin="6,0,0,0" />
+                    <TextBlock Grid.Column="2" Text="Cantitate" Style="{StaticResource SmallMutedText}" Margin="6,0,0,0" />
+                    <TextBlock Grid.Column="3" Text="Note" Style="{StaticResource SmallMutedText}" Margin="6,0,0,0" />
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding IngredientRows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:RecipeIngredientRowViewModel}">
+                            <Grid Margin="0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="32" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" Style="{StaticResource AppComboBox}"
+                                          IsEditable="True" IsTextSearchEnabled="True"
+                                          ItemsSource="{Binding AllIngredients}" DisplayMemberPath="Name"
+                                          SelectedItem="{Binding SelectedIngredient}" />
+                                <ComboBox Grid.Column="1" Style="{StaticResource AppComboBox}" Margin="6,0,0,0"
+                                          ItemsSource="{Binding AllUnits}" DisplayMemberPath="Abbreviation"
+                                          SelectedItem="{Binding SelectedUnit}" />
+                                <TextBox Grid.Column="2" Style="{StaticResource AppTextBox}" Margin="6,0,0,0"
+                                         Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Column="3" Style="{StaticResource AppTextBox}" Margin="6,0,0,0"
+                                         MaxLength="{x:Static vm:ReteteEditorViewModel.NotesMaxLength}"
+                                         Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="4" Content="✕" Width="24" Height="24" Padding="0"
+                                        FontSize="11" Background="Transparent" BorderThickness="0"
+                                        Foreground="{StaticResource DangerBrush}" Cursor="Hand"
+                                        ToolTip="Elimina randul" Margin="6,0,0,0"
+                                        Command="{Binding RemoveCommand}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Niciun ingredient adaugat." Style="{StaticResource SmallMutedText}"
+                           Margin="0,6,0,0"
+                           Visibility="{Binding IngredientRows.Count, Converter={StaticResource EmptyToVisibility}}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Error slot -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,12,0,0"
+                   Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Content="Salveaza" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+            <Button Content="Renunta" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"
+                    Command="{Binding CancelCommand}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

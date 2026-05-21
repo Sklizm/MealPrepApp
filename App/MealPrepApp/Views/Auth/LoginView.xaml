@@ -1,0 +1,31 @@
+<UserControl x:Class="MealPrepApp.Views.Auth.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Auth"
+             d:DataContext="{d:DesignInstance vm:LoginViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <StackPanel>
+        <TextBlock Text="Conectare" Style="{StaticResource TitleText}" Margin="0,0,0,18" />
+
+        <TextBlock Text="Utilizator sau email" Style="{StaticResource SmallMutedText}" Margin="0,0,0,4" />
+        <TextBox Style="{StaticResource AppTextBox}" Margin="0,0,0,14"
+                 Text="{Binding Identifier, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Text="Parola" Style="{StaticResource SmallMutedText}" Margin="0,0,0,4" />
+        <PasswordBox x:Name="PasswordBox" Style="{StaticResource AppPasswordBox}" Margin="0,0,0,14" />
+
+        <TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="0,0,0,12"
+                   Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+        <Button Content="Conectare" Style="{StaticResource PrimaryButton}" Height="38"
+                Click="OnLoginClick"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+
+        <Button Content="Cont nou? Inregistreaza-te" Style="{StaticResource LinkButton}"
+                Margin="0,18,0,0" Command="{Binding SwitchToRegisterCommand}" />
+    </StackPanel>
+</UserControl>

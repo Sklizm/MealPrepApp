@@ -1,0 +1,7 @@
+# Build output
+bin/
+obj/
+.vs/
+
+# Local connection string — contains the mealprep_app password, never commit
+appsettings.Local.json
