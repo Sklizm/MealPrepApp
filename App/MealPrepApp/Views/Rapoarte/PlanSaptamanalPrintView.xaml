@@ -1,0 +1,86 @@
+<UserControl x:Class="MealPrepApp.Views.Rapoarte.PlanSaptamanalPrintView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Rapoarte"
+             d:DataContext="{d:DesignInstance vm:PlanSaptamanalPrintViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.Resources>
+        <Style x:Key="WrapCell" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="2" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Plan saptamanal pentru tiparire" Style="{StaticResource TitleText}"
+                   Margin="0,0,0,16" />
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="‹" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding PreviousWeekCommand}" />
+            <DatePicker Grid.Column="1" SelectedDate="{Binding SelectedDate}"
+                        VerticalAlignment="Center" Width="140" Margin="8,0,0,0" />
+            <Button Grid.Column="2" Content="›" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding NextWeekCommand}" Margin="8,0,0,0" />
+            <Button Grid.Column="3" Content="Afiseaza" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding GenereazaCommand}" Margin="12,0,0,0" />
+            <TextBlock Grid.Column="4" Text="{Binding WeekLabel}" Style="{StaticResource SectionHeaderText}"
+                       VerticalAlignment="Center" Margin="16,0,0,0" />
+
+            <Button Grid.Column="6" Content="Export Excel" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding ExportExcelCommand}"
+                    IsEnabled="{Binding Days.Count, Converter={StaticResource NonEmptyToBool}}" />
+            <Button Grid.Column="7" Content="Tipareste" Style="{StaticResource SecondaryButton}"
+                    Click="OnPrintClick" Margin="8,0,0,0"
+                    IsEnabled="{Binding Days.Count, Converter={StaticResource NonEmptyToBool}}" />
+        </Grid>
+
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+        <DataGrid Grid.Row="3"
+                  Style="{StaticResource AppDataGrid}"
+                  ColumnHeaderStyle="{StaticResource AppDataGridColumnHeader}"
+                  AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                  CanUserResizeRows="False"
+                  ItemsSource="{Binding Days}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Zi" Binding="{Binding Day}" Width="120"
+                                    ElementStyle="{StaticResource WrapCell}" />
+                <DataGridTextColumn Header="Mic dejun" Binding="{Binding Breakfast}" Width="*"
+                                    ElementStyle="{StaticResource WrapCell}" />
+                <DataGridTextColumn Header="Pranz" Binding="{Binding Lunch}" Width="*"
+                                    ElementStyle="{StaticResource WrapCell}" />
+                <DataGridTextColumn Header="Cina" Binding="{Binding Dinner}" Width="*"
+                                    ElementStyle="{StaticResource WrapCell}" />
+                <DataGridTextColumn Header="Gustare" Binding="{Binding Snack}" Width="*"
+                                    ElementStyle="{StaticResource WrapCell}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

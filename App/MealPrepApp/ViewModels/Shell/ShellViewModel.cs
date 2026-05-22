@@ -4,6 +4,7 @@ using MealPrepApp.Services;
 using MealPrepApp.ViewModels.Auth;
 using MealPrepApp.ViewModels.Ingrediente;
 using MealPrepApp.ViewModels.Planificare;
+using MealPrepApp.ViewModels.Rapoarte;
 using MealPrepApp.ViewModels.Retete;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -84,7 +85,7 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     {
         ActiveTab = "Rapoarte";
         StatusText = "Rapoarte si statistici";
-        await _navigation.NavigateToAsync(new PlaceholderViewModel("Rapoarte"));
+        await _navigation.NavigateToAsync<RapoarteRootViewModel>();
     }
 
     [RelayCommand]

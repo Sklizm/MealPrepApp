@@ -1,0 +1,76 @@
+<UserControl x:Class="MealPrepApp.Views.Rapoarte.RapoarteRootView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MealPrepApp.ViewModels.Rapoarte"
+             xmlns:views="clr-namespace:MealPrepApp.Views.Rapoarte"
+             d:DataContext="{d:DesignInstance vm:RapoarteRootViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.Resources>
+        <!-- Horizontal segmented toggle, matching the Planificare tab strip. -->
+        <Style x:Key="ReportToggleRadio" TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeMenu}" />
+            <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd" Background="Transparent" Padding="24,10"
+                                BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       FontFamily="{TemplateBinding FontFamily}"
+                                       FontSize="{TemplateBinding FontSize}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource MossLightBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource MossBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20,16,20,8">
+            <RadioButton Content="Statistici lunare" Style="{StaticResource ReportToggleRadio}" GroupName="ReportView"
+                         Command="{Binding ShowStatisticiCommand}"
+                         IsChecked="{Binding ActiveView, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Statistici}" />
+            <RadioButton Content="Plan saptamanal" Style="{StaticResource ReportToggleRadio}" GroupName="ReportView"
+                         Command="{Binding ShowPlanPrintCommand}"
+                         IsChecked="{Binding ActiveView, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=PlanPrint}" />
+            <RadioButton Content="Lista cumparaturi" Style="{StaticResource ReportToggleRadio}" GroupName="ReportView"
+                         Command="{Binding ShowListaPrintCommand}"
+                         IsChecked="{Binding ActiveView, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=ListaPrint}" />
+        </StackPanel>
+
+        <ContentControl Grid.Row="1" Content="{Binding CurrentSubView}">
+            <ContentControl.Resources>
+                <DataTemplate DataType="{x:Type vm:StatisticiLunareViewModel}">
+                    <views:StatisticiLunareView />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:PlanSaptamanalPrintViewModel}">
+                    <views:PlanSaptamanalPrintView />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type vm:ListaCumparaturiPrintViewModel}">
+                    <views:ListaCumparaturiPrintView />
+                </DataTemplate>
+            </ContentControl.Resources>
+        </ContentControl>
+    </Grid>
+</UserControl>
