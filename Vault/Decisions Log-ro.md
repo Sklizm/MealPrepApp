@@ -288,3 +288,17 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decizie**: `App/` este acum commit-uit in git (115 fisiere; `appsettings.Local.json`, `bin`/`obj` si `App/*.zip` raman ignorate). Cu aplicatia urmarita, motivul din 2026-05-18 pentru `bgIsolation: "none"` nu mai e valabil — un worktree contine acum sursa aplicatiei — deci setarea este revocata la valoarea implicita a harness-ului.
 **De ce**: Acea intrare spunea explicit sa se revoce "daca/cand `App/` devine urmarit in git." Tocmai s-a intamplat, deci sesiunile bg isi recapata garda de izolare.
 **Aplicare**: `.claude/` este in `.gitignore`, deci asta e o schimbare doar pe masina locala; oglindeste-o pe orice alta masina care avea opt-out-ul.
+
+---
+
+## 2026-05-22 — Scopul Rapoarte = cele 3 sub-taburi din specificatie, sustinute doar de proceduri reale
+**Decizie**: Tabul Rapoarte livreaza exact trei sub-taburi — **Statistici lunare**, **Plan saptamanal pentru tiparire**, **Lista cumparaturi pentru tiparire** — si nimic altceva. Cardurile de raport din prototipul WinForms ("Pret mediu per portie", "Calorii medii per reteta", "Alerta stoc", "Reteta cu calorii minime") au fost **eliminate intentionat**.
+**De ce**: Acele carduri nu au date in spate — schema nu stocheaza pret sau nutritie, si nu exista o procedura de alerta stoc. Statistici lunare se mapeaza pe `sp_GetMonthlyStats` / `sp_GetTopRecipes` / `sp_GetTopIngredients`; cele doua sub-taburi de tiparire reutilizeaza `sp_GetWeeklyPlan` si `sp_GetShoppingList`. Fiecare view din Rapoarte e sustinut de o procedura existenta; nimic nu e fals.
+**Aplicare**: Daca se doreste vreodata pret/nutritie, e intai o schimbare de schema + procedura (vezi TODO "Maybe Later" pentru nutritie), apoi un sub-tab nou — nu un card hardcodat. Sub-taburile de tiparire reutilizeaza helperele de print FlowDocument + export ClosedXML din lista de cumparaturi din Ingrediente.
+
+---
+
+## 2026-05-22 — Crash-ul la salvarea retetei era un ingredient duplicat; garda in UI + mapare erori SQL native
+**Decizie**: "Eroarea neasteptata" opaca la salvare era SQL **2627** dintr-un rand de ingredient duplicat (`UQ_RecipeIngredients_Recipe_Ingr`). Fix-ul are doua straturi: o garda anti-duplicat in `ReteteEditorViewModel.Save` care blocheaza doua randuri cu acelasi ingredient inainte de apelul la baza de date, plus `DbExceptionMapper` care mapeaza coduri native (2627/2601/547/515/2628/8152) la mesaje in romana si `AppDbException` care adauga `(cod N)` pentru orice cod nemapat.
+**De ce**: O incalcare de cheie unica care ajunge la utilizator ca mesaj generic e nediagnosticabila. Prinderea ei in UI da un clar "ingredientul apare de mai multe ori"; fallback-ul `(cod N)` inseamna ca *urmatoarea* eroare neasteptata isi poarta numarul SQL in loc sa fie opaca.
+**Aplicare**: Valideaza fata de constrangerile cunoscute in ViewModel inainte de round-trip; nu lasa niciodata un `SqlException` brut sa apara netradus — ruteaza prin `AppDbException`/`DbExceptionMapper`.

@@ -7,13 +7,19 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Phase G (Planificare) — meal-plan calendar UI on top of the existing `MealPlanEntries` procs
-- [ ] Phase H (Rapoarte + polish) — dashboard/reports screens (`sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`)
+- [ ] Merge `fix-recipe-field-limits` (Title `MaxLength=150`, ingredient Notes `255`) after VM verification
+- [ ] Update `origin` URL — GitHub repo moved `Sklizm/MealPrepDB` → `Sklizm/MealPrepApp`
 
 ## Soon
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
+- [ ] Loading screen on app launch
+- [ ] Conversion to .exe
+- [ ] Add Drafts
+- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
+- [ ] Add a function to change password in login window in case forgot
+- [ ] Ability to add photos to recipes
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
 - [ ] Meal plans / weekly schedule tables
@@ -24,6 +30,9 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Phase H (Rapoarte) confirmed on the VM + merged** — `RapoarteRootViewModel` with 3 sub-tabs: Statistici lunare (KPI tiles + per-slot + top recipes/ingredients), Plan saptamanal pentru tiparire, Lista cumparaturi pentru tiparire (print + Excel). See [[Sessions/2026-05-22 - Recipe crash fixed; Planificare + Rapoarte shipped]]
+- [x] **Phase G (Planificare) confirmed on the VM + merged** — Lunar/Saptamanal calendar + Plan-meal dialog + "Adauga la plan" on recipe detail, on the existing `MealPlanEntries` procs
+- [x] **Recipe-save crash root cause = duplicate ingredient ("Ulei" twice → SQL 2627)** — fixed with an editor duplicate guard + native-error mapping (`DbExceptionMapper`/`AppDbException`, `(cod N)` fallback)
 - [x] **UI restyle confirmed on Rita's PC + a Windows 11 VM** — dropdowns/live-search, chrome-less windows (`WindowChrome`), styled `MessageDialog` (Info/Confirm/Error), themed DatePicker/Calendar/Menu/ToolTip/ScrollBar via global implicit styles — see [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome]]
 - [x] **`App/` committed to git** — project is no longer DB-only; root `.gitignore` + `CLAUDE.md` updated; `appsettings.Local.json`/`bin`/`obj`/`App/*.zip` stay out; `bgIsolation` reverted to default
 - [x] Phase F (Ingrediente / Frigider / Lista cumparaturi) confirmed working on Rita's PC

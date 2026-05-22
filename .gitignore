@@ -11,6 +11,11 @@ appsettings.Local.json
 # Source snapshot zips used to ship to the VM — redundant with tracked source
 App/*.zip
 
+# Report generator: Python venv + PDF validation artifact (the .docx stays tracked)
+Raport/.venv/
+Raport/*.pdf
+__pycache__/
+
 Vault/.obsidian/workspace*.json
 Vault/.obsidian/cache
 Vault/.trash/

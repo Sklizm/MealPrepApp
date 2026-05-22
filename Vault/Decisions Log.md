@@ -288,3 +288,17 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: `App/` is now committed to git (115 files; `appsettings.Local.json`, `bin`/`obj`, and `App/*.zip` stay ignored). With the app tracked, the 2026-05-18 reason for `bgIsolation: "none"` no longer holds — a worktree now carries the app source — so the setting is reverted to the harness default.
 **Why**: That entry explicitly said to revert "if/when `App/` becomes git-tracked." It just did, so bg sessions get their isolation guard back.
 **How to apply**: `.claude/` is gitignored, so this is a local-machine change only; mirror it on any other machine that had the opt-out.
+
+---
+
+## 2026-05-22 — Rapoarte scope = the 3 design-spec sub-tabs, backed only by real procs
+**Decision**: The Rapoarte tab ships exactly three sub-tabs — **Statistici lunare**, **Plan saptamanal pentru tiparire**, **Lista cumparaturi pentru tiparire** — and nothing else. The WinForms prototype's report cards ("Pret mediu per portie", "Calorii medii per reteta", "Alerta stoc", "Reteta cu calorii minime") were **deliberately dropped**.
+**Why**: Those cards have no data behind them — the schema stores no price or nutrition, and there is no stock-alert proc. Statistici lunare maps to `sp_GetMonthlyStats` / `sp_GetTopRecipes` / `sp_GetTopIngredients`; the two print sub-tabs reuse `sp_GetWeeklyPlan` and `sp_GetShoppingList`. Every Rapoarte view is backed by an existing proc; nothing is faked.
+**How to apply**: If price/nutrition is ever wanted, it's a schema + proc change first (see the "Maybe Later" TODO for nutrition), then a new sub-tab — not a hard-coded card. The print sub-tabs reuse the FlowDocument print + ClosedXML export helpers from the Ingrediente shopping list.
+
+---
+
+## 2026-05-22 — Recipe-save crash was a duplicate ingredient; guard at the UI + map native SQL errors
+**Decision**: The opaque "eroare neasteptata" on save was SQL **2627** from a duplicate ingredient row (`UQ_RecipeIngredients_Recipe_Ingr`). Fix is two-layer: a duplicate guard in `ReteteEditorViewModel.Save` that blocks two rows with the same ingredient before the DB call, plus `DbExceptionMapper` mapping native codes (2627/2601/547/515/2628/8152) to Romanian messages and `AppDbException` appending `(cod N)` for any unmapped code.
+**Why**: A unique-key violation reaching the user as a generic message is undiagnosable. Catching it at the UI gives a clear "ingredientul apare de mai multe ori"; the `(cod N)` fallback means the *next* unexpected failure carries its SQL number instead of being opaque.
+**How to apply**: Validate against known constraints in the ViewModel before the round-trip; never let a raw `SqlException` surface untranslated — route through `AppDbException`/`DbExceptionMapper`.
