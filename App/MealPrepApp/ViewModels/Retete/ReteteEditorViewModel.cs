@@ -17,8 +17,9 @@ namespace MealPrepApp.ViewModels.Retete;
 /// </summary>
 public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadable
 {
-    /// <summary>Soft cap mirrored by the editor's notes/description textboxes.</summary>
-    public const int NotesMaxLength = 500;
+    /// <summary>Char cap on an ingredient's note. Must match RecipeIngredients.Notes NVARCHAR(255)
+    /// in the DB — a longer value would be truncated/rejected by SQL Server (error 8152).</summary>
+    public const int NotesMaxLength = 255;
 
     private readonly RecipeRepository _recipes;
     private readonly IngredientRepository _ingredients;

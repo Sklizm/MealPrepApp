@@ -24,7 +24,7 @@
 
                 <!-- Title -->
                 <TextBlock Text="Titlu *" Style="{StaticResource SmallMutedText}" />
-                <TextBox Style="{StaticResource AppTextBox}" Margin="0,2,0,12"
+                <TextBox Style="{StaticResource AppTextBox}" Margin="0,2,0,12" MaxLength="150"
                          Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
 
                 <!-- Category -->
