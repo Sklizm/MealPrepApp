@@ -56,6 +56,13 @@ public sealed class RecipeFull
     public List<RecipeIngredientLine> Ingredients { get; set; } = new();
 }
 
+/// <summary>A recipe's photo bytes + content type, from <c>sp_GetRecipePhoto</c>.</summary>
+public sealed class RecipePhotoData
+{
+    public byte[] ImageData { get; set; } = Array.Empty<byte>();
+    public string ContentType { get; set; } = "image/jpeg";
+}
+
 /// <summary>Result row from <c>sp_FindRecipesByIngredients</c> ("what can I make with…?").</summary>
 public sealed class RecipeFindResult
 {

@@ -57,6 +57,24 @@ public sealed class RecipeRepository : RepositoryBase
     public Task DeleteRecipeAsync(int recipeId, int userId) =>
         ExecuteProcAsync("sp_DeleteRecipe", new { RecipeID = recipeId, UserID = userId });
 
+    /// <summary>Inserts or replaces the single stored photo for a recipe. Owner-only in SQL.</summary>
+    public Task SetRecipePhotoAsync(int recipeId, int userId, byte[] imageData, string contentType) =>
+        ExecuteProcAsync("sp_SetRecipePhoto", new
+        {
+            RecipeID = recipeId,
+            UserID = userId,
+            ImageData = imageData,
+            ContentType = contentType
+        });
+
+    /// <summary>Loads the stored photo for a recipe, or null when the recipe has no photo.</summary>
+    public Task<RecipePhotoData?> GetRecipePhotoAsync(int recipeId) =>
+        QuerySingleOrDefaultProcAsync<RecipePhotoData>("sp_GetRecipePhoto", new { RecipeID = recipeId });
+
+    /// <summary>Deletes the stored recipe photo. Owner-only in SQL; silent if no photo exists.</summary>
+    public Task DeleteRecipePhotoAsync(int recipeId, int userId) =>
+        ExecuteProcAsync("sp_DeleteRecipePhoto", new { RecipeID = recipeId, UserID = userId });
+
     /// <summary>Loads a recipe header + its ingredient lines, or null if not found.</summary>
     public Task<RecipeFull?> GetRecipeFullAsync(int recipeId) =>
         QueryMultipleProcAsync("sp_GetRecipeFull", new { RecipeID = recipeId }, async grid =>

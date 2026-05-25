@@ -76,6 +76,40 @@
                                Text="{Binding AuthorUsername, StringFormat='Autor: {0}'}" />
                 </WrapPanel>
 
+                <!-- Recipe photo -->
+                <Border Style="{StaticResource Card}" Margin="0,24,0,0" Padding="0"
+                        Visibility="{Binding DataContext.PhotoSource,
+                                             RelativeSource={RelativeSource AncestorType=UserControl},
+                                             Converter={StaticResource NotNullToVisibility}}">
+                    <Image Source="{Binding DataContext.PhotoSource,
+                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           MaxHeight="320" Stretch="UniformToFill" />
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Command="{Binding DataContext.ChoosePhotoCommand,
+                                              RelativeSource={RelativeSource AncestorType=UserControl}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                <Setter Property="Content" Value="Adauga poza" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DataContext.HasPhoto,
+                                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 Value="True">
+                                        <Setter Property="Content" Value="Schimba poza" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="Sterge poza" Style="{StaticResource DangerButton}" Margin="8,0,0,0"
+                            Command="{Binding DataContext.DeletePhotoCommand,
+                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            Visibility="{Binding DataContext.HasPhoto,
+                                                 RelativeSource={RelativeSource AncestorType=UserControl},
+                                                 Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+
                 <!-- Description -->
                 <TextBlock Text="Descriere" Style="{StaticResource SectionHeaderText}" Margin="0,24,0,6"
                            Visibility="{Binding Description, Converter={StaticResource NotNullToVisibility}}" />

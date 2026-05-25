@@ -43,6 +43,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-23 - Hermes takeover]]
 - [[Sessions/2026-05-25 - TODO cleanup and draft-photo DB verification]]
 - [[Sessions/2026-05-25 - Drafts UI wiring]]
+- [[Sessions/2026-05-25 - Photos UI wiring]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

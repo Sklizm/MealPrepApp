@@ -40,12 +40,29 @@ def test_draft_controls_are_visible_in_xaml():
     assert "SaveDraftCommand" in editor_xaml
 
 
+def test_recipe_photos_are_wired_in_detail_screen():
+    repo = read("App/MealPrepApp/Data/Repositories/RecipeRepository.cs")
+    vm = read("App/MealPrepApp/ViewModels/Retete/ReteteDetailViewModel.cs")
+    xaml = read("App/MealPrepApp/Views/Retete/ReteteDetailView.xaml")
+    assert "SetRecipePhotoAsync" in repo
+    assert "GetRecipePhotoAsync" in repo
+    assert "DeleteRecipePhotoAsync" in repo
+    assert "PhotoSource" in vm
+    assert "private async Task ChoosePhoto" in vm
+    assert "private async Task DeletePhoto" in vm
+    assert "Adauga poza" in xaml
+    assert "Schimba poza" in xaml
+    assert "Sterge poza" in xaml
+    assert "PhotoSource" in xaml
+
+
 if __name__ == "__main__":
     tests = [
         test_draft_repository_registered_in_di,
         test_recipe_list_exposes_draft_filter_and_commands,
         test_recipe_editor_can_save_and_load_drafts,
         test_draft_controls_are_visible_in_xaml,
+        test_recipe_photos_are_wired_in_detail_screen,
     ]
     for test in tests:
         test()

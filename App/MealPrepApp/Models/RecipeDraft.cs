@@ -37,10 +37,3 @@ public sealed class DraftIngredientInput
     public decimal Quantity { get; set; }
     public string? Notes { get; set; }
 }
-
-/// <summary>A recipe's photo bytes + content type, from sp_GetRecipePhoto.</summary>
-public sealed class RecipePhotoData
-{
-    public byte[] ImageData { get; set; } = Array.Empty<byte>();
-    public string ContentType { get; set; } = "image/jpeg";
-}
