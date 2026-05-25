@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Windows;
+using System.Windows.Media.Animation;
 using MealPrepApp.ViewModels.Shell;
 using MealPrepApp.Views.Auth;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,10 +19,52 @@ public partial class ShellWindow : Window
 
         _viewModel.SignOutRequested += OnSignOutRequested;
         _viewModel.ChangePasswordRequested += OnChangePasswordRequested;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Loaded += OnLoaded;
+        Closed += OnClosed;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e) => await _viewModel.InitializeAsync();
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        _viewModel.SignOutRequested -= OnSignOutRequested;
+        _viewModel.ChangePasswordRequested -= OnChangePasswordRequested;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ShellViewModel.IsInitializing))
+            AnimateLoadingOverlay(_viewModel.IsInitializing);
+    }
+
+    private void AnimateLoadingOverlay(bool show)
+    {
+        LoadingOverlay.BeginAnimation(OpacityProperty, null);
+
+        var animation = new DoubleAnimation
+        {
+            To = show ? 1 : 0,
+            Duration = TimeSpan.FromMilliseconds(show ? 160 : 220),
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut },
+        };
+
+        if (show)
+        {
+            LoadingOverlay.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            animation.Completed += (_, _) =>
+            {
+                if (!_viewModel.IsInitializing)
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+            };
+        }
+
+        LoadingOverlay.BeginAnimation(OpacityProperty, animation);
+    }
 
     private void OnSignOutRequested(object? sender, EventArgs e)
     {

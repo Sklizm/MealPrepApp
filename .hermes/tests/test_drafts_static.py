@@ -72,6 +72,27 @@ def test_recipe_list_cards_show_photo_thumbnails():
     assert "RecipeCardPhoto" in xaml
 
 
+def test_shell_loading_overlay_after_login():
+    vm = read("App/MealPrepApp/ViewModels/Shell/ShellViewModel.cs")
+    codebehind = read("App/MealPrepApp/Views/ShellWindow.xaml.cs")
+    xaml = read("App/MealPrepApp/Views/ShellWindow.xaml")
+    assert "private bool _isInitializing" in vm
+    assert "private string _loadingMessage" in vm
+    assert "await Task.Yield();" in vm
+    assert "Task.Delay(650)" in vm
+    assert "IsInitializing = false" in vm
+    assert "PropertyChanged += OnViewModelPropertyChanged" in codebehind
+    assert "AnimateLoadingOverlay" in codebehind
+    assert "DoubleAnimation" in codebehind
+    assert "Visibility.Collapsed" in codebehind
+    assert "Startup loading overlay" in xaml
+    assert "x:Name=\"LoadingOverlay\"" in xaml
+    assert "Se incarca aplicatia" in xaml
+    assert "LoadingMessage" in xaml
+    assert "LoadingSpinnerRotate" in xaml
+    assert "RepeatBehavior=\"Forever\"" in xaml
+
+
 if __name__ == "__main__":
     tests = [
         test_draft_repository_registered_in_di,
@@ -80,6 +101,7 @@ if __name__ == "__main__":
         test_draft_controls_are_visible_in_xaml,
         test_recipe_photos_are_wired_in_detail_screen,
         test_recipe_list_cards_show_photo_thumbnails,
+        test_shell_loading_overlay_after_login,
     ]
     for test in tests:
         test()

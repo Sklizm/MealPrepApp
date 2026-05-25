@@ -7,10 +7,10 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
+- [ ] Verify loading screen after login on Windows/.NET 10 VM and fix any compile/runtime issues
 - [ ] Verify Photos UI wiring on Windows/.NET 10 VM and fix any compile/runtime issues
 
 ## Soon
-- [ ] Loading screen on app launch
 - [ ] Conversion to .exe
 - [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
 - [ ] Add a function to change password in login window in case forgot
@@ -23,6 +23,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Loading screen after login implemented** — ShellWindow now shows a smooth modal startup overlay while Acasa/dashboard data loads; includes spinner animation, loading message, minimum display time, and fade in/out; pending Windows/.NET 10 verification
 - [x] **Photos initial UI wiring implemented** — detail screen can load, add/change, and delete a recipe photo via `sp_GetRecipePhoto`/`sp_SetRecipePhoto`/`sp_DeleteRecipePhoto`; pending Windows/.NET 10 verification
 - [x] **Drafts UI wiring verified by Codrin** — add/open/delete draft flow works properly; wording switched from ciorna/ciorne to Drafts / `Salveaza ca draft`
 - [x] **Drafts initial UI wiring implemented** — registered `DraftRepository`, added Retete > Ciorne list/open/delete flow, added editor `Salveaza ciorna` save/load flow; pending Windows/.NET 10 verification
