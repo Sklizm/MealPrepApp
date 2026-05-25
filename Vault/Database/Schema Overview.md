@@ -4,7 +4,7 @@ tags: [database, schema]
 
 # Schema Overview
 
-Twelve tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for meal planning + one Phase 4 for ingredient categorization). Build order is dependency order:
+Fourteen tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for meal planning + one Phase 4 for ingredient categorization + drafts/photos). Build order is dependency order:
 
 ```
 [[Users]]                  [[Units]]            [[Categories]]
@@ -29,6 +29,8 @@ Twelve tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for
 - [[RecipeFavorites]] — composite-PK join table for "user has favorited this recipe"
 - [[UserPantry]] — current stock per user, per ingredient+unit (no cross-unit conversion in v1)
 - [[IngredientCategories]] — Phase 4 lookup powering the Ingrediente sidebar; nullable FK from [[Ingredients]]
+- [[RecipeDrafts]] — partially-complete recipe editor saves per user; nullable fields + opaque ingredient JSON
+- [[RecipePhotos]] — one optional DB-stored photo per recipe
 
 ## API surface (Phase 2)
 The .NET app does not query tables directly. It connects as the low-privilege `mealprep_app` SQL login and calls stored procs in `Database/procs/`:
@@ -46,6 +48,8 @@ The .NET app does not query tables directly. It connects as the low-privilege `m
 | Shopping list | `sp_GetShoppingList` (computed, joins planned meals minus pantry) |
 | Dashboard | `sp_GetDashboardCounts`, `sp_GetRecentRecipes` |
 | Reports | `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients` |
+| Drafts | `sp_SaveDraft`, `sp_GetDrafts`, `sp_GetDraft`, `sp_DeleteDraft` |
+| Photos | `sp_SetRecipePhoto`, `sp_GetRecipePhoto`, `sp_DeleteRecipePhoto` |
 | Internal | `sp_WriteAudit` (called from mutating procs) |
 
 The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an ingredient ID list.
@@ -59,8 +63,8 @@ The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an
 - `sa` is reserved for migrations only; the app never uses it.
 
 ## Cascade Behavior
-- Delete a [[Recipes|Recipe]] → its [[RecipeIngredients]] rows are removed (`ON DELETE CASCADE`).
-- Delete a [[Users|User]] → blocked if they own recipes (no cascade by design); but `PasswordHistory` rows DO cascade away (child has no meaning without parent).
+- Delete a [[Recipes|Recipe]] → its [[RecipeIngredients]] rows and optional [[RecipePhotos|RecipePhoto]] row are removed (`ON DELETE CASCADE`).
+- Delete a [[Users|User]] → blocked if they own recipes (no cascade by design); but `PasswordHistory` and [[RecipeDrafts]] rows DO cascade away (children have no meaning without the user).
 - Delete an [[Ingredients|Ingredient]] → blocked if any recipe uses it.
 - Delete a [[Units|Unit]] → blocked if any recipe ingredient uses it.
 
@@ -88,11 +92,15 @@ Run `Database/run_all.sql` end-to-end (idempotent) — the master script `:r`-in
 10. `14_ingredient_categories.sql` — `IngredientCategories` table + nullable FK column on `Ingredients`
 11. `seeds/ingredient_categories_seed.sql` — 8 categories + backfill of shipped Ingredients
 
-**Stored proc API (Phase 2 + 3 + 4)**
-12. `procs/01_users.sql` … `procs/11_reports.sql` — full API. `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP; `sp_AddPantryItem` is a MERGE upsert; `sp_GetShoppingList` is computed (no table); `sp_GetUserProfile` is the safe profile read (no PasswordHash exposed); `sp_GetIngredients` accepts optional `@IngredientCategoryID`.
+**Phase H+ (drafts + photos)**
+12. `15_recipe_drafts.sql` — `RecipeDrafts` table.
+13. `16_recipe_photos.sql` — `RecipePhotos` table.
+
+**Stored proc API (Phase 2 + 3 + 4 + H+)**
+14. `procs/01_users.sql` … `procs/13_recipe_photos.sql` — full API. `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP; `sp_AddPantryItem` is a MERGE upsert; `sp_GetShoppingList` is computed (no table); `sp_GetUserProfile` is the safe profile read (no PasswordHash exposed); `sp_GetIngredients` accepts optional `@IngredientCategoryID`; draft/photo access stays behind stored procs.
 
 **App login + role (run last)**
-13. `09_app_role.sql` — login + role + grants. Requires `-v AppPassword="..."`.
+15. `09_app_role.sql` — login + role + grants. On rebuilds the in-file empty `AppPassword` default is fine when the login already exists; first-time setup needs the chosen password supplied per `09_app_role.sql` comments.
 
 **Error codes raised by procs**
 - `50001` — password reused

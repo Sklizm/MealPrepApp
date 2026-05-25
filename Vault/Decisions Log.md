@@ -302,3 +302,18 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: The opaque "eroare neasteptata" on save was SQL **2627** from a duplicate ingredient row (`UQ_RecipeIngredients_Recipe_Ingr`). Fix is two-layer: a duplicate guard in `ReteteEditorViewModel.Save` that blocks two rows with the same ingredient before the DB call, plus `DbExceptionMapper` mapping native codes (2627/2601/547/515/2628/8152) to Romanian messages and `AppDbException` appending `(cod N)` for any unmapped code.
 **Why**: A unique-key violation reaching the user as a generic message is undiagnosable. Catching it at the UI gives a clear "ingredientul apare de mai multe ori"; the `(cod N)` fallback means the *next* unexpected failure carries its SQL number instead of being opaque.
 **How to apply**: Validate against known constraints in the ViewModel before the round-trip; never let a raw `SqlException` surface untranslated — route through `AppDbException`/`DbExceptionMapper`.
+
+
+---
+
+## 2026-05-25 — Recipe drafts store incomplete editor state as nullable columns plus ingredient JSON
+**Decision**: `RecipeDrafts` stores per-user draft recipe fields with nullable content columns and an opaque `IngredientsJson` blob. Drafts are accessed only through `sp_SaveDraft`, `sp_GetDrafts`, `sp_GetDraft`, and `sp_DeleteDraft`.
+**Why**: A draft can be intentionally incomplete or temporarily invalid while the user is editing. Normalizing draft ingredients into `RecipeIngredients` would force production-level constraints before the draft is ready to become a real recipe.
+**How to apply**: Validation belongs when saving a real [[Recipes|Recipe]], not when saving a draft. Keep draft reads/writes behind stored procs and keep the UI wording as `Drafts` / `Salveaza ca draft` per Codrin's preference.
+
+---
+
+## 2026-05-25 — Recipe photos are DB-stored, one per recipe, with app-side resizing
+**Decision**: `RecipePhotos` stores a single optional photo per recipe (`RecipeID` is both PK and FK). The app downscales selected images to `DecodePixelWidth = 1200` and re-encodes them to JPEG quality 85 before saving through `sp_SetRecipePhoto`.
+**Why**: Keeping the bytes in SQL Server means photos travel with the project database across machines and stay inside the stored-procedure-only security model. App-side resizing avoids unbounded `VARBINARY(MAX)` growth from original camera files.
+**Trade-off**: There is no separate thumbnail table; recipe cards currently load the stored photo bytes and render a thumbnail from them. If this becomes slow with many recipes, add a computed/resized thumbnail path later instead of exposing table access.
