@@ -145,10 +145,19 @@
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
+                                        <!-- Photo thumbnail -->
+                                        <Border x:Name="RecipeCardPhoto" Grid.Row="0" CornerRadius="8" ClipToBounds="True"
+                                                Margin="0,0,0,12" Height="110"
+                                                Visibility="{Binding PhotoData, Converter={StaticResource NotNullToVisibility}}">
+                                            <Image Source="{Binding PhotoData, Converter={StaticResource ByteArrayToImageSource}}"
+                                                   Stretch="UniformToFill" />
+                                        </Border>
+
                                         <!-- Title + delete -->
-                                        <Grid Grid.Row="0">
+                                        <Grid Grid.Row="1">
                                             <TextBlock Text="{Binding Title}" Style="{StaticResource SectionHeaderText}"
                                                        TextWrapping="Wrap" Margin="0,0,24,0" />
                                             <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -161,7 +170,7 @@
                                         </Grid>
 
                                         <!-- Category badge -->
-                                        <Border Grid.Row="1" Background="{StaticResource MossBrush}" CornerRadius="3"
+                                        <Border Grid.Row="2" Background="{StaticResource MossBrush}" CornerRadius="3"
                                                 Padding="6,2" HorizontalAlignment="Left" Margin="0,8,0,0"
                                                 Visibility="{Binding CategoryName, Converter={StaticResource NotNullToVisibility}}">
                                             <TextBlock Text="{Binding CategoryName}" Foreground="{StaticResource CreamBrush}"
@@ -169,7 +178,7 @@
                                         </Border>
 
                                         <!-- Times + servings -->
-                                        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                                        <StackPanel Grid.Row="3" Margin="0,10,0,0">
                                             <TextBlock Style="{StaticResource SmallMutedText}"
                                                        Text="{Binding PrepTimeMinutes, StringFormat='Preparare: {0} min', TargetNullValue='Preparare: —'}" />
                                             <TextBlock Style="{StaticResource SmallMutedText}"

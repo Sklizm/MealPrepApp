@@ -78,12 +78,14 @@
 
                 <!-- Recipe photo -->
                 <Border Style="{StaticResource Card}" Margin="0,24,0,0" Padding="0"
+                        HorizontalAlignment="Stretch"
                         Visibility="{Binding DataContext.PhotoSource,
                                              RelativeSource={RelativeSource AncestorType=UserControl},
                                              Converter={StaticResource NotNullToVisibility}}">
                     <Image Source="{Binding DataContext.PhotoSource,
                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
-                           MaxHeight="320" Stretch="UniformToFill" />
+                           Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=StackPanel}}"
+                           Stretch="Uniform" />
                 </Border>
 
                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">

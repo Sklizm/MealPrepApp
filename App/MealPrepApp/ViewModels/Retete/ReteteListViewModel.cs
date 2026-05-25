@@ -147,6 +147,8 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
                 rows = await _recipes.GetRecipesAsync(categoryId: categoryId, pageSize: PageSize);
             }
 
+            await LoadRecipePhotosAsync(rows);
+
             Recipes.Clear();
             foreach (var row in rows)
                 Recipes.Add(row);
@@ -158,6 +160,15 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task LoadRecipePhotosAsync(IReadOnlyList<RecipeListItem> rows)
+    {
+        foreach (var row in rows)
+        {
+            var photo = await _recipes.GetRecipePhotoAsync(row.RecipeID);
+            row.PhotoData = photo?.ImageData;
         }
     }
 

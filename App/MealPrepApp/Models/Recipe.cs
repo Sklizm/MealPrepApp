@@ -15,6 +15,7 @@ public sealed class RecipeListItem
     public int? PrepTimeMinutes { get; set; }
     public int? CookTimeMinutes { get; set; }
     public int? Servings { get; set; }
+    public byte[]? PhotoData { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? FavoritedAt { get; set; }
     public int TotalCount { get; set; }

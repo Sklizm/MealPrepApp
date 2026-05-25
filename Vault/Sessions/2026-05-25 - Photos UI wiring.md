@@ -8,6 +8,10 @@ tags: [session, wpf, photos, recipes]
 Codrin confirmed the Drafts flow works properly on the Windows/.NET 10 environment. The next TODO item was adding photos to recipes. The database layer for `RecipePhotos` and its stored procedures was already present from the draft/photo DB pass.
 
 ## Changes made
+- Detail photos now resize with the recipe detail content width instead of using a fixed `MaxHeight`.
+- Recipe list cards now show a thumbnail at the top when a recipe has a stored photo; the existing title/category/time/servings content appears underneath.
+- Added `PhotoData` to `RecipeListItem` and load each visible recipe card's photo through `GetRecipePhotoAsync` before populating the list.
+- Added `ByteArrayToImageSourceConverter` and registered it in `App.xaml` for card thumbnail bindings.
 - Added recipe-photo repository calls in `App/MealPrepApp/Data/Repositories/RecipeRepository.cs`:
   - `SetRecipePhotoAsync`
   - `GetRecipePhotoAsync`
@@ -38,6 +42,7 @@ Codrin confirmed the Drafts flow works properly on the Windows/.NET 10 environme
 - Static draft/photo checks pass:
   - `python .hermes/tests/test_drafts_static.py`
 - XAML parses as XML for:
+  - `App.xaml`
   - `ReteteDetailView.xaml`
   - `ReteteListView.xaml`
   - `ReteteEditorView.xaml`

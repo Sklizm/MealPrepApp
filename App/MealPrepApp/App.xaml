@@ -15,6 +15,7 @@
             <conv:NonEmptyCollectionToVisibilityConverter x:Key="NonEmptyToVisibility" />
             <conv:NonEmptyCollectionToBoolConverter x:Key="NonEmptyToBool" />
             <conv:StringEqualsConverter x:Key="StringEquals" />
+            <conv:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSource" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

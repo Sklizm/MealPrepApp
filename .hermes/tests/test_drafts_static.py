@@ -54,6 +54,22 @@ def test_recipe_photos_are_wired_in_detail_screen():
     assert "Schimba poza" in xaml
     assert "Sterge poza" in xaml
     assert "PhotoSource" in xaml
+    assert "MaxHeight" not in xaml
+
+
+def test_recipe_list_cards_show_photo_thumbnails():
+    model = read("App/MealPrepApp/Models/Recipe.cs")
+    vm = read("App/MealPrepApp/ViewModels/Retete/ReteteListViewModel.cs")
+    xaml = read("App/MealPrepApp/Views/Retete/ReteteListView.xaml")
+    app = read("App/MealPrepApp/App.xaml")
+    converter = read("App/MealPrepApp/Converters/CommonConverters.cs")
+    assert "byte[]? PhotoData" in model
+    assert "LoadRecipePhotosAsync" in vm
+    assert "GetRecipePhotoAsync" in vm
+    assert "ByteArrayToImageSource" in app
+    assert "ByteArrayToImageSourceConverter" in converter
+    assert "Source=\"{Binding PhotoData, Converter={StaticResource ByteArrayToImageSource}}\"" in xaml
+    assert "RecipeCardPhoto" in xaml
 
 
 if __name__ == "__main__":
@@ -63,6 +79,7 @@ if __name__ == "__main__":
         test_recipe_editor_can_save_and_load_drafts,
         test_draft_controls_are_visible_in_xaml,
         test_recipe_photos_are_wired_in_detail_screen,
+        test_recipe_list_cards_show_photo_thumbnails,
     ]
     for test in tests:
         test()
