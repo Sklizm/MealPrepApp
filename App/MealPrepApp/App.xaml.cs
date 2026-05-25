@@ -60,6 +60,7 @@ public partial class App : Application
         services.AddSingleton<ShoppingListRepository>();
         services.AddSingleton<DashboardRepository>();
         services.AddSingleton<ReportRepository>();
+        services.AddSingleton<DraftRepository>();
 
         // Services
         services.AddSingleton<ISessionService, SessionService>();

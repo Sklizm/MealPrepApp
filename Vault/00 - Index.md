@@ -39,6 +39,10 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default]]
 - [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built]]
 - [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome]]
+- [[Sessions/2026-05-22 - Recipe crash fixed; Planificare + Rapoarte shipped]]
+- [[Sessions/2026-05-23 - Hermes takeover]]
+- [[Sessions/2026-05-25 - TODO cleanup and draft-photo DB verification]]
+- [[Sessions/2026-05-25 - Drafts UI wiring]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

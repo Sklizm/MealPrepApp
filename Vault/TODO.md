@@ -7,29 +7,29 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Merge `fix-recipe-field-limits` (Title `MaxLength=150`, ingredient Notes `255`) after VM verification
-- [ ] Update `origin` URL — GitHub repo moved `Sklizm/MealPrepDB` → `Sklizm/MealPrepApp`
+- [ ] Verify Drafts UI wiring on Windows/.NET 10 VM and fix any compile/runtime issues
 
 ## Soon
+- [ ] Ability to add photos to recipes
+- [ ] Loading screen on app launch
+- [ ] Conversion to .exe
+- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
+- [ ] Add a function to change password in login window in case forgot
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
-- [ ] Loading screen on app launch
-- [ ] Conversion to .exe
-- [ ] Add Drafts
-- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
-- [ ] Add a function to change password in login window in case forgot
-- [ ] Ability to add photos to recipes
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
-- [ ] Meal plans / weekly schedule tables
-- [ ] Shx`opping list generation
 - [ ] Nutrition tracking (calories, macros per ingredient)
-- [x] Recipe ratings / favorites
-- [ ] Photos / image attachments
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Drafts initial UI wiring implemented** — registered `DraftRepository`, added Retete > Ciorne list/open/delete flow, added editor `Salveaza ciorna` save/load flow; pending Windows/.NET 10 verification
+- [x] **Draft/photo database scripts verified through `run_all.sql`** — full SQL Server build exited 0; verified `RecipeDrafts`, `RecipePhotos`, and draft/photo procs exist; `mealprep_app_role` still has EXECUTE grant plus direct DML denies
+- [x] **Origin URL updated** — `origin` now points to `https://github.com/Sklizm/MealPrepApp.git`
+- [x] **`fix-recipe-field-limits` merged** — git history contains merge `25276e3 Merge branch 'fix-recipe-field-limits'`
+- [x] **Meal planning / weekly schedule shipped** — covered by Phase G Planificare
+- [x] **Shopping list generation shipped** — covered by Phase F/H computed shopping list + print/export flows
 - [x] **Phase H (Rapoarte) confirmed on the VM + merged** — `RapoarteRootViewModel` with 3 sub-tabs: Statistici lunare (KPI tiles + per-slot + top recipes/ingredients), Plan saptamanal pentru tiparire, Lista cumparaturi pentru tiparire (print + Excel). See [[Sessions/2026-05-22 - Recipe crash fixed; Planificare + Rapoarte shipped]]
 - [x] **Phase G (Planificare) confirmed on the VM + merged** — Lunar/Saptamanal calendar + Plan-meal dialog + "Adauga la plan" on recipe detail, on the existing `MealPlanEntries` procs
 - [x] **Recipe-save crash root cause = duplicate ingredient ("Ulei" twice → SQL 2627)** — fixed with an editor duplicate guard + native-error mapping (`DbExceptionMapper`/`AppDbException`, `(cod N)` fallback)

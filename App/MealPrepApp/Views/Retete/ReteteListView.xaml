@@ -80,6 +80,9 @@
                 <RadioButton Content="Recente" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
                              Command="{Binding ShowRecenteCommand}"
                              IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Recente}" />
+                <RadioButton Content="Drafts" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
+                             Command="{Binding ShowDraftsCommand}"
+                             IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Drafts}" />
             </StackPanel>
         </Border>
 
@@ -123,7 +126,7 @@
                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
 
             <!-- Cards / empty state -->
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Visibility="{Binding IsShowingRecipes, Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               Visibility="{Binding Recipes.Count, Converter={StaticResource NonEmptyToVisibility}}">
                     <ItemsControl ItemsSource="{Binding Recipes}">
@@ -190,6 +193,73 @@
                         <TextBlock Text="Adauga prima ta reteta pentru a incepe."
                                    Style="{StaticResource SmallMutedText}" Margin="0,6,0,0"
                                    HorizontalAlignment="Center" />
+                        <Button Content="+ Adauga reteta" Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Center" Margin="0,14,0,0"
+                                Command="{Binding CreateRecipeCommand}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Draft cards / empty state -->
+            <Grid Grid.Row="2" Visibility="{Binding IsShowingDrafts, Converter={StaticResource BoolToVisibility}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding Drafts.Count, Converter={StaticResource NonEmptyToVisibility}}">
+                    <ItemsControl ItemsSource="{Binding Drafts}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:RecipeDraftListItem}">
+                                <Button Style="{StaticResource RecipeCard}"
+                                        Command="{Binding DataContext.OpenDraftCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Grid.Row="0">
+                                            <TextBlock Text="{Binding Title, TargetNullValue='Draft fara titlu'}"
+                                                       Style="{StaticResource SectionHeaderText}"
+                                                       TextWrapping="Wrap" Margin="0,0,24,0" />
+                                            <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    Width="22" Height="22" Padding="0" FontSize="11"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Foreground="{StaticResource DangerBrush}" Cursor="Hand"
+                                                    ToolTip="Sterge draft"
+                                                    Command="{Binding DataContext.DeleteDraftCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+
+                                        <Border Grid.Row="1" Background="{StaticResource MossBrush}" CornerRadius="3"
+                                                Padding="6,2" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                Visibility="{Binding CategoryName, Converter={StaticResource NotNullToVisibility}}">
+                                            <TextBlock Text="{Binding CategoryName}" Foreground="{StaticResource CreamBrush}"
+                                                       FontSize="{StaticResource FontSizeSmall}" />
+                                        </Border>
+
+                                        <TextBlock Grid.Row="2" Style="{StaticResource SmallMutedText}"
+                                                   Margin="0,10,0,0"
+                                                   Text="{Binding UpdatedAt, StringFormat='Actualizata: {0:dd.MM.yyyy HH:mm}'}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Border Style="{StaticResource Card}" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Visibility="{Binding Drafts.Count, Converter={StaticResource EmptyToVisibility}}">
+                    <StackPanel Margin="16" HorizontalAlignment="Center">
+                        <TextBlock Text="Niciun draft" Style="{StaticResource SectionHeaderText}"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Salveaza o reteta ca draft din editor si revino aici cand vrei sa o termini."
+                                   Style="{StaticResource SmallMutedText}" Margin="0,6,0,0"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />
                         <Button Content="+ Adauga reteta" Style="{StaticResource PrimaryButton}"
                                 HorizontalAlignment="Center" Margin="0,14,0,0"
                                 Command="{Binding CreateRecipeCommand}" />
