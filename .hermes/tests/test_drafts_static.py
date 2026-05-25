@@ -72,25 +72,29 @@ def test_recipe_list_cards_show_photo_thumbnails():
     assert "RecipeCardPhoto" in xaml
 
 
-def test_shell_loading_overlay_after_login():
-    vm = read("App/MealPrepApp/ViewModels/Shell/ShellViewModel.cs")
-    codebehind = read("App/MealPrepApp/Views/ShellWindow.xaml.cs")
-    xaml = read("App/MealPrepApp/Views/ShellWindow.xaml")
-    assert "private bool _isInitializing" in vm
-    assert "private string _loadingMessage" in vm
-    assert "await Task.Yield();" in vm
-    assert "Task.Delay(650)" in vm
-    assert "IsInitializing = false" in vm
-    assert "PropertyChanged += OnViewModelPropertyChanged" in codebehind
-    assert "AnimateLoadingOverlay" in codebehind
-    assert "DoubleAnimation" in codebehind
-    assert "Visibility.Collapsed" in codebehind
-    assert "Startup loading overlay" in xaml
-    assert "x:Name=\"LoadingOverlay\"" in xaml
-    assert "Se incarca aplicatia" in xaml
-    assert "LoadingMessage" in xaml
-    assert "LoadingSpinnerRotate" in xaml
-    assert "RepeatBehavior=\"Forever\"" in xaml
+def test_standalone_loading_window_before_shell():
+    app = read("App/MealPrepApp/App.xaml.cs")
+    login_codebehind = read("App/MealPrepApp/Views/Auth/LoginWindow.xaml.cs")
+    shell_codebehind = read("App/MealPrepApp/Views/ShellWindow.xaml.cs")
+    shell_vm = read("App/MealPrepApp/ViewModels/Shell/ShellViewModel.cs")
+    splash_xaml = read("App/MealPrepApp/Views/StartupLoadingWindow.xaml")
+    splash_codebehind = read("App/MealPrepApp/Views/StartupLoadingWindow.xaml.cs")
+    shell_xaml = read("App/MealPrepApp/Views/ShellWindow.xaml")
+    assert "services.AddTransient<StartupLoadingWindow>();" in app
+    assert "GetRequiredService<StartupLoadingWindow>()" in login_codebehind
+    assert "loadingWindow.Show();" in login_codebehind
+    assert "Hide();" in login_codebehind
+    assert "Task.Delay(TimeSpan.FromMilliseconds(3500))" in login_codebehind
+    assert "Task.WhenAll(shell.InitializeBeforeShowAsync(), minimumDisplay)" in login_codebehind
+    assert login_codebehind.index("await Task.WhenAll(shell.InitializeBeforeShowAsync(), minimumDisplay)") < login_codebehind.index("shell.Show();")
+    assert "InitializeBeforeShowAsync" in shell_codebehind
+    assert "Loaded += OnLoaded" not in shell_codebehind
+    assert "private bool _isInitializing" not in shell_vm
+    assert "LoadingOverlay" not in shell_xaml
+    assert "StartupLoadingWindow" in splash_codebehind
+    assert "x:Name=\"StartupSpinnerRotate\"" in splash_xaml
+    assert "RepeatBehavior=\"Forever\"" in splash_xaml
+    assert "Pregatim tabloul de bord" in splash_xaml
 
 
 if __name__ == "__main__":
@@ -101,7 +105,7 @@ if __name__ == "__main__":
         test_draft_controls_are_visible_in_xaml,
         test_recipe_photos_are_wired_in_detail_screen,
         test_recipe_list_cards_show_photo_thumbnails,
-        test_shell_loading_overlay_after_login,
+        test_standalone_loading_window_before_shell,
     ]
     for test in tests:
         test()

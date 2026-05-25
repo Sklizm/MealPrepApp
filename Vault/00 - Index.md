@@ -48,6 +48,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-25 - Photos UI wiring]]
 - [[Sessions/2026-05-25 - App recommendations, drafts, photos handoff]]
 - [[Sessions/2026-05-25 - Loading screen after login]]
+- [[Sessions/2026-05-25 - Standalone loading window before shell]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

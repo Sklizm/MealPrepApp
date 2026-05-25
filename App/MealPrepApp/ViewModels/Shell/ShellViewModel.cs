@@ -35,12 +35,6 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [ObservableProperty]
     private string _statusText = "Acasa";
 
-    [ObservableProperty]
-    private bool _isInitializing;
-
-    [ObservableProperty]
-    private string _loadingMessage = "Pregatim aplicatia...";
-
     public string CurrentUsername => _session.CurrentUsername;
 
     public ShellViewModel(INavigationService navigation, ISessionService session, IServiceProvider services)
@@ -51,26 +45,10 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
         _navigation.CurrentViewChanged += (_, _) => CurrentView = _navigation.CurrentView;
     }
 
-    /// <summary>Called once when the shell window loads — opens the Acasa dashboard.</summary>
+    /// <summary>Called before the shell window is shown — opens the Acasa dashboard.</summary>
     public async Task InitializeAsync()
     {
-        IsInitializing = true;
-        LoadingMessage = "Pregatim tabloul de bord...";
-
-        var minimumDisplay = Task.Delay(650);
-
-        try
-        {
-            // Let the shell and loading overlay paint before the dashboard starts loading.
-            await Task.Yield();
-            await ShowAcasaCommand.ExecuteAsync(null);
-            LoadingMessage = "Gata.";
-        }
-        finally
-        {
-            await minimumDisplay;
-            IsInitializing = false;
-        }
+        await ShowAcasaCommand.ExecuteAsync(null);
     }
 
     [RelayCommand]

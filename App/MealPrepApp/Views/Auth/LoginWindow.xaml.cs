@@ -35,12 +35,31 @@ public partial class LoginWindow : Window
     private void ShowRegister() =>
         Host.Content = new RegisterView { DataContext = _registerViewModel };
 
-    private void OpenShell()
+    private async void OpenShell()
     {
+        var loadingWindow = App.Services.GetRequiredService<StartupLoadingWindow>();
+        Application.Current.MainWindow = loadingWindow;
+        loadingWindow.Show();
+        Hide();
+
         var shell = App.Services.GetRequiredService<ShellWindow>();
-        Application.Current.MainWindow = shell;
-        shell.Show();
-        Close();
+        var minimumDisplay = Task.Delay(TimeSpan.FromMilliseconds(3500));
+
+        try
+        {
+            await Task.WhenAll(shell.InitializeBeforeShowAsync(), minimumDisplay);
+            Application.Current.MainWindow = shell;
+            shell.Show();
+            loadingWindow.Close();
+            Close();
+        }
+        catch
+        {
+            loadingWindow.Close();
+            Show();
+            Application.Current.MainWindow = this;
+            throw;
+        }
     }
 
     private void OnMinimizeClick(object sender, RoutedEventArgs e) =>

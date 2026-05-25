@@ -317,3 +317,10 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: `RecipePhotos` stores a single optional photo per recipe (`RecipeID` is both PK and FK). The app downscales selected images to `DecodePixelWidth = 1200` and re-encodes them to JPEG quality 85 before saving through `sp_SetRecipePhoto`.
 **Why**: Keeping the bytes in SQL Server means photos travel with the project database across machines and stay inside the stored-procedure-only security model. App-side resizing avoids unbounded `VARBINARY(MAX)` growth from original camera files.
 **Trade-off**: There is no separate thumbnail table; recipe cards currently load the stored photo bytes and render a thumbnail from them. If this becomes slow with many recipes, add a computed/resized thumbnail path later instead of exposing table access.
+
+---
+
+## 2026-05-25 — Startup loading is a standalone pre-shell window
+**Decision**: After a successful login, the app shows a separate `StartupLoadingWindow` for a fixed minimum of 3.5 seconds while the shell initializes. The main `ShellWindow` is not shown until the loading window finishes and Acasa has been prepared.
+**Why**: Codrin preferred a clear loading step before the app appears, instead of showing the shell first with an overlay on top. This avoids exposing half-loaded UI and makes the transition from login to app feel deliberate.
+**How to apply**: Keep shell startup initialization behind `ShellWindow.InitializeBeforeShowAsync()` and call `shell.Show()` only after the standalone loading window's delay plus initialization complete. Do not reintroduce a shell overlay unless the desired UX changes again.

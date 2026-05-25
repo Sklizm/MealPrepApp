@@ -99,6 +99,7 @@ public partial class App : Application
         // Windows / Views
         services.AddTransient<LoginWindow>();
         services.AddTransient<ChangePasswordDialog>();
+        services.AddTransient<StartupLoadingWindow>();
         services.AddTransient<ShellWindow>();
     }
 }

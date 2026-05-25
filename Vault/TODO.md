@@ -7,7 +7,7 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Verify loading screen after login on Windows/.NET 10 VM and fix any compile/runtime issues
+- [ ] Verify standalone loading window before shell on Windows/.NET 10 VM and fix any compile/runtime issues
 - [ ] Verify Photos UI wiring on Windows/.NET 10 VM and fix any compile/runtime issues
 
 ## Soon
@@ -23,7 +23,8 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
-- [x] **Loading screen after login implemented** — ShellWindow now shows a smooth modal startup overlay while Acasa/dashboard data loads; includes spinner animation, loading message, minimum display time, and fade in/out; pending Windows/.NET 10 verification
+- [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; pending Windows/.NET 10 verification
+- [x] **Loading screen after login implemented** — superseded by the standalone pre-shell loading window; original version used a smooth modal startup overlay while Acasa/dashboard data loaded; pending Windows/.NET 10 verification
 - [x] **Photos initial UI wiring implemented** — detail screen can load, add/change, and delete a recipe photo via `sp_GetRecipePhoto`/`sp_SetRecipePhoto`/`sp_DeleteRecipePhoto`; pending Windows/.NET 10 verification
 - [x] **Drafts UI wiring verified by Codrin** — add/open/delete draft flow works properly; wording switched from ciorna/ciorne to Drafts / `Salveaza ca draft`
 - [x] **Drafts initial UI wiring implemented** — registered `DraftRepository`, added Retete > Ciorne list/open/delete flow, added editor `Salveaza ciorna` save/load flow; pending Windows/.NET 10 verification
