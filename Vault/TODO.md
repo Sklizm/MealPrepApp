@@ -7,11 +7,10 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
+- [ ] Add a function to change password in login window in case forgot
 
 ## Soon
 - [ ] Conversion to .exe
-- [ ] Add a function to change password in login window in case forgot
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
@@ -21,6 +20,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Missing-ingredient-from-recipe-editor task dismissed** — Codrin chose to skip this item and prioritize the forgot-password/change-password flow instead
 - [x] **Standalone loading window and Photos UI verified on Rita's machine** — Codrin confirmed the Windows target-machine check passed and everything works properly
 - [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; verified on Rita's machine
 - [x] **Loading screen after login implemented** — superseded by the standalone pre-shell loading window; original version used a smooth modal startup overlay while Acasa/dashboard data loaded

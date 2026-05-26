@@ -50,6 +50,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-25 - Loading screen after login]]
 - [[Sessions/2026-05-25 - Standalone loading window before shell]]
 - [[Sessions/2026-05-26 - Rita verification and next work]]
+- [[Sessions/2026-05-26 - Forgot password priority]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:
