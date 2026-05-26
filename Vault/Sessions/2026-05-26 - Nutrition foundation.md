@@ -43,13 +43,9 @@ Codrin resumed work from the app recommendations / TODO list and chose to implem
 - Attempted `dotnet build App/MealPrepApp/MealPrepApp.csproj --no-restore` on Fedora; it still cannot build locally because the Linux SDK lacks `Microsoft.NET.Sdk.WindowsDesktop` targets.
 
 ## Verification gap
-Windows/Rita machine verification is still needed for the live WPF runtime:
-1. Open Ingrediente.
-2. Click `Nutritie` on an ingredient.
-3. Save nutrition values.
-4. Open a recipe using that ingredient.
-5. Confirm the recipe detail `Nutritie estimata` card updates and warnings make sense.
+- Closed: Codrin verified the nutrition UI on Rita's Windows machine/VM and confirmed it works.
+- Follow-up UX note: entering every nutrition value manually is tedious, so a seed/import/preset improvement is worth considering.
 
 ## Next
-- Verify nutrition UI on Rita's Windows machine/VM.
-- Continue with `.exe` conversion after the nutrition feature is confirmed.
+- Continue with `.exe` conversion.
+- Optional later: seed common ingredient nutrition values or add an import/preset flow for nutrition data.
