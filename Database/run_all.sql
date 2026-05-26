@@ -44,6 +44,7 @@
 -- ===== Phase N: nutrition =====
 :r 17_unit_conversions.sql
 :r 18_ingredient_nutrition.sql
+:r seeds/ingredient_nutrition_seed.sql
 
 -- ===== Phase 2 + 3 + 4 + H + N: stored-proc API =====
 :r procs/01_users.sql

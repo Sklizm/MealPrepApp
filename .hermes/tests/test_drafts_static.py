@@ -140,6 +140,24 @@ def test_nutrition_foundation_is_proc_backed_and_wired_to_recipe_detail():
     assert "MissingNutritionCount" in detail_xaml
 
 
+def test_common_ingredient_nutrition_seed_is_wired_and_idempotent():
+    run_all = read("Database/run_all.sql")
+    seed = read("Database/seeds/ingredient_nutrition_seed.sql")
+    assert ":r seeds/ingredient_nutrition_seed.sql" in run_all
+    assert "MERGE dbo.IngredientNutrition" in seed
+    assert "WHEN NOT MATCHED BY TARGET THEN" in seed
+    assert "WHEN MATCHED THEN" not in seed
+    assert "Preserve manually edited nutrition rows" in seed
+    assert "JOIN dbo.Ingredients i ON i.Name = source.IngredientName" in seed
+    assert "JOIN dbo.Units u ON u.Abbreviation = source.BasisUnitAbbreviation" in seed
+    assert "N'Piept de pui'" in seed
+    assert "N'Orez'" in seed
+    assert "N'Cartof'" in seed
+    assert "N'Ou'" in seed
+    assert "N'Lapte'" in seed
+    assert "N'Ulei de masline'" in seed
+
+
 def test_forgot_password_flow_is_backed_by_proc_and_wired_to_login():
     proc = read("Database/procs/01_users.sql")
     repo = read("App/MealPrepApp/Data/Repositories/UserRepository.cs")
@@ -187,6 +205,7 @@ if __name__ == "__main__":
         test_recipe_list_cards_show_photo_thumbnails,
         test_standalone_loading_window_before_shell,
         test_nutrition_foundation_is_proc_backed_and_wired_to_recipe_detail,
+        test_common_ingredient_nutrition_seed_is_wired_and_idempotent,
         test_forgot_password_flow_is_backed_by_proc_and_wired_to_login,
     ]
     for test in tests:

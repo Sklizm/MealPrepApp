@@ -10,7 +10,6 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 
 ## Soon
 - [ ] Conversion to .exe
-- [ ] Optional nutrition data quality improvement: seed common ingredient nutrition values or add an import/preset flow so values do not need to be typed manually one by one
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
@@ -19,6 +18,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Common nutrition seed added** — `seeds/ingredient_nutrition_seed.sql` now inserts demo nutrition defaults for the 44 common seeded ingredients; it is wired into `run_all.sql`, verified in Docker, and preserves manually edited nutrition rows on rebuild
 - [x] **Nutrition feature Windows verification passed on Rita's machine/VM** — Codrin confirmed ingredient nutrition edit/save and recipe-detail nutrition display work; manual entry is usable but tedious, so seeding/import/presets are a possible follow-up
 - [x] **Nutrition tracking foundation implemented** — added `UnitConversions`, `IngredientNutrition`, nutrition stored procs, ingredient nutrition editor dialog, Ingrediente `Nutritie` action, and recipe detail `Nutritie estimata` totals; SQL/static/XAML checks pass locally, pending Rita Windows runtime verification
 - [x] **Forgot-password reset flow verified on Rita's Windows machine/VM** — Codrin confirmed the login-window reset flow works properly end-to-end
