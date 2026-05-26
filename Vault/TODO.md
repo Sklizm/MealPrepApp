@@ -7,12 +7,10 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Verify standalone loading window before shell on Windows/.NET 10 VM and fix any compile/runtime issues
-- [ ] Verify Photos UI wiring on Windows/.NET 10 VM and fix any compile/runtime issues
+- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
 
 ## Soon
 - [ ] Conversion to .exe
-- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
 - [ ] Add a function to change password in login window in case forgot
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
@@ -23,9 +21,10 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
-- [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; pending Windows/.NET 10 verification
-- [x] **Loading screen after login implemented** — superseded by the standalone pre-shell loading window; original version used a smooth modal startup overlay while Acasa/dashboard data loaded; pending Windows/.NET 10 verification
-- [x] **Photos initial UI wiring implemented** — detail screen can load, add/change, and delete a recipe photo via `sp_GetRecipePhoto`/`sp_SetRecipePhoto`/`sp_DeleteRecipePhoto`; pending Windows/.NET 10 verification
+- [x] **Standalone loading window and Photos UI verified on Rita's machine** — Codrin confirmed the Windows target-machine check passed and everything works properly
+- [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; verified on Rita's machine
+- [x] **Loading screen after login implemented** — superseded by the standalone pre-shell loading window; original version used a smooth modal startup overlay while Acasa/dashboard data loaded
+- [x] **Photos initial UI wiring implemented** — detail screen can load, add/change, and delete a recipe photo via `sp_GetRecipePhoto`/`sp_SetRecipePhoto`/`sp_DeleteRecipePhoto`; verified on Rita's machine
 - [x] **Drafts UI wiring verified by Codrin** — add/open/delete draft flow works properly; wording switched from ciorna/ciorne to Drafts / `Salveaza ca draft`
 - [x] **Drafts initial UI wiring implemented** — registered `DraftRepository`, added Retete > Ciorne list/open/delete flow, added editor `Salveaza ciorna` save/load flow; pending Windows/.NET 10 verification
 - [x] **Draft/photo database scripts verified through `run_all.sql`** — full SQL Server build exited 0; verified `RecipeDrafts`, `RecipePhotos`, and draft/photo procs exist; `mealprep_app_role` still has EXECUTE grant plus direct DML denies
