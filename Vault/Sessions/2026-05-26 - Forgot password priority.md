@@ -44,5 +44,7 @@ Recommended design questions before implementation:
 - Attempted `dotnet build App/MealPrepApp/MealPrepApp.csproj --no-restore` on Fedora; it cannot run here because the installed Linux SDK is missing `Microsoft.NET.Sdk.WindowsDesktop` targets, so Windows runtime/build verification remains a Rita machine/VM step.
 
 ## Next
-- Runtime-test the reset flow on Rita's Windows machine/VM because Fedora cannot build/run WPF WindowsDesktop targets.
-- Then continue with `.exe` conversion from the TODO list.
+- Continue with `.exe` conversion from the TODO list.
+
+## Windows verification
+- Codrin verified the forgot-password reset flow on Rita's Windows machine/VM and confirmed everything works properly.
