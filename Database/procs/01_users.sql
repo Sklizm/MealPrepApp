@@ -243,3 +243,87 @@ BEGIN
     END CATCH;
 END
 GO
+
+-- ===== sp_ResetForgottenPassword =====
+-- Demo-safe forgot-password reset used from the login window.
+-- Requires both username/email identifier and account email to match, then applies
+-- the same password-history handling as sp_ChangePassword.
+-- THROW 50001 on password reuse and 50005 when no matching account is found.
+
+CREATE OR ALTER PROCEDURE dbo.sp_ResetForgottenPassword
+    @UsernameOrEmail NVARCHAR(255),
+    @Email           NVARCHAR(255),
+    @NewPasswordHash NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @HistoryDepth INT = 5;
+    DECLARE @UserID INT;
+
+    BEGIN TRY
+        BEGIN TRAN;
+
+        SELECT TOP 1 @UserID = UserID
+        FROM dbo.Users
+        WHERE (Username = @UsernameOrEmail OR Email = @UsernameOrEmail)
+          AND Email = @Email;
+
+        IF @UserID IS NULL
+            THROW 50005, N'Password reset account not found', 1;
+
+        -- Check current password too (it counts as "in history").
+        IF EXISTS (
+            SELECT 1 FROM dbo.Users
+            WHERE UserID = @UserID AND PasswordHash = @NewPasswordHash
+        )
+            THROW 50001, N'Password reused', 1;
+
+        IF EXISTS (
+            SELECT 1 FROM (
+                SELECT TOP (@HistoryDepth) PasswordHash
+                FROM dbo.PasswordHistory
+                WHERE UserID = @UserID
+                ORDER BY ChangedAt DESC, PasswordHistoryID DESC
+            ) recent
+            WHERE recent.PasswordHash = @NewPasswordHash
+        )
+            THROW 50001, N'Password reused', 1;
+
+        INSERT INTO dbo.PasswordHistory (UserID, PasswordHash)
+        SELECT UserID, PasswordHash FROM dbo.Users WHERE UserID = @UserID;
+
+        UPDATE dbo.Users
+        SET PasswordHash = @NewPasswordHash,
+            FailedLoginCount = 0,
+            LockedUntil = NULL
+        WHERE UserID = @UserID;
+
+        ;WITH ranked AS (
+            SELECT PasswordHistoryID,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY UserID
+                       ORDER BY ChangedAt DESC, PasswordHistoryID DESC
+                   ) AS rn
+            FROM dbo.PasswordHistory
+            WHERE UserID = @UserID
+        )
+        DELETE FROM dbo.PasswordHistory
+        WHERE PasswordHistoryID IN (SELECT PasswordHistoryID FROM ranked WHERE rn > @HistoryDepth);
+
+        EXEC dbo.sp_WriteAudit
+            @UserID     = @UserID,
+            @Action     = N'PASSWORD_RESET',
+            @EntityType = N'User',
+            @EntityID   = @UserID,
+            @Details    = N'Reset from login window';
+
+        COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0 ROLLBACK TRAN;
+        THROW;
+    END CATCH;
+END
+GO

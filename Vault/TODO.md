@@ -7,7 +7,7 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Add a function to change password in login window in case forgot
+- [ ] Verify forgot-password reset flow on Rita's Windows machine/VM
 
 ## Soon
 - [ ] Conversion to .exe
@@ -20,6 +20,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Forgot-password reset flow implemented** — login window now has `Ai uitat parola?`, opens `ForgotPasswordDialog`, and resets the password through `sp_ResetForgottenPassword`; SQL/static/XAML checks pass locally, pending Rita Windows runtime verification
 - [x] **Missing-ingredient-from-recipe-editor task dismissed** — Codrin chose to skip this item and prioritize the forgot-password/change-password flow instead
 - [x] **Standalone loading window and Photos UI verified on Rita's machine** — Codrin confirmed the Windows target-machine check passed and everything works properly
 - [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; verified on Rita's machine

@@ -324,3 +324,11 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: After a successful login, the app shows a separate `StartupLoadingWindow` for a fixed minimum of 3.5 seconds while the shell initializes. The main `ShellWindow` is not shown until the loading window finishes and Acasa has been prepared.
 **Why**: Codrin preferred a clear loading step before the app appears, instead of showing the shell first with an overlay on top. This avoids exposing half-loaded UI and makes the transition from login to app feel deliberate.
 **How to apply**: Keep shell startup initialization behind `ShellWindow.InitializeBeforeShowAsync()` and call `shell.Show()` only after the standalone loading window's delay plus initialization complete. Do not reintroduce a shell overlay unless the desired UX changes again.
+
+---
+
+## 2026-05-26 — Forgot-password reset is a local/demo controlled reset, not email recovery
+**Decision**: The login window exposes `Ai uitat parola?`, opening `ForgotPasswordDialog`. The user must provide username/email plus account email and a new password. The app calls `sp_ResetForgottenPassword`, which validates the account match, enforces password reuse rules against current/history hashes, records `PASSWORD_RESET`, clears lockout state, and preserves the stored-proc-only security model.
+**Why**: The practica app has no email/SMS recovery infrastructure, so pretending to send a recovery email would be fake. A local/demo reset flow is honest, testable, and still shows realistic DB-side validation/audit behaviour.
+**Trade-off**: Anyone who knows username/email plus email can reset in the demo app. For a production version, replace this with a time-limited recovery token delivered through verified email, not a direct reset dialog.
+**How to apply**: Keep reset logic in the proc/repository/ViewModel path. Do not add ad-hoc SQL or direct table access for password recovery. Error `50005` is reserved for "no matching account" in this flow.

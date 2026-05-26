@@ -3,7 +3,7 @@ using MealPrepApp.Models;
 namespace MealPrepApp.Data.Repositories;
 
 /// <summary>Users &amp; auth: wraps sp_RegisterUser, sp_GetUserForLogin, sp_RecordLoginSuccess/Failure,
-/// sp_GetUserProfile, sp_ChangePassword.</summary>
+/// sp_GetUserProfile, sp_ChangePassword, sp_ResetForgottenPassword.</summary>
 public sealed class UserRepository : RepositoryBase
 {
     public UserRepository(IDbConnectionFactory factory) : base(factory) { }
@@ -33,4 +33,10 @@ public sealed class UserRepository : RepositoryBase
     /// new hash matches any of the last five passwords.</summary>
     public Task ChangePasswordAsync(int userId, string newPasswordHash) =>
         ExecuteProcAsync("sp_ChangePassword", new { UserID = userId, NewPasswordHash = newPasswordHash });
+
+    /// <summary>Resets a forgotten password from the login window. Throws <see cref="AppDbException"/>
+    /// with error 50005 if the identifier/email pair does not match an account.</summary>
+    public Task ResetForgottenPasswordAsync(string usernameOrEmail, string email, string newPasswordHash) =>
+        ExecuteProcAsync("sp_ResetForgottenPassword",
+            new { UsernameOrEmail = usernameOrEmail, Email = email, NewPasswordHash = newPasswordHash });
 }

@@ -77,6 +77,7 @@ public partial class App : Application
         services.AddTransient<RegisterViewModel>();
         services.AddTransient<ProfileViewModel>();
         services.AddTransient<ChangePasswordViewModel>();
+        services.AddTransient<ForgotPasswordViewModel>();
         services.AddTransient<AcasaViewModel>();
         services.AddTransient<ReteteListViewModel>();
         services.AddTransient<ReteteDetailViewModel>();
@@ -99,6 +100,7 @@ public partial class App : Application
         // Windows / Views
         services.AddTransient<LoginWindow>();
         services.AddTransient<ChangePasswordDialog>();
+        services.AddTransient<ForgotPasswordDialog>();
         services.AddTransient<StartupLoadingWindow>();
         services.AddTransient<ShellWindow>();
     }

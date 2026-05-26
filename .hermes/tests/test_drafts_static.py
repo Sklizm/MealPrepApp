@@ -97,6 +97,43 @@ def test_standalone_loading_window_before_shell():
     assert "Pregatim tabloul de bord" in splash_xaml
 
 
+def test_forgot_password_flow_is_backed_by_proc_and_wired_to_login():
+    proc = read("Database/procs/01_users.sql")
+    repo = read("App/MealPrepApp/Data/Repositories/UserRepository.cs")
+    mapper = read("App/MealPrepApp/Data/DbExceptionMapper.cs")
+    app = read("App/MealPrepApp/App.xaml.cs")
+    login_vm = read("App/MealPrepApp/ViewModels/Auth/LoginViewModel.cs")
+    forgot_vm = read("App/MealPrepApp/ViewModels/Auth/ForgotPasswordViewModel.cs")
+    login_xaml = read("App/MealPrepApp/Views/Auth/LoginView.xaml")
+    login_codebehind = read("App/MealPrepApp/Views/Auth/LoginWindow.xaml.cs")
+    dialog_xaml = read("App/MealPrepApp/Views/Auth/ForgotPasswordDialog.xaml")
+    dialog_codebehind = read("App/MealPrepApp/Views/Auth/ForgotPasswordDialog.xaml.cs")
+    assert "CREATE OR ALTER PROCEDURE dbo.sp_ResetForgottenPassword" in proc
+    assert "@UsernameOrEmail NVARCHAR(255)" in proc
+    assert "@Email           NVARCHAR(255)" in proc
+    assert "THROW 50005" in proc
+    assert "PASSWORD_RESET" in proc
+    assert "FailedLoginCount = 0" in proc
+    assert "LockedUntil = NULL" in proc
+    assert "ResetForgottenPasswordAsync" in repo
+    assert "sp_ResetForgottenPassword" in repo
+    assert "50005" in mapper
+    assert "Nu am gasit un cont cu aceste date." in mapper
+    assert "services.AddTransient<ForgotPasswordViewModel>();" in app
+    assert "services.AddTransient<ForgotPasswordDialog>();" in app
+    assert "ForgotPasswordRequested" in login_vm
+    assert "ForgotPasswordCommand" in login_xaml
+    assert "Ai uitat parola?" in login_xaml
+    assert "ShowForgotPasswordDialog" in login_codebehind
+    assert "GetRequiredService<ForgotPasswordDialog>()" in login_codebehind
+    assert "ResetAsync" in forgot_vm
+    assert "ResetForgottenPasswordAsync" in forgot_vm
+    assert "Resetare parola" in dialog_xaml
+    assert "Email cont" in dialog_xaml
+    assert "Reseteaza parola" in dialog_xaml
+    assert "PrefillIdentifier" in dialog_codebehind
+
+
 if __name__ == "__main__":
     tests = [
         test_draft_repository_registered_in_di,
@@ -106,6 +143,7 @@ if __name__ == "__main__":
         test_recipe_photos_are_wired_in_detail_screen,
         test_recipe_list_cards_show_photo_thumbnails,
         test_standalone_loading_window_before_shell,
+        test_forgot_password_flow_is_backed_by_proc_and_wired_to_login,
     ]
     for test in tests:
         test()
