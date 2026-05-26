@@ -332,3 +332,11 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Why**: The practica app has no email/SMS recovery infrastructure, so pretending to send a recovery email would be fake. A local/demo reset flow is honest, testable, and still shows realistic DB-side validation/audit behaviour.
 **Trade-off**: Anyone who knows username/email plus email can reset in the demo app. For a production version, replace this with a time-limited recovery token delivered through verified email, not a direct reset dialog.
 **How to apply**: Keep reset logic in the proc/repository/ViewModel path. Do not add ad-hoc SQL or direct table access for password recovery. Error `50005` is reserved for "no matching account" in this flow.
+
+---
+
+## 2026-05-26 — Nutrition is ingredient-sourced and recipe-calculated
+**Decision**: Nutrition values are stored only per ingredient in `IngredientNutrition`; recipe nutrition is calculated on demand by `sp_GetRecipeNutrition`. The app edits ingredient nutrition through `IngredientNutritionDialog` and displays recipe totals/per-serving estimates on the recipe detail screen.
+**Why**: Storing calculated totals on recipes would go stale when ingredient nutrition or recipe ingredients change. Ingredient-level source data plus proc-calculated recipe summaries keeps SQL Server as the source of truth and preserves the stored-proc-only app contract.
+**Trade-off**: The first version supports only direct compatible conversions through `UnitConversions` (`g`/`kg`, `ml`/`l`, `buc`). Missing nutrition rows and incompatible conversions are counted and surfaced as incomplete instead of guessing with fake precision.
+**How to apply**: Add nutrition data to ingredients first. Keep future nutrition features (daily/weekly reports, averages in Rapoarte, targets) backed by proc-calculated recipe/meal-plan totals, not hard-coded UI cards or direct table reads.

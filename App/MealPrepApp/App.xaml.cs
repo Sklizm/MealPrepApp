@@ -11,6 +11,7 @@ using MealPrepApp.ViewModels.Retete;
 using MealPrepApp.ViewModels.Shell;
 using MealPrepApp.Views;
 using MealPrepApp.Views.Auth;
+using MealPrepApp.Views.Ingrediente;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -61,6 +62,7 @@ public partial class App : Application
         services.AddSingleton<DashboardRepository>();
         services.AddSingleton<ReportRepository>();
         services.AddSingleton<DraftRepository>();
+        services.AddSingleton<NutritionRepository>();
 
         // Services
         services.AddSingleton<ISessionService, SessionService>();
@@ -85,6 +87,7 @@ public partial class App : Application
         services.AddTransient<IngredienteRootViewModel>();
         services.AddTransient<IngredienteListViewModel>();
         services.AddTransient<IngredientAddDialogViewModel>();
+        services.AddTransient<IngredientNutritionDialogViewModel>();
         services.AddTransient<FrigiderViewModel>();
         services.AddTransient<PantryItemDialogViewModel>();
         services.AddTransient<ShoppingListViewModel>();
@@ -101,6 +104,7 @@ public partial class App : Application
         services.AddTransient<LoginWindow>();
         services.AddTransient<ChangePasswordDialog>();
         services.AddTransient<ForgotPasswordDialog>();
+        services.AddTransient<IngredientNutritionDialog>();
         services.AddTransient<StartupLoadingWindow>();
         services.AddTransient<ShellWindow>();
     }

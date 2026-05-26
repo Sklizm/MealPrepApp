@@ -23,6 +23,7 @@ namespace MealPrepApp.ViewModels.Retete;
 public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadable
 {
     private readonly RecipeRepository _recipes;
+    private readonly NutritionRepository _nutritionRepository;
     private readonly FavoriteRepository _favorites;
     private readonly ISessionService _session;
     private readonly INavigationService _navigation;
@@ -41,6 +42,9 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     [ObservableProperty]
     private ImageSource? _photoSource;
 
+    [ObservableProperty]
+    private RecipeNutritionSummary? _nutrition;
+
     public bool HasPhoto => PhotoSource is not null;
 
     partial void OnPhotoSourceChanged(ImageSource? value)
@@ -50,6 +54,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
     public ReteteDetailViewModel(
         RecipeRepository recipes,
+        NutritionRepository nutrition,
         FavoriteRepository favorites,
         ISessionService session,
         INavigationService navigation,
@@ -57,6 +62,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         IServiceProvider services)
     {
         _recipes = recipes;
+        _nutritionRepository = nutrition;
         _favorites = favorites;
         _session = session;
         _navigation = navigation;
@@ -83,6 +89,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
             var photo = await _recipes.GetRecipePhotoAsync(RecipeId);
             PhotoSource = photo is null ? null : ToImageSource(photo.ImageData);
+
+            Nutrition = await _nutritionRepository.GetRecipeNutritionAsync(RecipeId);
         }
         catch (AppDbException ex)
         {

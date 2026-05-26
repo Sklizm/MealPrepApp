@@ -74,6 +74,7 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="32" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding Name}"
@@ -86,7 +87,10 @@
                                                    Foreground="{StaticResource CreamBrush}"
                                                    FontSize="{StaticResource FontSizeSmall}" />
                                     </Border>
-                                    <Button Grid.Column="2" Content="✕" Width="24" Height="24" Padding="0"
+                                    <Button Grid.Column="2" Content="Nutritie" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"
+                                            Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="3" Content="✕" Width="24" Height="24" Padding="0"
                                             FontSize="11" Background="Transparent" BorderThickness="0"
                                             Foreground="{StaticResource DangerBrush}" Cursor="Hand"
                                             ToolTip="Sterge ingredientul"

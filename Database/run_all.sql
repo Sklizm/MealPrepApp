@@ -41,7 +41,11 @@
 :r 15_recipe_drafts.sql
 :r 16_recipe_photos.sql
 
--- ===== Phase 2 + 3 + 4: stored-proc API =====
+-- ===== Phase N: nutrition =====
+:r 17_unit_conversions.sql
+:r 18_ingredient_nutrition.sql
+
+-- ===== Phase 2 + 3 + 4 + H + N: stored-proc API =====
 :r procs/01_users.sql
 :r procs/02_recipes_write.sql
 :r procs/03_recipes_read.sql
@@ -55,6 +59,7 @@
 :r procs/11_reports.sql
 :r procs/12_recipe_drafts.sql
 :r procs/13_recipe_photos.sql
+:r procs/14_nutrition.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

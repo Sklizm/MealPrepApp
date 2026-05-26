@@ -51,6 +51,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-25 - Standalone loading window before shell]]
 - [[Sessions/2026-05-26 - Rita verification and next work]]
 - [[Sessions/2026-05-26 - Forgot password priority]]
+- [[Sessions/2026-05-26 - Nutrition foundation]]
 
 ## Resume Protocol
 If you (Claude) are picking this up in a new session:

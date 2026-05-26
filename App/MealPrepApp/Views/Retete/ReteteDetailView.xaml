@@ -153,6 +153,57 @@
                 <TextBlock Text="Aceasta reteta nu are ingrediente."
                            Style="{StaticResource SmallMutedText}" Margin="0,6,0,0"
                            Visibility="{Binding Ingredients, Converter={StaticResource EmptyToVisibility}}" />
+
+                <!-- Nutrition -->
+                <TextBlock Text="Nutritie estimata" Style="{StaticResource SectionHeaderText}" Margin="0,24,0,6"
+                           Visibility="{Binding DataContext.Nutrition,
+                                                RelativeSource={RelativeSource AncestorType=UserControl},
+                                                Converter={StaticResource NotNullToVisibility}}" />
+                <Border Style="{StaticResource Card}"
+                        Visibility="{Binding DataContext.Nutrition,
+                                             RelativeSource={RelativeSource AncestorType=UserControl},
+                                             Converter={StaticResource NotNullToVisibility}}">
+                    <StackPanel DataContext="{Binding DataContext.Nutrition,
+                                                      RelativeSource={RelativeSource AncestorType=UserControl}}">
+                        <UniformGrid Columns="4">
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Total kcal" Style="{StaticResource SmallMutedText}" />
+                                <TextBlock Text="{Binding TotalCalories, StringFormat='{}{0:0.##}'}" Style="{StaticResource BodyText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Proteine" Style="{StaticResource SmallMutedText}" />
+                                <TextBlock Text="{Binding TotalProteinGrams, StringFormat='{}{0:0.##} g'}" Style="{StaticResource BodyText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Carbohidrati" Style="{StaticResource SmallMutedText}" />
+                                <TextBlock Text="{Binding TotalCarbsGrams, StringFormat='{}{0:0.##} g'}" Style="{StaticResource BodyText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Grasimi" Style="{StaticResource SmallMutedText}" />
+                                <TextBlock Text="{Binding TotalFatGrams, StringFormat='{}{0:0.##} g'}" Style="{StaticResource BodyText}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <TextBlock Text="Per portie" Style="{StaticResource SmallMutedText}" Margin="0,14,0,4" />
+                        <TextBlock Style="{StaticResource BodyText}">
+                            <Run Text="{Binding CaloriesPerServing, StringFormat='{}{0:0.##} kcal'}" />
+                            <Run Text="  •  " />
+                            <Run Text="{Binding ProteinGramsPerServing, StringFormat='Proteine {0:0.##} g'}" />
+                            <Run Text="  •  " />
+                            <Run Text="{Binding CarbsGramsPerServing, StringFormat='Carbohidrati {0:0.##} g'}" />
+                            <Run Text="  •  " />
+                            <Run Text="{Binding FatGramsPerServing, StringFormat='Grasimi {0:0.##} g'}" />
+                        </TextBlock>
+
+                        <TextBlock Margin="0,10,0,0" Style="{StaticResource SmallMutedText}" TextWrapping="Wrap">
+                            <Run Text="Ingrediente fara date nutritionale: " />
+                            <Run Text="{Binding MissingNutritionCount}" />
+                            <Run Text=". Ingrediente cu unitati neconvertibile: " />
+                            <Run Text="{Binding UnconvertibleIngredientCount}" />
+                            <Run Text="." />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

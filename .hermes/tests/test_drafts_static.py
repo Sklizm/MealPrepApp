@@ -97,6 +97,49 @@ def test_standalone_loading_window_before_shell():
     assert "Pregatim tabloul de bord" in splash_xaml
 
 
+def test_nutrition_foundation_is_proc_backed_and_wired_to_recipe_detail():
+    run_all = read("Database/run_all.sql")
+    conversions = read("Database/17_unit_conversions.sql")
+    nutrition_table = read("Database/18_ingredient_nutrition.sql")
+    proc = read("Database/procs/14_nutrition.sql")
+    app = read("App/MealPrepApp/App.xaml.cs")
+    models = read("App/MealPrepApp/Models/Nutrition.cs")
+    repo = read("App/MealPrepApp/Data/Repositories/NutritionRepository.cs")
+    ingredient_vm = read("App/MealPrepApp/ViewModels/Ingrediente/IngredientNutritionDialogViewModel.cs")
+    ingredient_list_vm = read("App/MealPrepApp/ViewModels/Ingrediente/IngredienteListViewModel.cs")
+    ingredient_list_xaml = read("App/MealPrepApp/Views/Ingrediente/IngredienteListView.xaml")
+    nutrition_dialog = read("App/MealPrepApp/Views/Ingrediente/IngredientNutritionDialog.xaml")
+    detail_vm = read("App/MealPrepApp/ViewModels/Retete/ReteteDetailViewModel.cs")
+    detail_xaml = read("App/MealPrepApp/Views/Retete/ReteteDetailView.xaml")
+    assert ":r 17_unit_conversions.sql" in run_all
+    assert ":r 18_ingredient_nutrition.sql" in run_all
+    assert ":r procs/14_nutrition.sql" in run_all
+    assert "CREATE TABLE dbo.UnitConversions" in conversions
+    assert "UQ_UnitConversions_From_To" in conversions
+    assert "CREATE TABLE dbo.IngredientNutrition" in nutrition_table
+    assert "CK_IngredientNutrition_Calories" in nutrition_table
+    assert "CREATE OR ALTER PROCEDURE dbo.sp_GetIngredientNutrition" in proc
+    assert "CREATE OR ALTER PROCEDURE dbo.sp_SetIngredientNutrition" in proc
+    assert "CREATE OR ALTER PROCEDURE dbo.sp_GetRecipeNutrition" in proc
+    assert "MissingNutritionCount" in proc
+    assert "UnconvertibleIngredientCount" in proc
+    assert "services.AddSingleton<NutritionRepository>();" in app
+    assert "services.AddTransient<IngredientNutritionDialogViewModel>();" in app
+    assert "services.AddTransient<IngredientNutritionDialog>();" in app
+    assert "public sealed class IngredientNutrition" in models
+    assert "public sealed class RecipeNutritionSummary" in models
+    assert "GetRecipeNutritionAsync" in repo
+    assert "SetIngredientNutritionAsync" in repo
+    assert "SaveAsync" in ingredient_vm
+    assert "EditNutrition" in ingredient_list_vm
+    assert "Nutritie" in ingredient_list_xaml
+    assert "IngredientNutritionDialog" in nutrition_dialog
+    assert "NutritionRepository" in detail_vm
+    assert "Nutrition" in detail_vm
+    assert "Nutritie estimata" in detail_xaml
+    assert "MissingNutritionCount" in detail_xaml
+
+
 def test_forgot_password_flow_is_backed_by_proc_and_wired_to_login():
     proc = read("Database/procs/01_users.sql")
     repo = read("App/MealPrepApp/Data/Repositories/UserRepository.cs")
@@ -143,6 +186,7 @@ if __name__ == "__main__":
         test_recipe_photos_are_wired_in_detail_screen,
         test_recipe_list_cards_show_photo_thumbnails,
         test_standalone_loading_window_before_shell,
+        test_nutrition_foundation_is_proc_backed_and_wired_to_recipe_detail,
         test_forgot_password_flow_is_backed_by_proc_and_wired_to_login,
     ]
     for test in tests:

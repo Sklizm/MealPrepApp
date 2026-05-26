@@ -7,6 +7,7 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
+- [ ] **Nutrition feature Windows verification on Rita's machine/VM** — verify ingredient nutrition edit/save, recipe detail nutrition totals, and incomplete-data warnings in the running WPF app
 
 ## Soon
 - [ ] Conversion to .exe
@@ -15,10 +16,10 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
-- [ ] Nutrition tracking (calories, macros per ingredient)
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Nutrition tracking foundation implemented** — added `UnitConversions`, `IngredientNutrition`, nutrition stored procs, ingredient nutrition editor dialog, Ingrediente `Nutritie` action, and recipe detail `Nutritie estimata` totals; SQL/static/XAML checks pass locally, pending Rita Windows runtime verification
 - [x] **Forgot-password reset flow verified on Rita's Windows machine/VM** — Codrin confirmed the login-window reset flow works properly end-to-end
 - [x] **Forgot-password reset flow implemented** — login window now has `Ai uitat parola?`, opens `ForgotPasswordDialog`, and resets the password through `sp_ResetForgottenPassword`; SQL/static/XAML checks pass locally and Rita Windows runtime verification passed
 - [x] **Missing-ingredient-from-recipe-editor task dismissed** — Codrin chose to skip this item and prioritize the forgot-password/change-password flow instead
