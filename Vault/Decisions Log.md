@@ -302,3 +302,48 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Decision**: The opaque "eroare neasteptata" on save was SQL **2627** from a duplicate ingredient row (`UQ_RecipeIngredients_Recipe_Ingr`). Fix is two-layer: a duplicate guard in `ReteteEditorViewModel.Save` that blocks two rows with the same ingredient before the DB call, plus `DbExceptionMapper` mapping native codes (2627/2601/547/515/2628/8152) to Romanian messages and `AppDbException` appending `(cod N)` for any unmapped code.
 **Why**: A unique-key violation reaching the user as a generic message is undiagnosable. Catching it at the UI gives a clear "ingredientul apare de mai multe ori"; the `(cod N)` fallback means the *next* unexpected failure carries its SQL number instead of being opaque.
 **How to apply**: Validate against known constraints in the ViewModel before the round-trip; never let a raw `SqlException` surface untranslated — route through `AppDbException`/`DbExceptionMapper`.
+
+
+---
+
+## 2026-05-25 — Recipe drafts store incomplete editor state as nullable columns plus ingredient JSON
+**Decision**: `RecipeDrafts` stores per-user draft recipe fields with nullable content columns and an opaque `IngredientsJson` blob. Drafts are accessed only through `sp_SaveDraft`, `sp_GetDrafts`, `sp_GetDraft`, and `sp_DeleteDraft`.
+**Why**: A draft can be intentionally incomplete or temporarily invalid while the user is editing. Normalizing draft ingredients into `RecipeIngredients` would force production-level constraints before the draft is ready to become a real recipe.
+**How to apply**: Validation belongs when saving a real [[Recipes|Recipe]], not when saving a draft. Keep draft reads/writes behind stored procs and keep the UI wording as `Drafts` / `Salveaza ca draft` per Codrin's preference.
+
+---
+
+## 2026-05-25 — Recipe photos are DB-stored, one per recipe, with app-side resizing
+**Decision**: `RecipePhotos` stores a single optional photo per recipe (`RecipeID` is both PK and FK). The app downscales selected images to `DecodePixelWidth = 1200` and re-encodes them to JPEG quality 85 before saving through `sp_SetRecipePhoto`.
+**Why**: Keeping the bytes in SQL Server means photos travel with the project database across machines and stay inside the stored-procedure-only security model. App-side resizing avoids unbounded `VARBINARY(MAX)` growth from original camera files.
+**Trade-off**: There is no separate thumbnail table; recipe cards currently load the stored photo bytes and render a thumbnail from them. If this becomes slow with many recipes, add a computed/resized thumbnail path later instead of exposing table access.
+
+---
+
+## 2026-05-25 — Startup loading is a standalone pre-shell window
+**Decision**: After a successful login, the app shows a separate `StartupLoadingWindow` for a fixed minimum of 3.5 seconds while the shell initializes. The main `ShellWindow` is not shown until the loading window finishes and Acasa has been prepared.
+**Why**: Codrin preferred a clear loading step before the app appears, instead of showing the shell first with an overlay on top. This avoids exposing half-loaded UI and makes the transition from login to app feel deliberate.
+**How to apply**: Keep shell startup initialization behind `ShellWindow.InitializeBeforeShowAsync()` and call `shell.Show()` only after the standalone loading window's delay plus initialization complete. Do not reintroduce a shell overlay unless the desired UX changes again.
+
+---
+
+## 2026-05-26 — Forgot-password reset is a local/demo controlled reset, not email recovery
+**Decision**: The login window exposes `Ai uitat parola?`, opening `ForgotPasswordDialog`. The user must provide username/email plus account email and a new password. The app calls `sp_ResetForgottenPassword`, which validates the account match, enforces password reuse rules against current/history hashes, records `PASSWORD_RESET`, clears lockout state, and preserves the stored-proc-only security model.
+**Why**: The practica app has no email/SMS recovery infrastructure, so pretending to send a recovery email would be fake. A local/demo reset flow is honest, testable, and still shows realistic DB-side validation/audit behaviour.
+**Trade-off**: Anyone who knows username/email plus email can reset in the demo app. For a production version, replace this with a time-limited recovery token delivered through verified email, not a direct reset dialog.
+**How to apply**: Keep reset logic in the proc/repository/ViewModel path. Do not add ad-hoc SQL or direct table access for password recovery. Error `50005` is reserved for "no matching account" in this flow.
+
+---
+
+## 2026-05-26 — Nutrition is ingredient-sourced and recipe-calculated
+**Decision**: Nutrition values are stored only per ingredient in `IngredientNutrition`; recipe nutrition is calculated on demand by `sp_GetRecipeNutrition`. The app edits ingredient nutrition through `IngredientNutritionDialog` and displays recipe totals/per-serving estimates on the recipe detail screen.
+**Why**: Storing calculated totals on recipes would go stale when ingredient nutrition or recipe ingredients change. Ingredient-level source data plus proc-calculated recipe summaries keeps SQL Server as the source of truth and preserves the stored-proc-only app contract.
+**Trade-off**: The first version supports only direct compatible conversions through `UnitConversions` (`g`/`kg`, `ml`/`l`). Same-unit count values (`pc`) work directly because recipe unit and nutrition basis unit match; missing nutrition rows and incompatible conversions are counted and surfaced as incomplete instead of guessing with fake precision.
+**How to apply**: Add nutrition data to ingredients first. Keep future nutrition features (daily/weekly reports, averages in Rapoarte, targets) backed by proc-calculated recipe/meal-plan totals, not hard-coded UI cards or direct table reads. Common nutrition seed data should insert missing rows only, preserving values Codrin edits manually in the app.
+
+---
+
+## 2026-05-26 — Windows exe publish is self-contained but config stays external
+**Decision**: Publish MealPrepApp as a Windows x64, self-contained, single-file executable using `Windows-x64-Folder.pubxml`, with `PublishTrimmed=false` for WPF safety. The publish output includes `appsettings.json` and a safe `appsettings.Local.template.json`, but deliberately excludes the real `appsettings.Local.json`.
+**Why**: A self-contained publish gives Codrin a practical `.exe` deliverable without requiring the target PC to install the .NET runtime. Trimming is risky for WPF/reflection-heavy desktop apps, so reliability is more important than smaller file size. The real local config contains the `mealprep_app` password, so it must stay out of git and out of automated artifacts.
+**How to apply**: Build with `App\publish-windows-exe.cmd` on Windows. After publishing, create `appsettings.Local.json` beside `MealPrepApp.exe` from the template and fill in the real password locally.

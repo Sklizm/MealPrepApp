@@ -15,6 +15,9 @@ public sealed partial class LoginViewModel : ViewModelBase
     /// <summary>Raised when the user clicks the "Inregistreaza-te" link.</summary>
     public event EventHandler? SwitchToRegisterRequested;
 
+    /// <summary>Raised when the user clicks the forgot-password link.</summary>
+    public event EventHandler? ForgotPasswordRequested;
+
     /// <summary>Raised after a successful sign-in; the host window opens the shell.</summary>
     public event EventHandler? LoginSucceeded;
 
@@ -30,6 +33,9 @@ public sealed partial class LoginViewModel : ViewModelBase
 
     [RelayCommand]
     private void SwitchToRegister() => SwitchToRegisterRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void ForgotPassword() => ForgotPasswordRequested?.Invoke(this, EventArgs.Empty);
 
     /// <summary>The password is passed in from the view's PasswordBox rather than data-bound.</summary>
     public async Task LoginAsync(string password)

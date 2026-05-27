@@ -45,8 +45,11 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
         _navigation.CurrentViewChanged += (_, _) => CurrentView = _navigation.CurrentView;
     }
 
-    /// <summary>Called once when the shell window loads — opens the Acasa dashboard.</summary>
-    public Task InitializeAsync() => ShowAcasaCommand.ExecuteAsync(null);
+    /// <summary>Called before the shell window is shown — opens the Acasa dashboard.</summary>
+    public async Task InitializeAsync()
+    {
+        await ShowAcasaCommand.ExecuteAsync(null);
+    }
 
     [RelayCommand]
     private async Task ShowAcasa()

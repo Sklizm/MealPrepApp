@@ -27,6 +27,10 @@ def build():
     # Stiluri globale + actualizarea automata a campurilor (TOC/PAGE).
     h.configure_styles(doc)
     h.enable_auto_update_fields(doc)
+    doc.core_properties.title = "Raport privind stagiul de practica — MealPrep"
+    doc.core_properties.subject = "Aplicatie de gestionare a retetelor si planificare a meselor"
+    doc.core_properties.author = "Codrin"
+    doc.core_properties.keywords = "MealPrep, WPF, SQL Server, practica, raport"
 
     # Sectiunea 1: foaia de titlu (A4, fara numar de pagina).
     sec1 = doc.sections[0]

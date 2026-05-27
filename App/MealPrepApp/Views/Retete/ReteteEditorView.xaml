@@ -147,6 +147,9 @@
             <Button Content="Salveaza" Style="{StaticResource PrimaryButton}"
                     Command="{Binding SaveCommand}"
                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+            <Button Content="Salveaza ca draft" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"
+                    Command="{Binding SaveDraftCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
             <Button Content="Renunta" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"
                     Command="{Binding CancelCommand}" />
         </StackPanel>

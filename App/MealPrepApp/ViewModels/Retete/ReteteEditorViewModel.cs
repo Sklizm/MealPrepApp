@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MealPrepApp.Data;
@@ -22,6 +23,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     public const int NotesMaxLength = 255;
 
     private readonly RecipeRepository _recipes;
+    private readonly DraftRepository _drafts;
     private readonly IngredientRepository _ingredients;
     private readonly LookupRepository _lookups;
     private readonly ISessionService _session;
@@ -36,8 +38,12 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     /// <summary>Recipe to edit, or null to create a new one. Set before <see cref="LoadAsync"/> runs.</summary>
     public int? RecipeId { get; set; }
 
+    /// <summary>Draft to load into the editor, or null for a blank recipe/new edit flow.</summary>
+    public int? DraftId { get; set; }
+
     public bool IsEdit => RecipeId.HasValue;
-    public string ScreenTitle => IsEdit ? "Editeaza reteta" : "Reteta noua";
+    public bool IsDraft => DraftId.HasValue && !IsEdit;
+    public string ScreenTitle => IsEdit ? "Editeaza reteta" : IsDraft ? "Editeaza draft" : "Reteta noua";
 
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<RecipeIngredientRowViewModel> IngredientRows { get; } = new();
@@ -65,6 +71,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
     public ReteteEditorViewModel(
         RecipeRepository recipes,
+        DraftRepository drafts,
         IngredientRepository ingredients,
         LookupRepository lookups,
         ISessionService session,
@@ -73,6 +80,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         IServiceProvider services)
     {
         _recipes = recipes;
+        _drafts = drafts;
         _ingredients = ingredients;
         _lookups = lookups;
         _session = session;
@@ -98,8 +106,11 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
             if (IsEdit)
                 await PopulateFromExistingAsync(RecipeId!.Value);
+            else if (DraftId.HasValue)
+                await PopulateFromDraftAsync(DraftId.Value);
 
             OnPropertyChanged(nameof(ScreenTitle));
+            OnPropertyChanged(nameof(IsDraft));
         }
         catch (AppDbException ex)
         {
@@ -141,6 +152,56 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         }
     }
 
+    private async Task PopulateFromDraftAsync(int draftId)
+    {
+        var draft = await _drafts.GetDraftAsync(draftId, _session.CurrentUserId);
+        if (draft is null)
+        {
+            ErrorMessage = "Draftul nu a fost gasit.";
+            return;
+        }
+
+        DraftId = draft.DraftID;
+        Title = draft.Title ?? "";
+        Description = draft.Description;
+        Instructions = draft.Instructions ?? "";
+        PrepTimeMinutes = draft.PrepTimeMinutes;
+        CookTimeMinutes = draft.CookTimeMinutes;
+        Servings = draft.Servings;
+        SelectedCategory = Categories.FirstOrDefault(c => c.CategoryID == draft.CategoryID);
+
+        IngredientRows.Clear();
+        var lines = DeserializeDraftIngredients(draft.IngredientsJson);
+        foreach (var line in lines)
+        {
+            var row = NewRow();
+            row.SelectedIngredient = line.IngredientID.HasValue
+                ? _allIngredients.FirstOrDefault(i => i.IngredientID == line.IngredientID.Value)
+                : null;
+            row.SelectedUnit = line.UnitID.HasValue
+                ? _allUnits.FirstOrDefault(u => u.UnitID == line.UnitID.Value)
+                : null;
+            row.Quantity = line.Quantity <= 0m ? 1m : line.Quantity;
+            row.Notes = line.Notes;
+            IngredientRows.Add(row);
+        }
+    }
+
+    private static IReadOnlyList<DraftIngredientInput> DeserializeDraftIngredients(string? ingredientsJson)
+    {
+        if (string.IsNullOrWhiteSpace(ingredientsJson))
+            return Array.Empty<DraftIngredientInput>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<DraftIngredientInput>>(ingredientsJson) ?? new List<DraftIngredientInput>();
+        }
+        catch (JsonException)
+        {
+            return Array.Empty<DraftIngredientInput>();
+        }
+    }
+
     private RecipeIngredientRowViewModel NewRow()
     {
         var row = new RecipeIngredientRowViewModel(_allIngredients, _allUnits);
@@ -154,6 +215,47 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
     [RelayCommand]
     private void AddIngredientRow() => IngredientRows.Add(NewRow());
+
+    [RelayCommand]
+    private async Task SaveDraft()
+    {
+        ClearError();
+        IsBusy = true;
+        try
+        {
+            var draftInputs = IngredientRows.Select(r => new DraftIngredientInput
+            {
+                IngredientID = r.SelectedIngredient?.IngredientID,
+                UnitID = r.SelectedUnit?.UnitID,
+                Quantity = r.Quantity,
+                Notes = Trimmed(r.Notes),
+            }).ToList();
+
+            DraftId = await _drafts.SaveDraftAsync(
+                _session.CurrentUserId,
+                DraftId,
+                SelectedCategory?.CategoryID,
+                Trimmed(Title),
+                Trimmed(Description),
+                Trimmed(Instructions),
+                PrepTimeMinutes,
+                CookTimeMinutes,
+                Servings,
+                draftInputs);
+
+            OnPropertyChanged(nameof(IsDraft));
+            OnPropertyChanged(nameof(ScreenTitle));
+            _dialog.ShowInfo("Draft salvat", "Draftul a fost salvat. Il gasesti in Retete > Drafts.");
+        }
+        catch (AppDbException ex)
+        {
+            ErrorMessage = ex.FriendlyMessage;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     [RelayCommand]
     private async Task Save()
@@ -212,6 +314,9 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
                     userId, categoryId, Title.Trim(), Trimmed(Description), Instructions.Trim(),
                     PrepTimeMinutes, CookTimeMinutes, Servings, inputs);
             }
+
+            if (DraftId.HasValue)
+                await _drafts.DeleteDraftAsync(DraftId.Value, userId);
 
             await NavigateToDetailAsync(recipeId);
         }

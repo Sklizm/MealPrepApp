@@ -7,29 +7,38 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] Merge `fix-recipe-field-limits` (Title `MaxLength=150`, ingredient Notes `255`) after VM verification
-- [ ] Update `origin` URL — GitHub repo moved `Sklizm/MealPrepDB` → `Sklizm/MealPrepApp`
+- [x] **Windows exe publish/runtime verification** — run `App\publish-windows-exe.cmd` on Rita's Windows machine/VM; confirm `MealPrepApp.exe` is created and launches with a valid `appsettings.Local.json`
 
 ## Soon
-- [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
-- [ ] Optional: add an admin role for migrations distinct from `sa`
-- [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
-- [ ] Loading screen on app launch
-- [ ] Conversion to .exe
-- [ ] Add Drafts
-- [ ] Add the ability of adding an ingredient when making a recipe if said ingredient does not currently exist in the DB
-- [ ] Add a function to change password in login window in case forgot
-- [ ] Ability to add photos to recipes
+- [ ] ~~Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)~~
+- [ ] ~~Optional: add an admin role for migrations distinct from `sa`~~
+- [ ] ~~Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
+- [ ] If no photo on a recipe then default photo of a aesthetic knife
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
-- [ ] Meal plans / weekly schedule tables
-- [ ] Shx`opping list generation
-- [ ] Nutrition tracking (calories, macros per ingredient)
-- [x] Recipe ratings / favorites
-- [ ] Photos / image attachments
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **README and Romanian vault counterparts updated** — root `README.md` now documents DB/app/features in more detail; missing `-ro` counterparts were added for database/session notes; schema overview and index notes were refreshed for drafts, photos, unit conversions and nutrition
+- [x] **Practice report regenerated and requirement-checked** — `Raport/Raport_practica.docx` and `.pdf` were regenerated from the Python generator; report now reflects the final completed app features (forgot password, drafts, photos, loading, nutrition, Windows exe publishing) and includes Anexa A5 requirement checklist
+- [x] **Windows exe publish path implemented** — added a Windows x64 self-contained single-file publish profile, `App\publish-windows-exe.cmd`, a safe `appsettings.Local.template.json`, and README instructions; local static checks pass, actual WPF publish needs Windows verification
+- [x] **Common nutrition seed added** — `seeds/ingredient_nutrition_seed.sql` now inserts demo nutrition defaults for the 44 common seeded ingredients; it is wired into `run_all.sql`, verified in Docker, and preserves manually edited nutrition rows on rebuild
+- [x] **Nutrition feature Windows verification passed on Rita's machine/VM** — Codrin confirmed ingredient nutrition edit/save and recipe-detail nutrition display work; manual entry is usable but tedious, so seeding/import/presets are a possible follow-up
+- [x] **Nutrition tracking foundation implemented** — added `UnitConversions`, `IngredientNutrition`, nutrition stored procs, ingredient nutrition editor dialog, Ingrediente `Nutritie` action, and recipe detail `Nutritie estimata` totals; SQL/static/XAML checks pass locally, pending Rita Windows runtime verification
+- [x] **Forgot-password reset flow verified on Rita's Windows machine/VM** — Codrin confirmed the login-window reset flow works properly end-to-end
+- [x] **Forgot-password reset flow implemented** — login window now has `Ai uitat parola?`, opens `ForgotPasswordDialog`, and resets the password through `sp_ResetForgottenPassword`; SQL/static/XAML checks pass locally and Rita Windows runtime verification passed
+- [x] **Missing-ingredient-from-recipe-editor task dismissed** — Codrin chose to skip this item and prioritize the forgot-password/change-password flow instead
+- [x] **Standalone loading window and Photos UI verified on Rita's machine** — Codrin confirmed the Windows target-machine check passed and everything works properly
+- [x] **Standalone loading window before shell implemented** — after login the app now shows a separate `StartupLoadingWindow`, keeps the shell hidden, initializes Acasa in the background, enforces a 3.5 second minimum display time, and only then shows the main app; verified on Rita's machine
+- [x] **Loading screen after login implemented** — superseded by the standalone pre-shell loading window; original version used a smooth modal startup overlay while Acasa/dashboard data loaded
+- [x] **Photos initial UI wiring implemented** — detail screen can load, add/change, and delete a recipe photo via `sp_GetRecipePhoto`/`sp_SetRecipePhoto`/`sp_DeleteRecipePhoto`; verified on Rita's machine
+- [x] **Drafts UI wiring verified by Codrin** — add/open/delete draft flow works properly; wording switched from ciorna/ciorne to Drafts / `Salveaza ca draft`
+- [x] **Drafts initial UI wiring implemented** — registered `DraftRepository`, added Retete > Ciorne list/open/delete flow, added editor `Salveaza ciorna` save/load flow; pending Windows/.NET 10 verification
+- [x] **Draft/photo database scripts verified through `run_all.sql`** — full SQL Server build exited 0; verified `RecipeDrafts`, `RecipePhotos`, and draft/photo procs exist; `mealprep_app_role` still has EXECUTE grant plus direct DML denies
+- [x] **Origin URL updated** — `origin` now points to `https://github.com/Sklizm/MealPrepApp.git`
+- [x] **`fix-recipe-field-limits` merged** — git history contains merge `25276e3 Merge branch 'fix-recipe-field-limits'`
+- [x] **Meal planning / weekly schedule shipped** — covered by Phase G Planificare
+- [x] **Shopping list generation shipped** — covered by Phase F/H computed shopping list + print/export flows
 - [x] **Phase H (Rapoarte) confirmed on the VM + merged** — `RapoarteRootViewModel` with 3 sub-tabs: Statistici lunare (KPI tiles + per-slot + top recipes/ingredients), Plan saptamanal pentru tiparire, Lista cumparaturi pentru tiparire (print + Excel). See [[Sessions/2026-05-22 - Recipe crash fixed; Planificare + Rapoarte shipped]]
 - [x] **Phase G (Planificare) confirmed on the VM + merged** — Lunar/Saptamanal calendar + Plan-meal dialog + "Adauga la plan" on recipe detail, on the existing `MealPlanEntries` procs
 - [x] **Recipe-save crash root cause = duplicate ingredient ("Ulei" twice → SQL 2627)** — fixed with an editor duplicate guard + native-error mapping (`DbExceptionMapper`/`AppDbException`, `(cod N)` fallback)

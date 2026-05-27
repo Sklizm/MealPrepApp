@@ -23,6 +23,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
     private static readonly Category AllCategories = new() { CategoryID = 0, Name = "Toate categoriile" };
 
     private readonly RecipeRepository _recipes;
+    private readonly DraftRepository _drafts;
     private readonly FavoriteRepository _favorites;
     private readonly DashboardRepository _dashboard;
     private readonly LookupRepository _lookups;
@@ -36,11 +37,21 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
     private const int SearchDebounceMs = 300;
 
     public ObservableCollection<RecipeListItem> Recipes { get; } = new();
+    public ObservableCollection<RecipeDraftListItem> Drafts { get; } = new();
     public ObservableCollection<Category> Categories { get; } = new();
 
-    /// <summary>Active sidebar entry: "Toate", "Favorite" or "Recente".</summary>
+    /// <summary>Active sidebar entry: "Toate", "Favorite", "Recente" or "Drafts".</summary>
     [ObservableProperty]
     private string _activeFilter = "Toate";
+
+    public bool IsShowingDrafts => ActiveFilter == "Drafts";
+    public bool IsShowingRecipes => !IsShowingDrafts;
+
+    partial void OnActiveFilterChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsShowingDrafts));
+        OnPropertyChanged(nameof(IsShowingRecipes));
+    }
 
     [ObservableProperty]
     private string _searchTerm = "";
@@ -50,6 +61,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
 
     public ReteteListViewModel(
         RecipeRepository recipes,
+        DraftRepository drafts,
         FavoriteRepository favorites,
         DashboardRepository dashboard,
         LookupRepository lookups,
@@ -59,6 +71,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
         IServiceProvider services)
     {
         _recipes = recipes;
+        _drafts = drafts;
         _favorites = favorites;
         _dashboard = dashboard;
         _lookups = lookups;
@@ -101,6 +114,17 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
         IsBusy = true;
         try
         {
+            if (ActiveFilter == "Drafts")
+            {
+                var drafts = await _drafts.GetDraftsAsync(_session.CurrentUserId);
+                Drafts.Clear();
+                foreach (var draft in drafts)
+                    Drafts.Add(draft);
+                Recipes.Clear();
+                return;
+            }
+
+            Drafts.Clear();
             var term = SearchTerm?.Trim() ?? "";
             IReadOnlyList<RecipeListItem> rows;
 
@@ -123,6 +147,8 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
                 rows = await _recipes.GetRecipesAsync(categoryId: categoryId, pageSize: PageSize);
             }
 
+            await LoadRecipePhotosAsync(rows);
+
             Recipes.Clear();
             foreach (var row in rows)
                 Recipes.Add(row);
@@ -134,6 +160,15 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task LoadRecipePhotosAsync(IReadOnlyList<RecipeListItem> rows)
+    {
+        foreach (var row in rows)
+        {
+            var photo = await _recipes.GetRecipePhotoAsync(row.RecipeID);
+            row.PhotoData = photo?.ImageData;
         }
     }
 
@@ -155,6 +190,13 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
     private Task ShowRecente()
     {
         ActiveFilter = "Recente";
+        return RefreshAsync();
+    }
+
+    [RelayCommand]
+    private Task ShowDrafts()
+    {
+        ActiveFilter = "Drafts";
         return RefreshAsync();
     }
 
@@ -206,6 +248,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
     {
         var editor = _services.GetRequiredService<ReteteEditorViewModel>();
         editor.RecipeId = null;
+        editor.DraftId = null;
         return _navigation.NavigateToAsync(editor);
     }
 
@@ -223,6 +266,44 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable
         {
             await _recipes.DeleteRecipeAsync(item.RecipeID, _session.CurrentUserId);
             Recipes.Remove(item);
+        }
+        catch (AppDbException ex)
+        {
+            _dialog.ShowError(ex.FriendlyMessage);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private Task OpenDraft(RecipeDraftListItem? item)
+    {
+        if (item is null)
+            return Task.CompletedTask;
+
+        var editor = _services.GetRequiredService<ReteteEditorViewModel>();
+        editor.RecipeId = null;
+        editor.DraftId = item.DraftID;
+        return _navigation.NavigateToAsync(editor);
+    }
+
+    [RelayCommand]
+    private async Task DeleteDraft(RecipeDraftListItem? item)
+    {
+        if (item is null)
+            return;
+
+        var title = string.IsNullOrWhiteSpace(item.Title) ? "fara titlu" : item.Title;
+        if (!_dialog.Confirm("Sterge draft", $"Sterge draftul \"{title}\"?"))
+            return;
+
+        IsBusy = true;
+        try
+        {
+            await _drafts.DeleteDraftAsync(item.DraftID, _session.CurrentUserId);
+            Drafts.Remove(item);
         }
         catch (AppDbException ex)
         {

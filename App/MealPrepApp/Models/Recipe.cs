@@ -15,6 +15,7 @@ public sealed class RecipeListItem
     public int? PrepTimeMinutes { get; set; }
     public int? CookTimeMinutes { get; set; }
     public int? Servings { get; set; }
+    public byte[]? PhotoData { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? FavoritedAt { get; set; }
     public int TotalCount { get; set; }
@@ -54,6 +55,13 @@ public sealed class RecipeFull
 
     /// <summary>Populated from the second result set; not a column on the first.</summary>
     public List<RecipeIngredientLine> Ingredients { get; set; } = new();
+}
+
+/// <summary>A recipe's photo bytes + content type, from <c>sp_GetRecipePhoto</c>.</summary>
+public sealed class RecipePhotoData
+{
+    public byte[] ImageData { get; set; } = Array.Empty<byte>();
+    public string ContentType { get; set; } = "image/jpeg";
 }
 
 /// <summary>Result row from <c>sp_FindRecipesByIngredients</c> ("what can I make with…?").</summary>

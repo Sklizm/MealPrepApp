@@ -17,10 +17,20 @@ public partial class ShellWindow : Window
 
         _viewModel.SignOutRequested += OnSignOutRequested;
         _viewModel.ChangePasswordRequested += OnChangePasswordRequested;
-        Loaded += OnLoaded;
+        Closed += OnClosed;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e) => await _viewModel.InitializeAsync();
+    /// <summary>
+    /// Initializes the dashboard while the standalone startup loading window is visible.
+    /// The shell is only shown after this task completes.
+    /// </summary>
+    public Task InitializeBeforeShowAsync() => _viewModel.InitializeAsync();
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        _viewModel.SignOutRequested -= OnSignOutRequested;
+        _viewModel.ChangePasswordRequested -= OnChangePasswordRequested;
+    }
 
     private void OnSignOutRequested(object? sender, EventArgs e)
     {

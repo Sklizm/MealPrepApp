@@ -8,6 +8,7 @@ namespace MealPrepApp.Data;
 ///   50002 — not authorized (ownership check failed)
 ///   50003 — entity not found
 ///   50004 — stale row / optimistic concurrency conflict (sp_UpdateRecipe)
+///   50005 — password reset account not found (sp_ResetForgottenPassword)
 /// It also translates the common *native* SQL errors so a constraint violation never reaches
 /// the user as an opaque "unexpected" message (e.g. 2627 when the same ingredient is added
 /// twice to one recipe).
@@ -15,7 +16,7 @@ namespace MealPrepApp.Data;
 public static class DbExceptionMapper
 {
     public static bool IsKnown(int errorNumber) =>
-        (errorNumber is >= 50000 and <= 50004)
+        (errorNumber is >= 50000 and <= 50005)
         || errorNumber is 2627 or 2601 or 547 or 515 or 2628 or 8152;
 
     public static string ToFriendlyMessage(int errorNumber) => errorNumber switch
@@ -25,6 +26,7 @@ public static class DbExceptionMapper
         50002 => "Nu ai permisiunea pentru aceasta actiune.",
         50003 => "Elementul nu a fost gasit.",
         50004 => "Reteta a fost modificata in alta sesiune. Reincarca si reincearca.",
+        50005 => "Nu am gasit un cont cu aceste date.",
 
         // Native SQL Server errors
         2627 or 2601 => "Aceasta inregistrare exista deja (valoare duplicata).",

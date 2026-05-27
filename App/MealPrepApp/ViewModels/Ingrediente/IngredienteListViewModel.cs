@@ -194,6 +194,17 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
     }
 
     [RelayCommand]
+    private async Task EditNutrition(Ingredient? item)
+    {
+        if (item is null)
+            return;
+
+        var dialogVm = _services.GetRequiredService<IngredientNutritionDialogViewModel>();
+        await dialogVm.LoadAsync(item);
+        _dialog.ShowDialog<IngredientNutritionDialog>(dialogVm);
+    }
+
+    [RelayCommand]
     private async Task DeleteIngredient(Ingredient? item)
     {
         if (item is null)

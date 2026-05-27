@@ -30,7 +30,7 @@ libreoffice --headless --convert-to pdf Raport/Raport_practica.docx
 | `build_report.py` | orchestratorul: stiluri + asamblarea secțiunilor |
 | `docx_helpers.py` | toate regulile de formatare (margini, fonturi, cod, figuri, TOC, numerotare) |
 | `content.py` | proza românească: foaie de titlu, introducere, conținut, concluzie, bibliografie |
-| `content_anexe.py` | anexe: A1 listing complet (citit din fișierele reale), A2 Claude Code, A3 Obsidian, A4 Git |
+| `content_anexe.py` | anexe: A1 listing complet (citit din fișierele reale), A2 Claude Code/Codex/Hermes Agent, A3 Obsidian, A4 Git, A5 checklist cerințe |
 | `assets/` | diagrame și capturi de ecran (de adăugat) |
 
 Listingul de cod din anexe este **citit direct din fișierele reale** ale proiectului la generare, deci
