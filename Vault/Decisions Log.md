@@ -340,3 +340,10 @@ EXEC dbo.sp_WriteAudit ..., @Details = @Details;
 **Why**: Storing calculated totals on recipes would go stale when ingredient nutrition or recipe ingredients change. Ingredient-level source data plus proc-calculated recipe summaries keeps SQL Server as the source of truth and preserves the stored-proc-only app contract.
 **Trade-off**: The first version supports only direct compatible conversions through `UnitConversions` (`g`/`kg`, `ml`/`l`). Same-unit count values (`pc`) work directly because recipe unit and nutrition basis unit match; missing nutrition rows and incompatible conversions are counted and surfaced as incomplete instead of guessing with fake precision.
 **How to apply**: Add nutrition data to ingredients first. Keep future nutrition features (daily/weekly reports, averages in Rapoarte, targets) backed by proc-calculated recipe/meal-plan totals, not hard-coded UI cards or direct table reads. Common nutrition seed data should insert missing rows only, preserving values Codrin edits manually in the app.
+
+---
+
+## 2026-05-26 — Windows exe publish is self-contained but config stays external
+**Decision**: Publish MealPrepApp as a Windows x64, self-contained, single-file executable using `Windows-x64-Folder.pubxml`, with `PublishTrimmed=false` for WPF safety. The publish output includes `appsettings.json` and a safe `appsettings.Local.template.json`, but deliberately excludes the real `appsettings.Local.json`.
+**Why**: A self-contained publish gives Codrin a practical `.exe` deliverable without requiring the target PC to install the .NET runtime. Trimming is risky for WPF/reflection-heavy desktop apps, so reliability is more important than smaller file size. The real local config contains the `mealprep_app` password, so it must stay out of git and out of automated artifacts.
+**How to apply**: Build with `App\publish-windows-exe.cmd` on Windows. After publishing, create `appsettings.Local.json` beside `MealPrepApp.exe` from the template and fill in the real password locally.

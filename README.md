@@ -103,6 +103,28 @@ The .NET app connects as `mealprep_app`, never `sa`:
 Server=localhost,1433;Database=MealPrepDB;User Id=mealprep_app;Password=<app-login-password>;TrustServerCertificate=true;
 ```
 
+## Publishing a Windows `.exe`
+
+On a Windows machine with the .NET 10 SDK installed, run:
+
+```cmd
+App\publish-windows-exe.cmd
+```
+
+That script publishes the WPF app with the `Windows-x64-Folder` publish profile and creates:
+
+```text
+App\publish\MealPrepApp-win-x64\MealPrepApp.exe
+```
+
+The publish is self-contained for Windows x64, so the target machine does not need to install the .NET runtime separately. The output folder still needs configuration beside the executable:
+
+1. Copy `appsettings.Local.template.json` to `appsettings.Local.json` in the same folder as `MealPrepApp.exe`.
+2. Replace `__SET_APP_PASSWORD__` with the real `mealprep_app` password.
+3. Make sure SQL Server is reachable from the machine running the app.
+
+Important: the real `appsettings.Local.json` is intentionally not published or committed, because it contains the app-login password.
+
 ## API surface
 
 | Area | Procs |

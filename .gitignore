@@ -11,6 +11,7 @@ appsettings.Local.json
 
 # Source snapshot zips used to ship to the VM — redundant with tracked source
 App/*.zip
+App/publish/
 
 # Report generator: Python venv + PDF validation artifact (the .docx stays tracked)
 Raport/.venv/

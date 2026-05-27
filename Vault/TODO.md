@@ -7,9 +7,9 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
+- [ ] **Windows exe publish/runtime verification** — run `App\publish-windows-exe.cmd` on Rita's Windows machine/VM; confirm `MealPrepApp.exe` is created and launches with a valid `appsettings.Local.json`
 
 ## Soon
-- [ ] Conversion to .exe
 - [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
 - [ ] Optional: add an admin role for migrations distinct from `sa`
 - [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
@@ -18,6 +18,7 @@ Running checklist. Check things off as they're done. Latest items at the top of 
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **Windows exe publish path implemented** — added a Windows x64 self-contained single-file publish profile, `App\publish-windows-exe.cmd`, a safe `appsettings.Local.template.json`, and README instructions; local static checks pass, actual WPF publish needs Windows verification
 - [x] **Common nutrition seed added** — `seeds/ingredient_nutrition_seed.sql` now inserts demo nutrition defaults for the 44 common seeded ingredients; it is wired into `run_all.sql`, verified in Docker, and preserves manually edited nutrition rows on rebuild
 - [x] **Nutrition feature Windows verification passed on Rita's machine/VM** — Codrin confirmed ingredient nutrition edit/save and recipe-detail nutrition display work; manual entry is usable but tedious, so seeding/import/presets are a possible follow-up
 - [x] **Nutrition tracking foundation implemented** — added `UnitConversions`, `IngredientNutrition`, nutrition stored procs, ingredient nutrition editor dialog, Ingrediente `Nutritie` action, and recipe detail `Nutritie estimata` totals; SQL/static/XAML checks pass locally, pending Rita Windows runtime verification

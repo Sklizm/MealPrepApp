@@ -158,6 +158,29 @@ def test_common_ingredient_nutrition_seed_is_wired_and_idempotent():
     assert "N'Ulei de masline'" in seed
 
 
+def test_windows_exe_publish_profile_is_safe_and_documented():
+    csproj = read("App/MealPrepApp/MealPrepApp.csproj")
+    profile = read("App/MealPrepApp/Properties/PublishProfiles/Windows-x64-Folder.pubxml")
+    publish_cmd = read("App/publish-windows-exe.cmd")
+    template = read("App/MealPrepApp/appsettings.Local.template.json")
+    readme = read("README.md")
+    gitignore = read(".gitignore")
+    assert "<RuntimeIdentifier>win-x64</RuntimeIdentifier>" in profile
+    assert "<SelfContained>true</SelfContained>" in profile
+    assert "<PublishSingleFile>true</PublishSingleFile>" in profile
+    assert "<PublishTrimmed>false</PublishTrimmed>" in profile
+    assert "<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>" in profile
+    assert "<CopyToPublishDirectory>Never</CopyToPublishDirectory>" in csproj
+    assert "appsettings.Local.template.json" in csproj
+    assert "dotnet publish" in publish_cmd
+    assert "Windows-x64-Folder" in publish_cmd
+    assert "MealPrepApp.exe" in publish_cmd
+    assert "__SET_APP_PASSWORD__" in template
+    assert "App/publish/" in gitignore
+    assert "publish-windows-exe.cmd" in readme
+    assert "MealPrepApp.exe" in readme
+
+
 def test_forgot_password_flow_is_backed_by_proc_and_wired_to_login():
     proc = read("Database/procs/01_users.sql")
     repo = read("App/MealPrepApp/Data/Repositories/UserRepository.cs")
@@ -206,6 +229,7 @@ if __name__ == "__main__":
         test_standalone_loading_window_before_shell,
         test_nutrition_foundation_is_proc_backed_and_wired_to_recipe_detail,
         test_common_ingredient_nutrition_seed_is_wired_and_idempotent,
+        test_windows_exe_publish_profile_is_safe_and_documented,
         test_forgot_password_flow_is_backed_by_proc_and_wired_to_login,
     ]
     for test in tests:
