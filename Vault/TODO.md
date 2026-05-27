@@ -7,17 +7,20 @@ tags: [todo]
 Running checklist. Check things off as they're done. Latest items at the top of each section.
 
 ## Now
-- [ ] **Windows exe publish/runtime verification** — run `App\publish-windows-exe.cmd` on Rita's Windows machine/VM; confirm `MealPrepApp.exe` is created and launches with a valid `appsettings.Local.json`
+- [x] **Windows exe publish/runtime verification** — run `App\publish-windows-exe.cmd` on Rita's Windows machine/VM; confirm `MealPrepApp.exe` is created and launches with a valid `appsettings.Local.json`
 
 ## Soon
-- [ ] Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)
-- [ ] Optional: add an admin role for migrations distinct from `sa`
-- [ ] Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
+- [ ] ~~Optional: add convenience views for ad-hoc DataGrip exploration (read-only, separate role grants if exposed to the app)~~
+- [ ] ~~Optional: add an admin role for migrations distinct from `sa`~~
+- [ ] ~~Optional: `sp_GetAuditForUser` if the app wants a "your activity" feed
+- [ ] If no photo on a recipe then default photo of a aesthetic knife
 
 ## Maybe Later (out of v1 scope, see [[Decisions Log]])
 - [ ] User-private ingredients (add nullable UserID to [[Ingredients]])
 
 ## Done
+- [x] **README and Romanian vault counterparts updated** — root `README.md` now documents DB/app/features in more detail; missing `-ro` counterparts were added for database/session notes; schema overview and index notes were refreshed for drafts, photos, unit conversions and nutrition
+- [x] **Practice report regenerated and requirement-checked** — `Raport/Raport_practica.docx` and `.pdf` were regenerated from the Python generator; report now reflects the final completed app features (forgot password, drafts, photos, loading, nutrition, Windows exe publishing) and includes Anexa A5 requirement checklist
 - [x] **Windows exe publish path implemented** — added a Windows x64 self-contained single-file publish profile, `App\publish-windows-exe.cmd`, a safe `appsettings.Local.template.json`, and README instructions; local static checks pass, actual WPF publish needs Windows verification
 - [x] **Common nutrition seed added** — `seeds/ingredient_nutrition_seed.sql` now inserts demo nutrition defaults for the 44 common seeded ingredients; it is wired into `run_all.sql`, verified in Docker, and preserves manually edited nutrition rows on rebuild
 - [x] **Nutrition feature Windows verification passed on Rita's machine/VM** — Codrin confirmed ingredient nutrition edit/save and recipe-detail nutrition display work; manual entry is usable but tedious, so seeding/import/presets are a possible follow-up

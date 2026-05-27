@@ -1,65 +1,207 @@
 # MealPrep — recipe tracking & meal planning
 
-A full meal-prep / recipe-tracking + meal-planning application, built as a school practica project. Two halves, both in this repo:
+MealPrep is a full meal-prep, recipe-tracking, meal-planning and nutrition desktop application built as a school practica project.
 
-- **The app** — a Windows desktop client (WPF + MVVM + Dapper, .NET 10), Romanian-language UI, with a cream/olive design system.
-- **The database** — SQL Server running in Docker, exposing a stored-proc-only API behind a least-privilege login so the app can never touch tables directly.
+The repo contains both halves of the project:
 
-The app talks to the database exclusively through stored procedures, authenticated as the low-privilege `mealprep_app` login. The companion design spec lives at [`Vault/Design/App Design Spec.md`](Vault/Design/App%20Design%20Spec.md).
+- `App/MealPrepApp/` — the Windows desktop client, built with WPF, MVVM and .NET 10.
+- `Database/` — the SQL Server database, seeds and stored-procedure API used by the app.
+- `Vault/` — the Obsidian project memory: decisions, sessions, TODOs, schema notes and Romanian counterparts.
+- `Raport/` — the generated practica report source and output files.
 
-## The app (`App/MealPrepApp/`)
+The important architectural idea is that the app never reads or writes tables directly. It connects as the low-privilege `mealprep_app` SQL login and can only execute stored procedures. SQL Server tables remain protected behind a proc-only API.
 
-WPF on **.NET 10** (`net10.0-windows`), MVVM via **CommunityToolkit.Mvvm**, data access via **Dapper** over **Microsoft.Data.SqlClient**, DI through **Microsoft.Extensions.DependencyInjection**, config from `appsettings.json` + a gitignored `appsettings.Local.json` (holds the app password). Excel export via **ClosedXML**; password hashing via **BCrypt.Net**.
+## Main features
 
-Screens (Romanian UI):
+### User and security features
 
-- **Autentificare** — register, login, change password. Lockout + password-history rules enforced server-side.
-- **Acasă** — dashboard with KPI tiles and recent recipes.
-- **Rețete** — recipe list, detail, and editor (ingredients entered as a list, optimistic-concurrency-safe save).
-- **Ingrediente** — ingredient list (flat or grouped by category) with live as-you-type search, ingredient add; **Frigider** (pantry) add/edit/remove; **Listă de cumpărături** (computed shopping list with date range, Excel export, and print).
-- **Planificare** / **Rapoarte** — meal-plan calendar and reports (DB procs ready; UI in progress).
+- User registration and login.
+- BCrypt password hashing in the WPF app.
+- SQL-side login success/failure tracking.
+- Account lockout: 5 failed attempts triggers a 15-minute lockout.
+- Password change with password-history protection.
+- Forgot-password/demo reset flow from the login window.
+- Audit logging for mutating database operations.
+- Profile-safe user read procedure that never returns password hashes.
 
-**Design system** — a single cream / olive / dark-brown theme in `Themes/Colors.xaml` + `Themes/Styles.xaml`: chrome-less windows (`WindowChrome`), a styled `MessageDialog` replacing `MessageBox`, and themed date pickers, menus, tooltips, and scrollbars. `appsettings.Local.json`, `bin`/`obj`, and source-snapshot zips stay out of git.
+### Recipe features
 
-Build + run on Windows with the .NET 10 SDK installed: create `appsettings.Local.json` from the committed template with the real `mealprep_app` password, point the connection string at the running SQL Server, then `dotnet run` (or open the solution in Visual Studio).
+- Recipe list, detail screen and editor.
+- Recipe fields: title, category, description, instructions, prep/cook time and servings.
+- Recipe ingredients stored as structured child rows.
+- Recipe create/update/delete through stored procedures.
+- Optimistic concurrency with `Recipes.RowVersion` so stale edits are rejected.
+- Search by title.
+- Find recipes by a selected ingredient list.
+- Duplicate-ingredient guard in the editor, backed by DB uniqueness constraints.
+- Recipe drafts: save incomplete recipe editor state and continue it later.
+- Recipe photos: one optional image per recipe, stored in SQL Server after app-side downscaling/re-encoding.
 
-## The database — what's in it
+### Ingredient, pantry and shopping-list features
 
-- **12 tables** — 6 core (Users, Units, Categories, Ingredients, Recipes, RecipeIngredients) + 2 for security/auditing (PasswordHistory, AuditLog) + 3 for meal planning (MealPlanEntries, RecipeFavorites, UserPantry) + 1 lookup (IngredientCategories).
-- **38 stored procedures** — the only API surface the app sees. Covers register/login, password change with history check, recipe CRUD with optimistic concurrency, paged search, find-recipes-by-ingredients, weekly/monthly meal plan reads, favorites toggle, pantry upsert, computed shopping list, dashboard counts, monthly reports, and lookup reads.
-- **44 seeded ingredients** (in Romanian, no diacritics) across 8 categories so the app demo isn't staring at an empty list on first launch.
-- **Lockout policy** — 5 failed logins in a row → 15-minute lockout. Last 5 password hashes retained per user; reuse is rejected.
-- **Optimistic concurrency** on Recipes — `RowVersion` column, `sp_UpdateRecipe` requires `@RowVersion` and `THROW 50004` on stale row.
-- **Audit log** — every mutating proc writes a row in the same transaction.
-- **Least-privilege app role** — `mealprep_app` has `EXECUTE` on the `dbo` schema and is **denied** SELECT/INSERT/UPDATE/DELETE. Mutations work only through stored procs via SQL Server ownership chaining.
+- Seeded Romanian ingredient list for demos.
+- Ingredient categories and grouped ingredient browsing.
+- Live ingredient search.
+- Add ingredient dialog.
+- Pantry/fridge (`Frigider`) tracking per user.
+- Pantry upsert behavior: adding more of the same ingredient/unit increases the quantity.
+- Computed shopping list for a date range.
+- Shopping list subtracts pantry quantities and scales requirements by planned servings.
+- Shopping list export to Excel through ClosedXML.
+- Printable shopping-list view.
 
-## Repo layout
+### Meal-planning and report features
 
+- Monthly and weekly meal-planning screens.
+- Add a recipe to the meal plan from the recipe detail screen.
+- Plan, update and unplan meals through stored procedures.
+- Favorites support.
+- Dashboard cards and recent recipes.
+- Reports area with:
+  - monthly statistics;
+  - top recipes;
+  - top ingredients;
+  - weekly meal plan for printing;
+  - shopping list for printing/export.
+
+### Nutrition features
+
+- `UnitConversions` table for direct compatible conversions, currently including g/kg and ml/l.
+- `IngredientNutrition` table with per-ingredient nutrition basis values.
+- Ingredient nutrition edit dialog.
+- Estimated recipe nutrition card on recipe details.
+- Total and per-serving calories/protein/carbs/fat.
+- Missing or unconvertible nutrition rows are counted and shown instead of guessed.
+- Demo nutrition seed for common seeded ingredients; it inserts missing rows only and preserves manually edited values.
+
+### UX and packaging features
+
+- Romanian UI.
+- Cream/olive/dark-brown visual design.
+- Chrome-less WPF windows using `WindowChrome`.
+- Styled app-native `MessageDialog` instead of raw `MessageBox`.
+- Themed DatePicker, Calendar, Menu, ToolTip and ScrollBar controls.
+- Standalone startup loading window after login, before the main shell appears.
+- Windows x64 self-contained single-file publish profile.
+- `App/publish-windows-exe.cmd` helper for producing `MealPrepApp.exe` on Windows.
+
+## App details (`App/MealPrepApp/`)
+
+Technology stack:
+
+- WPF on `net10.0-windows`.
+- MVVM with `CommunityToolkit.Mvvm`.
+- Data access with `Dapper` and `Microsoft.Data.SqlClient`.
+- Dependency injection with `Microsoft.Extensions.DependencyInjection`.
+- Configuration from `appsettings.json` plus local secret config in gitignored `appsettings.Local.json`.
+- Password hashing with `BCrypt.Net-Next`.
+- Excel export with `ClosedXML`.
+
+Runtime flow:
+
+1. `App.xaml.cs` builds the DI container and registers repositories, services, view-models and windows.
+2. `LoginWindow` handles registration/login/forgot-password and creates the shell only after successful authentication.
+3. `StartupLoadingWindow` shows a short standalone loading step while `ShellWindow.InitializeBeforeShowAsync()` prepares the first dashboard view.
+4. Top-level navigation switches between Acasa, Retete, Ingrediente, Planificare and Rapoarte through view-model commands.
+5. Repositories are the only data-access boundary; view-models do not run ad-hoc SQL.
+
+Key app implementation details:
+
+- Recipe edits send an ingredient JSON payload to `sp_CreateRecipe` / `sp_UpdateRecipe`.
+- `Recipes.RowVersion` is loaded and sent back on update so stale edits can be rejected cleanly.
+- Drafts save incomplete editor state separately from real recipes and can later be opened back into the editor.
+- Photos are selected through the UI, downscaled in WPF, re-encoded as JPEG quality 85 and saved through recipe-photo procedures.
+- Nutrition editing happens on ingredients; recipe details call the DB to calculate totals/per-serving values.
+- Printing uses WPF `FlowDocument`; shopping-list export uses ClosedXML.
+
+Important app folders:
+
+```text
+App/MealPrepApp/
+├── Converters/          WPF converters, including byte[] -> image source
+├── Data/                connection factory and repositories
+├── Models/              DTOs/models used by repositories and view-models
+├── Services/            dialog/session/navigation helpers
+├── Themes/              Colors.xaml and Styles.xaml design system
+├── ViewModels/          MVVM state and commands
+├── Views/               WPF windows, pages and dialogs
+├── appsettings.json     committed base config
+└── appsettings.Local.template.json  safe publish-time template
 ```
-App/
-├── MealPrepApp/                  WPF .NET 10 client (Views, ViewModels, Data, Services, Themes)
-└── legacy-winforms/              earlier WinForms prototype, kept for reference
 
+Runtime config rule: the real `appsettings.Local.json` contains the `mealprep_app` password and must not be committed or published. Use the template when preparing a Windows publish folder.
+
+## Database details (`Database/`)
+
+The database is SQL Server 2022 and is designed to be rebuilt safely through the idempotent `run_all.sql` script.
+
+Current object summary from the SQL scripts:
+
+- 16 tables:
+  - core: `Users`, `Units`, `Categories`, `Ingredients`, `Recipes`, `RecipeIngredients`;
+  - security/audit: `PasswordHistory`, `AuditLog`;
+  - meal planning: `MealPlanEntries`, `RecipeFavorites`, `UserPantry`;
+  - lookups/extensions: `IngredientCategories`, `RecipeDrafts`, `RecipePhotos`, `UnitConversions`, `IngredientNutrition`.
+- 50 stored procedures in the scripts, including the internal `sp_WriteAudit` helper. The public app API is the stored-procedure layer used by the repositories.
+- Seed data for units, recipe categories, ingredient categories, common Romanian ingredients and demo nutrition values.
+- Explicit constraints and indexes with stable names.
+- `NVARCHAR` for strings and UTC timestamps via `SYSUTCDATETIME()`.
+
+Database design rules:
+
+- Build scripts are idempotent: tables are guarded with `IF OBJECT_ID(...) IS NULL`, procs use `CREATE OR ALTER`, and seeds use `MERGE` or insert-only patterns.
+- The app login is least-privilege: `mealprep_app_role` gets `GRANT EXECUTE` but direct table `SELECT/INSERT/UPDATE/DELETE` is denied.
+- Mutating procs write audit rows through `sp_WriteAudit`.
+- FK columns get explicit indexes unless already covered by a leading key.
+- Deleting child rows is intentionally conservative: `RecipeIngredients`, recipe photos, plan entries/favorites/drafts/pantry cascade only where the child has no standalone meaning; important source rows such as users, ingredients and units are protected by RESTRICT-style relationships.
+- Shopping lists and nutrition totals are computed on demand instead of stored as stale snapshots.
+
+Important database files:
+
+```text
 Database/
-├── 00_create_database.sql        Phase 1: schema
-├── 01_users.sql … 06_recipe_ingredients.sql
-├── 07_users_security.sql         Phase 2: security state on Users + PasswordHistory
-├── 08_audit_log.sql              AuditLog + IntList TVP + sp_WriteAudit
-├── 09_app_role.sql               app login, role, GRANT/DENY
-├── 10_phase25_additions.sql      Phase 2.5: FK index gaps + RowVersion on Recipes
-├── 11_meal_plan.sql              Phase 3: MealPlanEntries
-├── 12_favorites.sql              Phase 3: RecipeFavorites
-├── 13_pantry.sql                 Phase 3: UserPantry
-├── 14_ingredient_categories.sql  Phase 4: IngredientCategories + FK column on Ingredients
-├── procs/                        the stored-proc API (11 files, 38 procs)
-├── seeds/                        units + categories + ingredients + ingredient_categories
-└── run_all.sql                   master script (idempotent)
-
-Vault/                            Obsidian notes — decisions log, per-table notes, design spec, sessions
-CLAUDE.md                         working instructions for Claude Code
+├── 00_create_database.sql
+├── 01_users.sql ... 06_recipe_ingredients.sql
+├── 07_users_security.sql
+├── 08_audit_log.sql
+├── 09_app_role.sql
+├── 10_phase25_additions.sql
+├── 11_meal_plan.sql
+├── 12_favorites.sql
+├── 13_pantry.sql
+├── 14_ingredient_categories.sql
+├── 15_recipe_drafts.sql
+├── 16_recipe_photos.sql
+├── 17_unit_conversions.sql
+├── 18_ingredient_nutrition.sql
+├── procs/                 stored-procedure API
+├── seeds/                 idempotent seed scripts
+└── run_all.sql             master build script
 ```
 
-## Running it
+### Stored-procedure areas
+
+| Area | Examples |
+|---|---|
+| Users/auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_GetUserProfile`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword`, `sp_ResetForgottenPassword` |
+| Recipes | `sp_CreateRecipe`, `sp_UpdateRecipe`, `sp_DeleteRecipe`, `sp_GetRecipeFull`, `sp_GetRecipes`, `sp_SearchRecipesByTitle`, `sp_FindRecipesByIngredients` |
+| Ingredients/lookups | `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients`, `sp_GetIngredientUsage`, `sp_GetUnits`, `sp_GetCategories`, `sp_GetIngredientCategories` |
+| Meal planning | `sp_PlanMeal`, `sp_UpdatePlannedMeal`, `sp_UnplanMeal`, `sp_GetWeeklyPlan`, `sp_GetMonthlyPlan` |
+| Favorites/pantry/shopping | `sp_ToggleFavorite`, `sp_GetFavoriteRecipes`, `sp_AddPantryItem`, `sp_UpdatePantryQuantity`, `sp_RemovePantryItem`, `sp_GetPantry`, `sp_GetShoppingList` |
+| Reports/dashboard | `sp_GetDashboardCounts`, `sp_GetRecentRecipes`, `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients` |
+| Drafts/photos | `sp_SaveDraft`, `sp_GetDrafts`, `sp_GetDraft`, `sp_DeleteDraft`, `sp_SetRecipePhoto`, `sp_GetRecipePhoto`, `sp_DeleteRecipePhoto` |
+| Nutrition | `sp_GetIngredientNutrition`, `sp_SetIngredientNutrition`, `sp_DeleteIngredientNutrition`, `sp_GetRecipeNutrition` |
+| Internal | `sp_WriteAudit` |
+
+Custom SQL error codes used by the app:
+
+- `50001` — password reused.
+- `50002` — not authorized.
+- `50003` — not found.
+- `50004` — stale recipe row / optimistic concurrency conflict.
+- `50005` — no matching account in the forgot-password reset flow.
+
+## Running the database
 
 Start a SQL Server 2022 container:
 
@@ -69,7 +211,7 @@ docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<your-sa-password>" \
   -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-Build the schema (idempotent — safe to re-run):
+Build or rebuild the schema. The script is idempotent and safe to re-run:
 
 ```bash
 docker exec -u 0 MealPrepDB rm -rf /tmp/Database
@@ -79,90 +221,111 @@ docker exec -w /tmp/Database MealPrepDB /opt/mssql-tools18/bin/sqlcmd \
   -C -b -i run_all.sql
 ```
 
-First-time bring-up only: `09_app_role.sql` needs the password for the `mealprep_app` login. Either edit the `:setvar AppPassword ""` line in that file to your chosen password before the first run, or delete that line and add `-v AppPassword="<your-password>"` to the sqlcmd command above. On rebuilds the login already exists at the server level, so the password is unused and no flag is needed.
-
 Notes:
-- The `rm -rf /tmp/Database` step is needed if you've copied before — `docker cp` nests the copy inside the existing dir otherwise. Run as root inside the container (`-u 0`) because the existing files are owned by uid 1000.
-- `mssql-tools18` requires `-C` (TLS is enforced by default).
-- `-b` makes sqlcmd exit non-zero on T-SQL errors — use it in scripts.
-- `run_all.sql` uses `:r` includes, so it must run via sqlcmd, not via a generic JDBC client.
 
-Run a one-off query:
+- `mssql-tools18` requires `-C` because TLS is enforced by default.
+- `-b` makes `sqlcmd` exit non-zero on SQL errors.
+- `run_all.sql` uses `:r` includes, so run it with `sqlcmd`, not a generic SQL console unless that console supports sqlcmd mode.
+- The `docker exec -u 0 ... rm -rf /tmp/Database` cleanup prevents `docker cp` from nesting a fresh copy inside an older copied directory.
+- First-time creation of `mealprep_app` requires setting the password in `09_app_role.sql` or passing it through sqlcmd as documented in that script. Rebuilds usually do not need the password because the server-level login already exists.
+
+Run a quick query:
 
 ```bash
 docker exec MealPrepDB /opt/mssql-tools18/bin/sqlcmd \
   -S localhost -U sa -P "$(docker exec MealPrepDB printenv SA_PASSWORD)" \
-  -C -d MealPrepDB -h-1 -W -Q "SELECT name FROM sys.procedures ORDER BY name;"
+  -C -d MealPrepDB -h-1 -W -Q "SELECT name FROM sys.tables ORDER BY name;"
 ```
 
 ## App connection string
 
-The .NET app connects as `mealprep_app`, never `sa`:
+The app connects as `mealprep_app`, never `sa`:
 
-```
+```text
 Server=localhost,1433;Database=MealPrepDB;User Id=mealprep_app;Password=<app-login-password>;TrustServerCertificate=true;
 ```
 
+For local development, place this in `App/MealPrepApp/appsettings.Local.json`. Do not commit that file.
+
+## Running the app on Windows
+
+Prerequisites:
+
+- Windows machine/VM.
+- .NET 10 SDK.
+- SQL Server container/database running and reachable.
+- `appsettings.Local.json` with the real app-login password.
+
+From the repo root on Windows:
+
+```cmd
+cd App\MealPrepApp
+dotnet run
+```
+
+Or open `App/MealPrepApp/MealPrepApp.csproj` in Visual Studio and run it from there.
+
+Note: WPF WindowsDesktop projects cannot be built or run properly on this Fedora/Linux development environment because the Linux SDK does not include the WindowsDesktop targets. Runtime verification is done on a Windows machine/VM.
+
 ## Publishing a Windows `.exe`
 
-On a Windows machine with the .NET 10 SDK installed, run:
+On Windows with the .NET 10 SDK installed, run from the repo root:
 
 ```cmd
 App\publish-windows-exe.cmd
 ```
 
-That script publishes the WPF app with the `Windows-x64-Folder` publish profile and creates:
+Expected output:
 
 ```text
 App\publish\MealPrepApp-win-x64\MealPrepApp.exe
 ```
 
-The publish is self-contained for Windows x64, so the target machine does not need to install the .NET runtime separately. The output folder still needs configuration beside the executable:
+The publish profile is Windows x64, self-contained and single-file. It deliberately does not publish the real `appsettings.Local.json`.
+
+Before running the exe:
 
 1. Copy `appsettings.Local.template.json` to `appsettings.Local.json` in the same folder as `MealPrepApp.exe`.
 2. Replace `__SET_APP_PASSWORD__` with the real `mealprep_app` password.
-3. Make sure SQL Server is reachable from the machine running the app.
+3. Make sure SQL Server is reachable from that machine.
 
-Important: the real `appsettings.Local.json` is intentionally not published or committed, because it contains the app-login password.
+## Repo layout
 
-## API surface
+```text
+App/                  WPF desktop app and Windows publish helper
+Database/             SQL Server schema, procs, seeds and run_all.sql
+Raport/               Python report generator plus generated DOCX/PDF report
+Vault/                Obsidian vault for project notes and history
+CLAUDE.md             agent/project instructions
+README.md             this file
+```
 
-| Area | Procs |
-|---|---|
-| Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin` (login flow), `sp_GetUserProfile` (profile screen — no PasswordHash), `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword` |
-| Recipes (write) | `sp_CreateRecipe`, `sp_UpdateRecipe` (requires `@RowVersion`), `sp_DeleteRecipe` |
-| Recipes (read) | `sp_GetRecipeFull` (returns `RowVersion`), `sp_GetRecipes`, `sp_SearchRecipesByTitle`, `sp_FindRecipesByIngredients` |
-| Ingredients | `sp_AddIngredient`, `sp_GetIngredients(@IngredientCategoryID = NULL)`, `sp_SearchIngredients`, `sp_GetIngredientUsage` |
-| Lookups | `sp_GetUnits`, `sp_GetCategories`, `sp_GetIngredientCategories` |
-| Meal plan | `sp_PlanMeal`, `sp_UpdatePlannedMeal`, `sp_UnplanMeal`, `sp_GetWeeklyPlan`, `sp_GetMonthlyPlan` |
-| Favorites | `sp_ToggleFavorite`, `sp_GetFavoriteRecipes` |
-| Pantry | `sp_AddPantryItem` (MERGE upsert), `sp_UpdatePantryQuantity`, `sp_RemovePantryItem`, `sp_GetPantry` |
-| Shopping list | `sp_GetShoppingList(@UserID, @StartDate, @EndDate)` — computed, joins planned meals minus pantry, scales by serving count |
-| Dashboard | `sp_GetDashboardCounts`, `sp_GetRecentRecipes` |
-| Reports | `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients` |
-| Internal | `sp_WriteAudit` (called from every mutating proc) |
+## Obsidian vault
 
-`sp_FindRecipesByIngredients` takes a `dbo.IntList` table-valued parameter so the app can pass a list of ingredient IDs cleanly. `sp_CreateRecipe` / `sp_UpdateRecipe` accept the ingredient list as JSON (parsed via `OPENJSON`).
+`Vault/` is the explicit cross-session source of truth for project history. It contains:
 
-Custom error codes raised by procs:
+- project overview and tech stack;
+- schema overview and per-table notes;
+- architectural decisions in `Decisions Log.md`;
+- TODO tracking;
+- dated session notes;
+- Romanian `-ro.md` counterparts for the notes used in the practica documentation.
 
-- `50001` — password reused (rejected by `sp_ChangePassword`)
-- `50002` — not authorized (e.g. trying to update someone else's recipe or meal plan entry)
-- `50003` — not found
-- `50004` — stale row (optimistic concurrency conflict on `sp_UpdateRecipe`)
+When notes and SQL disagree, trust the SQL scripts and update the vault.
 
-## Design notes
+## Load-bearing design decisions
 
-Load-bearing decisions, all recorded with full rationale in [`Vault/Decisions Log.md`](Vault/Decisions%20Log.md):
+The full rationale lives in `Vault/Decisions Log.md`. The most important decisions are:
 
-- **Stored-proc-only API** — the app has zero direct table access. Makes SQL injection structurally impossible from the app side.
-- **Hard delete, not soft** — no `IsDeleted` flags; rows are removed outright.
-- **Cascade is rare on purpose** — only `Recipes → RecipeIngredients`, `Recipes → MealPlanEntries`, `Users → PasswordHistory`, `Users/Recipes → RecipeFavorites`, `Users → UserPantry`. Deleting a user with recipes is blocked, deliberately.
-- **All timestamps UTC** via `SYSUTCDATETIME()`. Display conversion is the app's job.
-- **`NVARCHAR` everywhere** (Unicode), never `VARCHAR`.
-- **Idempotent scripts** — `IF OBJECT_ID(...) IS NULL`, `IF COL_LENGTH(...) IS NULL`, `MERGE` for seeds. Re-running `run_all.sql` never destroys local data.
-- **Constraint naming** — `PK_`, `FK_`, `UQ_`, `CK_`, `DF_`, `IX_` prefixes, explicit names (auto-generated names are unstable and unreadable in error messages).
-- **Optimistic concurrency on Recipes** — `RowVersion` token round-trip via `sp_GetRecipeFull` → `sp_UpdateRecipe`; raises 50004 if stale.
-- **Categories = meal slots** — `MealPlanEntries.CategoryID` is a FK to `Categories`; the planner's weekly view renders 4 of the 6 categories as columns. UI choice, not a DB constraint.
-- **Shopping list is computed**, not stored — `sp_GetShoppingList` joins planned meals through recipe ingredients with servings scaling, minus pantry on hand.
-- **Pantry is unit-exact** — `(UserID, IngredientID, UnitID)` is the upsert key. No cross-unit conversion.
+- Stored-procedure-only app API.
+- Least-privilege `mealprep_app` login.
+- Idempotent database scripts.
+- Explicit constraint/index names.
+- UTC timestamps.
+- `NVARCHAR` strings.
+- Recipes use optimistic concurrency with `RowVersion`.
+- Shopping list is computed, not stored.
+- Pantry quantities are unit-exact.
+- Drafts store incomplete editor state separately from real recipes.
+- Photos are stored in SQL Server, one optional photo per recipe.
+- Nutrition is ingredient-sourced and calculated per recipe on demand.

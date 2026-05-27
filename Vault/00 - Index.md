@@ -27,6 +27,8 @@ Open the graph view to see how everything connects.
 - [[Database/UserPantry]]
 - [[Database/RecipeDrafts]]
 - [[Database/RecipePhotos]]
+- [[Database/UnitConversions]]
+- [[Database/IngredientNutrition]]
 
 ## Design
 - [[Design/App Design Spec]]
@@ -53,9 +55,11 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-26 - Forgot password priority]]
 - [[Sessions/2026-05-26 - Nutrition foundation]]
 - [[Sessions/2026-05-26 - Windows exe publishing]]
+- [[Sessions/2026-05-27 - Raport regenerated]]
+- [[Sessions/2026-05-27 - README and Romanian vault counterparts]]
 
 ## Resume Protocol
-If you (Claude) are picking this up in a new session:
+If you (Claude/Hermes) are picking this up in a new session:
 1. Read this file.
 2. Read the latest entry in `Sessions/`.
 3. Read [[TODO]] for what's next.

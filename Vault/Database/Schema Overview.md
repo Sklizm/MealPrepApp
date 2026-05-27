@@ -4,40 +4,47 @@ tags: [database, schema]
 
 # Schema Overview
 
-Fourteen tables in `MealPrepDB` (six core + two security/audit + three Phase 3 for meal planning + one Phase 4 for ingredient categorization + drafts/photos). Build order is dependency order:
+Sixteen tables in `MealPrepDB` (six core + two security/audit + three meal-planning/pantry + one ingredient categorization lookup + drafts/photos + two nutrition tables). Build order is dependency order:
 
-```
+```text
 [[Users]]                  [[Units]]            [[Categories]]
    │                          │                      │
    │                          ▼                      │
    │                     [[Ingredients]]             │
-   │                          │                      │
-   ▼                          ▼                      ▼
+   │                       │      │                  │
+   ▼                       │      ▼                  ▼
 [[Recipes]] ─────────► [[RecipeIngredients]] ◄───────┘
+   │     │                     │
+   │     ▼                     ▼
+   │  [[RecipePhotos]]    [[IngredientNutrition]]
+   ▼
+[[RecipeDrafts]]
 ```
 
 ## Tables
 - [[Users]] — accounts (Username, Email, PasswordHash) + security state (LastLoginAt, FailedLoginCount, LockedUntil)
 - [[Units]] — measurement units (g, kg, ml, cup, …) with type (weight/volume/count)
-- [[Categories]] — recipe categories (Breakfast, Lunch, …)
-- [[Ingredients]] — global ingredient list with optional default unit; seeded with ~44 common items
+- [[Categories]] — recipe categories (Breakfast, Lunch, …), also reused as meal-plan slots
+- [[Ingredients]] — global ingredient list with optional default unit and optional ingredient category; seeded with common Romanian items
 - [[Recipes]] — owned by a user, optionally categorized; carries a `RowVersion` for optimistic concurrency
 - [[RecipeIngredients]] — junction: recipe ↔ ingredient with quantity + unit
-- **PasswordHistory** — recent password hashes per user (last 5 retained); cascade from Users
-- **AuditLog** — append-only log of state-changing actions; written by every mutating proc
-- [[MealPlanEntries]] — recipes scheduled to a date + meal slot (Category) per user
+- **PasswordHistory** — recent password hashes per user (last 5 retained); cascades from Users
+- **AuditLog** — append-only log of state-changing actions; written by mutating procs
+- [[MealPlanEntries]] — recipes scheduled to a date + meal slot per user
 - [[RecipeFavorites]] — composite-PK join table for "user has favorited this recipe"
-- [[UserPantry]] — current stock per user, per ingredient+unit (no cross-unit conversion in v1)
-- [[IngredientCategories]] — Phase 4 lookup powering the Ingrediente sidebar; nullable FK from [[Ingredients]]
+- [[UserPantry]] — current stock per user, per ingredient+unit; unit-exact by design
+- [[IngredientCategories]] — lookup powering the Ingrediente sidebar; nullable FK from [[Ingredients]]
 - [[RecipeDrafts]] — partially-complete recipe editor saves per user; nullable fields + opaque ingredient JSON
 - [[RecipePhotos]] — one optional DB-stored photo per recipe
+- [[UnitConversions]] — direct compatible conversions used by nutrition calculations
+- [[IngredientNutrition]] — nutrition source data per ingredient, used to calculate recipe totals on demand
 
-## API surface (Phase 2)
+## Stored-procedure API surface
 The .NET app does not query tables directly. It connects as the low-privilege `mealprep_app` SQL login and calls stored procs in `Database/procs/`:
 
 | Area | Procs |
 |---|---|
-| Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_GetUserProfile`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword` |
+| Users / auth | `sp_RegisterUser`, `sp_GetUserForLogin`, `sp_GetUserProfile`, `sp_RecordLoginSuccess`, `sp_RecordLoginFailure`, `sp_ChangePassword`, `sp_ResetForgottenPassword` |
 | Recipes (write) | `sp_CreateRecipe`, `sp_UpdateRecipe`, `sp_DeleteRecipe` |
 | Recipes (read) | `sp_GetRecipeFull`, `sp_GetRecipes`, `sp_SearchRecipesByTitle`, `sp_FindRecipesByIngredients` |
 | Ingredients | `sp_AddIngredient`, `sp_GetIngredients`, `sp_SearchIngredients`, `sp_GetIngredientUsage` |
@@ -50,6 +57,7 @@ The .NET app does not query tables directly. It connects as the low-privilege `m
 | Reports | `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients` |
 | Drafts | `sp_SaveDraft`, `sp_GetDrafts`, `sp_GetDraft`, `sp_DeleteDraft` |
 | Photos | `sp_SetRecipePhoto`, `sp_GetRecipePhoto`, `sp_DeleteRecipePhoto` |
+| Nutrition | `sp_GetIngredientNutrition`, `sp_SetIngredientNutrition`, `sp_DeleteIngredientNutrition`, `sp_GetRecipeNutrition` |
 | Internal | `sp_WriteAudit` (called from mutating procs) |
 
 The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an ingredient ID list.
@@ -57,53 +65,36 @@ The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an
 ## Security boundary
 - `mealprep_app` SQL login is the app's principal.
 - Member of `mealprep_app_role`:
-  - `GRANT EXECUTE ON SCHEMA::dbo` (and `EXECUTE ON TYPE::dbo.IntList`)
+  - `GRANT EXECUTE ON SCHEMA::dbo` and `EXECUTE ON TYPE::dbo.IntList`
   - `DENY SELECT, INSERT, UPDATE, DELETE ON SCHEMA::dbo`
-- Mutations succeed only via stored procs through **SQL Server ownership chaining** (procs and tables both owned by `dbo`).
+- Mutations succeed only via stored procs through SQL Server ownership chaining (procs and tables both owned by `dbo`).
 - `sa` is reserved for migrations only; the app never uses it.
 
-## Cascade Behavior
-- Delete a [[Recipes|Recipe]] → its [[RecipeIngredients]] rows and optional [[RecipePhotos|RecipePhoto]] row are removed (`ON DELETE CASCADE`).
-- Delete a [[Users|User]] → blocked if they own recipes (no cascade by design); but `PasswordHistory` and [[RecipeDrafts]] rows DO cascade away (children have no meaning without the user).
-- Delete an [[Ingredients|Ingredient]] → blocked if any recipe uses it.
-- Delete a [[Units|Unit]] → blocked if any recipe ingredient uses it.
+## Cascade behavior
+- Delete a [[Recipes|Recipe]] -> its [[RecipeIngredients]] rows, [[RecipePhotos|RecipePhoto]] row, meal-plan entries and favorites are removed when those FK rules apply.
+- Delete a [[Users|User]] -> blocked if they own recipes; `PasswordHistory`, [[RecipeDrafts]], [[RecipeFavorites]] and [[UserPantry]] rows cascade where designed.
+- Delete an [[Ingredients|Ingredient]] -> blocked if recipes, pantry or nutrition depend on it.
+- Delete a [[Units|Unit]] -> blocked if recipe ingredients, pantry, conversions or nutrition basis rows depend on it.
 
-See [[Decisions Log]] for why cascades are intentionally minimal.
+See [[Decisions Log]] for the rationale behind each cascade/restrict choice.
 
-## Build Order
-Run `Database/run_all.sql` end-to-end (idempotent) — the master script `:r`-includes everything in the right order. Manual order if needed:
+## Build order
+Run `Database/run_all.sql` end-to-end (idempotent). Manual order if needed:
 
-**Phase 1 (schema + seeds)**
 1. `00_create_database.sql`
 2. `01_users.sql` … `06_recipe_ingredients.sql`
 3. `seeds/units_seed.sql`, `seeds/categories_seed.sql`
+4. `07_users_security.sql`, `08_audit_log.sql`, `10_phase25_additions.sql`
+5. `11_meal_plan.sql`, `12_favorites.sql`, `13_pantry.sql`
+6. `14_ingredient_categories.sql`, `seeds/ingredient_categories_seed.sql`, `seeds/ingredients_seed.sql`
+7. `15_recipe_drafts.sql`, `16_recipe_photos.sql`
+8. `17_unit_conversions.sql`, `18_ingredient_nutrition.sql`, `seeds/ingredient_nutrition_seed.sql`
+9. `procs/01_users.sql` … `procs/14_nutrition.sql`
+10. `09_app_role.sql` — run last for login/role/grants. Rebuilds usually do not need an app password because the login already exists; first-time setup follows the comments in that script.
 
-**Phase 2 (security state, audit, API, login)**
-4. `07_users_security.sql` — augments `Users`, creates `PasswordHistory`
-5. `08_audit_log.sql` — `AuditLog` table + `IntList` TVP + `sp_WriteAudit`
-6. `10_phase25_additions.sql` — Phase 2.5: FK index gaps + `RowVersion` on Recipes (must run before the procs that reference `RowVersion`)
-
-**Phase 3 (meal planning, favorites, pantry)**
-7. `11_meal_plan.sql` — `MealPlanEntries`
-8. `12_favorites.sql` — `RecipeFavorites`
-9. `13_pantry.sql` — `UserPantry`
-
-**Phase 4 (ingredient categorization + reports)**
-10. `14_ingredient_categories.sql` — `IngredientCategories` table + nullable FK column on `Ingredients`
-11. `seeds/ingredient_categories_seed.sql` — 8 categories + backfill of shipped Ingredients
-
-**Phase H+ (drafts + photos)**
-12. `15_recipe_drafts.sql` — `RecipeDrafts` table.
-13. `16_recipe_photos.sql` — `RecipePhotos` table.
-
-**Stored proc API (Phase 2 + 3 + 4 + H+)**
-14. `procs/01_users.sql` … `procs/13_recipe_photos.sql` — full API. `sp_UpdateRecipe` requires `@RowVersion`; `sp_FindRecipesByIngredients` uses GROUP BY + LEFT JOIN to the TVP; `sp_AddPantryItem` is a MERGE upsert; `sp_GetShoppingList` is computed (no table); `sp_GetUserProfile` is the safe profile read (no PasswordHash exposed); `sp_GetIngredients` accepts optional `@IngredientCategoryID`; draft/photo access stays behind stored procs.
-
-**App login + role (run last)**
-15. `09_app_role.sql` — login + role + grants. On rebuilds the in-file empty `AppPassword` default is fine when the login already exists; first-time setup needs the chosen password supplied per `09_app_role.sql` comments.
-
-**Error codes raised by procs**
+## Error codes raised by procs
 - `50001` — password reused
 - `50002` — not authorized
 - `50003` — not found
-- `50004` — stale row (optimistic concurrency conflict)
+- `50004` — stale row / optimistic concurrency conflict
+- `50005` — no matching account for forgot-password reset

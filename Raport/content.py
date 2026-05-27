@@ -96,10 +96,10 @@ def introducere(doc, h):
     h.body(doc,
         "Prezentul raport descrie activitatea desfasurata in cadrul stagiului de practica, "
         "constand in proiectarea si dezvoltarea aplicatiei „MealPrep” — un sistem informatic "
-        "destinat gestionarii retetelor culinare si planificarii meselor. Lucrarea acopera ambele "
-        "componente ale produsului: o baza de date relationala SQL Server, gazduita intr-un container "
-        "Docker, si o aplicatie desktop pentru Windows realizata in tehnologia WPF (.NET 10), cu interfata "
-        "in limba romana.")
+        "destinat gestionarii retetelor culinare, planificarii meselor si urmaririi informatiilor "
+        "nutritionale. Lucrarea acopera ambele componente ale produsului final: o baza de date "
+        "relationala SQL Server, gazduita intr-un container Docker, si o aplicatie desktop pentru "
+        "Windows realizata in tehnologia WPF (.NET 10), cu interfata in limba romana.")
     h.body(doc,
         "Tema a fost aleasa pentru ca imbina, intr-un produs realist si demonstrabil, cele mai importante "
         "competente vizate de stagiu: modelarea datelor, securitatea accesului la baza de date, "
@@ -116,9 +116,10 @@ def introducere(doc, h):
                     "accesa direct tabelele.")
     h.numbered(doc, "O3. Dezvoltarea unei aplicatii desktop WPF, structurata dupa sablonul arhitectural "
                     "MVVM, care comunica cu baza de date prin acest API.")
-    h.numbered(doc, "O4. Implementarea functionalitatilor de baza: autentificare cu blocare la atacuri de "
-                    "tip brute-force, gestionarea retetelor, a ingredientelor si a camarii, lista de "
-                    "cumparaturi calculata, planificarea meselor si rapoarte.")
+    h.numbered(doc, "O4. Implementarea functionalitatilor complete: autentificare cu blocare la atacuri de "
+                    "tip brute-force si resetare parola, gestionarea retetelor, a drafturilor, fotografiilor, "
+                    "ingredientelor si camarii, lista de cumparaturi calculata, planificarea meselor, "
+                    "rapoarte, nutritie estimata si publicare ca executabil Windows.")
     h.numbered(doc, "O5. Aplicarea unui flux de lucru profesional de documentare (Obsidian) si versionare "
                     "(Git), folosind un asistent de programare bazat pe inteligenta artificiala (Claude Code).")
     h.body(doc,
@@ -162,11 +163,13 @@ def continut(doc, h):
 
     h.heading(doc, "Proiectarea bazei de date", level=3)
     h.body(doc,
-        "Baza de date MealPrepDB contine 12 tabele: sase de baza (Users, Units, Categories, Ingredients, "
-        "Recipes, RecipeIngredients), doua pentru securitate si audit (PasswordHistory, AuditLog), trei "
-        "pentru planificarea meselor (MealPlanEntries, RecipeFavorites, UserPantry) si una de tip lookup "
-        "(IngredientCategories). Ordinea de construire respecta dependentele dintre tabele si este codificata "
-        "in scriptul master run_all.sql.")
+        "Baza de date MealPrepDB contine, in versiunea finala, 16 tabele. Nucleul este format din sase "
+        "tabele de baza (Users, Units, Categories, Ingredients, Recipes, RecipeIngredients), la care se "
+        "adauga tabele pentru securitate si audit (PasswordHistory, AuditLog), planificare si stoc "
+        "(MealPlanEntries, RecipeFavorites, UserPantry), categorisirea ingredientelor (IngredientCategories), "
+        "drafturi si fotografii pentru retete (RecipeDrafts, RecipePhotos), respectiv nutritie si conversii "
+        "de unitati (UnitConversions, IngredientNutrition). Ordinea de construire respecta dependentele "
+        "dintre tabele si este codificata in scriptul master run_all.sql.")
     h.body(doc, "Conventiile de proiectare aplicate consecvent (motivate in jurnalul de decizii):")
     h.bullet(doc, "Scripturi idempotente: fiecare CREATE este protejat (IF OBJECT_ID(...) IS NULL), iar "
                   "seed-urile folosesc MERGE, astfel incat re-rularea build-ului nu distruge datele locale.")
@@ -196,15 +199,26 @@ def continut(doc, h):
         "(parsat cu OPENJSON) pentru sarcinile de scriere (lista de ingrediente la crearea unei retete) si "
         "un parametru de tip tabel (TVP dbo.IntList) pentru filtrele de citire. Lista de cumparaturi nu este "
         "stocata, ci calculata la cerere de procedura sp_GetShoppingList, prin imbinarea meselor planificate "
-        "cu ingredientele retetelor, scalate dupa numarul de portii, minus stocul existent in camara.")
+        "cu ingredientele retetelor, scalate dupa numarul de portii, minus stocul existent in camara. "
+        "In versiunea finala, API-ul bazei de date contine 49 de proceduri stocate.")
+    h.body(doc,
+        "Functionalitatile finale adaugate dupa modulul initial de rapoarte sunt tratate ca extensii reale, "
+        "nu ca elemente cosmetice: resetarea parolei are procedura dedicata (sp_ResetForgottenPassword) si "
+        "respecta istoricul de parole; drafturile pastreaza continut partial in RecipeDrafts; fotografiile "
+        "sunt stocate intr-o relatie 1:1 cu reteta; nutritia se calculeaza din IngredientNutrition si "
+        "UnitConversions, fara a inventa valori pentru ingredientele fara date.")
 
-    h.body(doc, "Dezvoltarea bazei de date s-a desfasurat pe patru faze:")
+    h.body(doc, "Dezvoltarea bazei de date s-a desfasurat pe sapte faze:")
     h.bullet(doc, "Faza 1 — schema de baza (6 tabele) si seed-urile pentru unitati si categorii.")
     h.bullet(doc, "Faza 2 si 2.5 — stratul de securitate (login cu privilegii minime, audit, istoric parole, "
-                  "blocare), indexarea cheilor externe si concurenta optimista; in total 18+ proceduri.")
+                  "blocare), indexarea cheilor externe si concurenta optimista; extinsa in final pana la 49 de proceduri.")
     h.bullet(doc, "Faza 3 — planificarea meselor, favoritele, camara si lista de cumparaturi calculata.")
     h.bullet(doc, "Faza 4 — categorisirea ingredientelor (lookup), procedurile de raportare si o procedura "
                   "sigura de citire a profilului (fara expunerea hash-ului parolei).")
+    h.bullet(doc, "Faza H+ — completarea aplicatiei cu resetare parola, drafturi de retete, fotografii salvate "
+                  "in baza de date, ecran de incarcare dupa autentificare si mecanism de publicare ca executabil Windows.")
+    h.bullet(doc, "Faza N — fundatia de nutritie: conversii intre unitati compatibile, valori nutritionale per "
+                  "ingredient si totaluri estimate per reteta, cu semnalarea ingredientelor fara date sau neconvertibile.")
 
     h.heading(doc, "Dezvoltarea aplicatiei WPF", level=3)
     h.body(doc,
@@ -222,18 +236,21 @@ def continut(doc, h):
         "native precum DatePicker, Calendar, Menu, ToolTip si ScrollBar au fost retematizate prin stiluri "
         "implicite (fara cheie), astfel incat intreaga aplicatie ramane consecventa vizual.")
     h.body(doc, "Aplicatia a fost construita incremental, pe ecranele descrise in specificatia de design:")
-    h.bullet(doc, "Autentificare — inregistrare, conectare, profil, schimbarea parolei.")
+    h.bullet(doc, "Autentificare — inregistrare, conectare, profil, schimbarea parolei si resetarea parolei uitate.")
     h.bullet(doc, "Acasa — tablou de bord cu indicatori (KPI) si retete recente.")
     h.bullet(doc, "Retete — lista, vederea de detaliu si editorul (ingrediente introduse ca tabel, "
-                  "salvare protejata de concurenta optimista).")
-    h.bullet(doc, "Ingrediente — lista (plata sau grupata pe categorii) cu cautare instantanee; Frigider "
-                  "(camara) cu adaugare/editare/stergere; Lista de cumparaturi cu interval de date, export "
-                  "Excel si tiparire.")
+                  "salvare protejata de concurenta optimista), cu drafturi pentru retete incomplete si "
+                  "fotografie optionala per reteta.")
+    h.bullet(doc, "Ingrediente — lista (plata sau grupata pe categorii) cu cautare instantanee; editor de "
+                  "nutritie per ingredient; Frigider (camara) cu adaugare/editare/stergere; Lista de "
+                  "cumparaturi cu interval de date, export Excel si tiparire.")
     h.bullet(doc, "Planificare — calendar de mese in doua vederi (lunar 6×7 si saptamanal 7×4), cu dialog "
                   "de adaugare/editare/stergere a unei mese si scurtatura „Adauga la plan” din detaliul retetei.")
     h.bullet(doc, "Rapoarte — trei sub-module: statistici lunare (indicatori, defalcare pe categorii de masa, "
                   "top retete si top ingrediente), plan saptamanal pentru tiparire si lista de cumparaturi pentru "
                   "tiparire, ambele cu tiparire si export Excel.")
+    h.bullet(doc, "Finalizare si distributie — fereastra de incarcare dupa autentificare, sablon sigur pentru "
+                  "appsettings.Local.json si profil de publicare Windows x64 self-contained single-file.")
 
     h.heading(doc, "Metodologia de lucru", level=3)
     h.body(doc,
@@ -320,6 +337,21 @@ def continut(doc, h):
             ["Planificarea unei mese",
              "Reteta + data + slot (mic dejun/pranz/cina/gustare) din dialogul de plan",
              "Masa apare in calendarul lunar si saptamanal; se poate edita sau sterge."],
+            ["Resetare parola uitata",
+             "Username/e-mail + e-mail cont + parola noua",
+             "Parola se reseteaza prin sp_ResetForgottenPassword; reutilizarea unei parole recente este respinsa."],
+            ["Salvare draft reteta",
+             "Reteta incompleta (titlu sau ingrediente lipsa)",
+             "Draftul se salveaza in RecipeDrafts si poate fi redeschis sau sters ulterior."],
+            ["Fotografie reteta",
+             "Imagine selectata din fisier",
+             "Aplicatia o redimensioneaza si o salveaza JPEG in RecipePhotos; poate fi schimbata sau stearsa."],
+            ["Nutritie reteta",
+             "Ingrediente cu valori nutritionale completate si unitati convertibile",
+             "Se afiseaza totaluri si valori per portie; ingredientele fara date sunt numarate separat."],
+            ["Publicare executabil Windows",
+             "Rulare App\\publish-windows-exe.cmd pe Windows",
+             "Se obtine MealPrepApp.exe self-contained single-file in folderul de publish."],
             ["Statistici lunare",
              "Selectarea unei luni cu mese planificate",
              "Total mese, retete/ingrediente distincte, top 5 retete si top 10 ingrediente."],
@@ -335,16 +367,18 @@ def continut(doc, h):
     h.figure_placeholder(doc, "Ecranul de autentificare (Conectare / Inregistrare).")
     h.figure_placeholder(doc, "Tabloul de bord (Acasa) cu indicatori si retete recente.")
     h.figure_placeholder(doc, "Lista de retete si vederea de detaliu a unei retete.")
-    h.figure_placeholder(doc, "Editorul de reteta, cu tabelul editabil de ingrediente.")
-    h.figure_placeholder(doc, "Modulul Ingrediente: Frigider (camara) si Lista de cumparaturi.")
+    h.figure_placeholder(doc, "Editorul de reteta, cu tabelul editabil de ingrediente si optiunea Salveaza ca draft.")
+    h.figure_placeholder(doc, "Detaliul retetei, cu fotografie optionala si nutritie estimata.")
+    h.figure_placeholder(doc, "Modulul Ingrediente: Frigider (camara), editor de nutritie si Lista de cumparaturi.")
     h.figure_placeholder(doc, "Modulul Planificare (calendar lunar / saptamanal) si dialogul de adaugare masa.")
     h.figure_placeholder(doc, "Modulul Rapoarte: statistici lunare (indicatori, top retete si ingrediente).")
     h.figure_placeholder(doc, "Modulul Rapoarte: plan saptamanal / lista de cumparaturi pentru tiparire.")
     h.body(doc,
-        "In urma testarii, toate fluxurile aplicatiei (autentificare, gestionarea retetelor, a ingredientelor "
-        "si a camarii, generarea listei de cumparaturi, planificarea meselor in calendar si rapoartele lunare) "
-        "functioneaza conform cerintelor, confirmate pe masina virtuala Windows 11. Mesajele de eroare sunt "
-        "afisate stilizat, in limba romana, fara blocarea aplicatiei.")
+        "In urma testarii, toate fluxurile aplicatiei (autentificare si resetare parola, gestionarea retetelor, "
+        "drafturilor, fotografiilor, ingredientelor, nutritiei si camarii, generarea listei de cumparaturi, "
+        "planificarea meselor in calendar, rapoartele lunare si publicarea executabilului Windows) functioneaza "
+        "conform cerintelor, confirmate pe masina virtuala Windows 11. Mesajele de eroare sunt afisate "
+        "stilizat, in limba romana, fara blocarea aplicatiei.")
 
 
 def _extract_proc(sql_text, proc_name):
@@ -401,8 +435,9 @@ def concluzie(doc, h):
         "asigurata prin constrangeri explicite (O1), expusa printr-un API de proceduri stocate pe principiul "
         "privilegiului minim, ceea ce face injectia SQL imposibila structural din partea aplicatiei (O2). "
         "Peste acest API a fost dezvoltata o aplicatie desktop WPF, organizata dupa sablonul MVVM (O3), care "
-        "implementeaza autentificarea cu blocare anti-brute-force, gestionarea retetelor, a ingredientelor si "
-        "a camarii, lista de cumparaturi calculata si modulele de planificare si raportare (O4). Intregul "
+        "implementeaza autentificarea cu blocare anti-brute-force si resetare parola, gestionarea retetelor, "
+        "drafturilor, fotografiilor, ingredientelor, camarii si nutritiei, lista de cumparaturi calculata, "
+        "modulele de planificare si raportare, plus publicarea ca executabil Windows (O4). Intregul "
         "proces a fost documentat in Obsidian si versionat in Git, cu sprijinul unui asistent AI (O5).")
     h.body(doc,
         "Importanta lucrarii consta in faptul ca reproduce, la scara unui proiect didactic, deciziile reale "
@@ -427,11 +462,11 @@ def concluzie(doc, h):
     h.heading(doc, "Directii de dezvoltare viitoare", level=2)
     h.body(doc, "Plecand chiar de la ceea ce nu a fost realizat in versiunea actuala, se contureaza urmatoarele "
                 "directii de continuare:")
-    h.bullet(doc, "Adaugarea unui ingredient nou direct din editorul de retete, atunci cand acesta nu exista.")
-    h.bullet(doc, "Functia de resetare a parolei din ecranul de autentificare.")
-    h.bullet(doc, "Atasarea de fotografii la retete si salvarea ciornelor (drafts).")
-    h.bullet(doc, "Conversia aplicatiei intr-un executabil (.exe) distribuibil si un ecran de incarcare.")
-    h.bullet(doc, "Un strat de conversie intre unitati de masura pentru camara si lista de cumparaturi.")
+    h.bullet(doc, "Adaugarea unui ingredient nou direct din editorul de retete, atunci cand acesta nu exista in lista globala.")
+    h.bullet(doc, "Extinderea nutritiei cu surse externe/import CSV, pentru a evita introducerea manuala a valorilor la fiecare ingredient.")
+    h.bullet(doc, "Conversii mai avansate intre unitati pentru camara si lista de cumparaturi, inclusiv conversii dependente de densitatea ingredientului (de exemplu cani ↔ grame).")
+    h.bullet(doc, "User-private ingredients, daca aplicatia va fi folosita de mai multi utilizatori cu liste personale.")
+    h.bullet(doc, "Un instalator Windows complet (MSIX/Setup) si un mecanism de backup/restaurare pentru baza de date.")
 
     h.heading(doc, "Comentariu personal", level=2)
     h.body(doc,

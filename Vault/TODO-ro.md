@@ -1,56 +1,50 @@
 ---
-tags: [todo]
+tags: [todo, ro]
 ---
 
-# TODO
+# TODO (Romana)
 
-Lista de verificare in desfasurare. Bifeaza pe masura ce sunt facute. Cele mai recente in partea de sus a fiecarei sectiuni.
+Lista de verificare in desfasurare. Cele mai recente iteme sunt sus.
 
 ## Acum
-- [ ] Faza G (Planificare) — UI calendar de planificare mese peste procedurile `MealPlanEntries` existente
-- [ ] Faza H (Rapoarte + slefuire) — ecrane dashboard/rapoarte (`sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`)
+- [ ] **Verificare publish/runtime Windows exe** — ruleaza `App\publish-windows-exe.cmd` pe masina/VM-ul Windows al Ritei; confirma ca `MealPrepApp.exe` este creat si porneste cu un `appsettings.Local.json` valid
 
 ## Curand
-- [ ] Optional: adauga view-uri de comoditate pentru explorare ad-hoc in DataGrip (doar citire, grant-uri de rol separate daca sunt expuse aplicatiei)
-- [ ] Optional: adauga un rol de administrator pentru migrari distinct de `sa`
-- [ ] Optional: `sp_GetAuditForUser` daca aplicatia vrea un feed "activitatea ta"
+- [ ] ~~Optional: adauga view-uri de comoditate pentru explorare ad-hoc in DataGrip (read-only, grant-uri separate daca ar fi expuse aplicatiei)~~
+- [ ] ~~Optional: adauga un rol de administrator pentru migrari, separat de `sa`~~
+- [ ] ~~Optional: `sp_GetAuditForUser` daca aplicatia va avea un feed "activitatea ta"~~
 
-## Poate Mai Tarziu (in afara scopului v1, vezi [[Decisions Log-ro]])
-- [ ] Tabele de planuri de masa / programare saptamanala
-- [ ] Generarea listei de cumparaturi
-- [ ] Urmarirea nutritiei (calorii, macronutrienti per ingredient)
-- [ ] Rating-uri / favorite pentru retete
-- [ ] Fotografii / atasamente de imagini
-- [ ] Ingrediente private per utilizator (adauga UserID nullable la [[Ingredients-ro]])
+## Poate mai tarziu (in afara scopului v1, vezi [[Decisions Log-ro]])
+- [ ] Ingrediente private per utilizator (adauga `UserID` nullable la [[Ingredients-ro]])
 
 ## Facute
-- [x] **Restilizare UI confirmata pe PC-ul Margaritei + un VM de Windows 11** — dropdown-uri/cautare-live, ferestre fara chrome nativ (`WindowChrome`), `MessageDialog` stilizat (Info/Confirm/Error), DatePicker/Calendar/Menu/ToolTip/ScrollBar tematizate prin stiluri implicite globale — vezi [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome-ro]]
-- [x] **`App/` commit-uit in git** — proiectul nu mai e doar DB; `.gitignore` radacina + `CLAUDE.md` actualizate; `appsettings.Local.json`/`bin`/`obj`/`App/*.zip` raman afara; `bgIsolation` revocat la implicit
-- [x] Faza F (Ingrediente / Frigider / Lista cumparaturi) confirmata ca functioneaza pe PC-ul Margaritei
-- [x] Margarita: revizuieste macheta Canva conform specificatiei de design din Faza 4
-- [x] Reimprospateaza DataGrip si confirma ca cele 12 tabele + 38 proceduri + tipul `IntList` apar
-- [x] Fazele A–E ale aplicatiei WPF (Schelet/Infra, Modele/Date, Auth, Shell/Acasa, Retete) confirmate ca functioneaza pe PC-ul Margaritei — vezi [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built-ro]]
-- [x] Conectat aplicatia .NET ca `mealprep_app` (nu `sa`); connection string-ul sta in `appsettings.Local.json` (in `.gitignore`)
-- [x] Seed-ul de ingrediente tradus in romana (fara diacritice, urmand conventia din IngredientCategories); JOIN-ul de backfill al categoriilor actualizat; `AppPassword` are default gol in `09_app_role.sql` astfel incat rebuild-urile nu mai au nevoie de `-v AppPassword=...`. Rebuild curat verificat — vezi [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default-ro]]
-- [x] Faza 4 — Finalizare design + adaugari DB: blocate deciziile pentru auth/navigare/click/calendar/categorii/rapoarte/iesire/scurtatura-plan; adaugat tabel `IngredientCategories` + FK + seed cu 8 categorii + backfill al celor 44 de ingrediente; adaugate `sp_GetUserProfile` (citire sigura), `sp_GetIngredientCategories`, `sp_GetMonthlyStats`, `sp_GetTopRecipes`, `sp_GetTopIngredients`; extins `sp_GetIngredients` cu filtru opțional pe categorie
-- [x] Faza 3 — Planificare mese + camara + lista de cumparaturi: `MealPlanEntries`, `RecipeFavorites`, `UserPantry`, 14 proceduri noi (plan/unplan/saptamanal/lunar, toggle favorite, upsert pantry via MERGE, lista de cumparaturi calculata cu scalare portii, contoare dashboard + retete recente)
-- [x] Faza 2.5 — Slefuire DB: ingrediente populate (~44), goluri de index FK inchise, `RowVersion` pe Recipes pentru concurenta optimista (THROW 50004), `sp_FindRecipesByIngredients` rescrisa ca single GROUP BY + LEFT JOIN la TVP, nou `sp_GetIngredientUsage`
-- [x] Faza 2 — Strat API aplicatie + securitate: 18 stored procedures, login `mealprep_app` cu privilegii reduse, `DENY` pe DML direct, audit log, istoric parole, blocare cont (5/15min)
-- [x] `run_all.sql` end-to-end ruleaza curat si idempotent
-- [x] Verificat ca login-ul aplicatiei poate EXEC proceduri dar nu poate SELECT/INSERT/UPDATE/DELETE direct pe tabele (ownership chaining acopera mutatiile)
-- [x] Rulat `run_all.sql` impotriva containerului Docker prin `sqlcmd` — toate cele 6 tabele create, 12 unitati + 6 categorii populate
-- [x] Verificat ca constrangerile CHECK se declanseaza (Quantity > 0, PrepTime/CookTime >= 0, Servings > 0, UnitType in setul permis)
-- [x] Verificat ca constrangerile UNIQUE se declanseaza (Users.Username, RecipeIngredients(RecipeID, IngredientID))
-- [x] Verificat `ON DELETE CASCADE` pe Recipes → RecipeIngredients functioneaza
-- [x] Verificat RESTRICT pe stergere Ingredient (blocheaza daca este in uz)
-- [x] Structura folderelor de proiect
-- [x] `00_create_database.sql` — `MealPrepDB`
-- [x] `01_users.sql` — [[Users-ro]]
-- [x] `02_units.sql` — [[Units-ro]]
-- [x] `03_categories.sql` — [[Categories-ro]]
-- [x] `04_ingredients.sql` — [[Ingredients-ro]]
-- [x] `05_recipes.sql` — [[Recipes-ro]]
-- [x] `06_recipe_ingredients.sql` — [[RecipeIngredients-ro]]
-- [x] `seeds/units_seed.sql`, `seeds/categories_seed.sql`
-- [x] Script master `run_all.sql`
-- [x] Vault Obsidian schelet
+- [x] **README si contraparti romanesti in Vault actualizate** — `README.md` documenteaza mai detaliat DB/app/features; au fost adaugate contraparti `-ro` lipsa pentru notele de baza de date si sesiuni; schema overview si indexurile au fost actualizate pentru drafturi, poze, conversii unitati si nutritie
+- [x] **Raportul de practica regenerat si verificat pe cerinte** — `Raport/Raport_practica.docx` si `.pdf` au fost regenerate; raportul reflecta functionalitatile finale (forgot password, drafturi, poze, loading, nutritie, Windows exe publishing) si include Anexa A5
+- [x] **Calea de publish Windows exe implementata** — profil win-x64 self-contained single-file, `App\publish-windows-exe.cmd`, template sigur `appsettings.Local.template.json` si instructiuni README; verificarea reala WPF ramane pe Windows
+- [x] **Seed comun de nutritie adaugat** — `seeds/ingredient_nutrition_seed.sql` insereaza valori demo pentru ingredientele comune si pastreaza valorile editate manual
+- [x] **Nutritia verificata pe masina/VM-ul Ritei** — editarea nutritiei ingredientelor si afisarea nutritiei pe reteta functioneaza
+- [x] **Fundatia de nutritie implementata** — `UnitConversions`, `IngredientNutrition`, proceduri de nutritie, dialog de editare si card `Nutritie estimata`
+- [x] **Resetarea parolei verificata pe masina/VM-ul Ritei** — flow-ul din login functioneaza end-to-end
+- [x] **Resetarea parolei implementata** — `Ai uitat parola?`, `ForgotPasswordDialog`, `sp_ResetForgottenPassword`
+- [x] **Itemul de ingredient lipsa din editor a fost abandonat** — Codrin a prioritizat forgot-password/change-password
+- [x] **Loading standalone si Photos UI verificate pe masina Ritei**
+- [x] **Fereastra standalone de loading inainte de shell implementata**
+- [x] **Loading screen dupa login implementat** — ulterior inlocuit de fereastra standalone pre-shell
+- [x] **Photos UI implementat** — adauga/schimba/sterge poza, persistenta prin proceduri si thumbnails in lista
+- [x] **Drafts UI verificat de Codrin** — flow open/save/delete functioneaza; wording-ul ramane `Drafts` / `Salveaza ca draft`
+- [x] **Drafts UI implementat** — repository, lista Drafts, open/delete si salvare draft din editor
+- [x] **Scripturile DB pentru drafturi/poze verificate prin `run_all.sql`**
+- [x] **Origin URL actualizat** — `https://github.com/Sklizm/MealPrepApp.git`
+- [x] **Branch-ul `fix-recipe-field-limits` merge-uit**
+- [x] **Planificare si Rapoarte livrate** — Planificare lunara/saptamanala, rapoarte, print/export
+- [x] **Crash-ul la salvare reteta rezolvat** — duplicat ingredient + mapare erori SQL
+- [x] **Restilizare UI confirmata pe PC-ul Ritei + VM Windows 11**
+- [x] **`App/` commit-uit in git** — proiectul nu mai este doar DB
+- [x] Faza F (Ingrediente / Frigider / Lista cumparaturi) confirmata pe PC-ul Ritei
+- [x] Fazele A-E WPF confirmate pe PC-ul Ritei
+- [x] Seed ingrediente tradus in romana fara diacritice; `AppPassword` default gol pentru rebuild-uri
+- [x] Faza 4 — design + `IngredientCategories` + proceduri profil/rapoarte
+- [x] Faza 3 — meal planning, favorite, pantry, shopping list
+- [x] Faza 2.5 — seed ingrediente, indexuri FK, `RowVersion`, optimizare find-by-ingredients
+- [x] Faza 2 — API + securitate, `mealprep_app`, audit, password history, lockout
+- [x] Faza 1 — schema de baza, seed-uri, `run_all.sql`, vault Obsidian
