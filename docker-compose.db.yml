@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mealprep-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mealprep-db
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-MealPrepSecure2026!}"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mealprep_data:/var/opt/mssql
+      - ./Database:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  mealprep_data:

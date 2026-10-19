@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Planificare"
+             xmlns:views="using:MealPrepApp.Desktop.Views.Planificare"
+             x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareRootView"
+             x:DataType="vm:PlanificareRootViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:PlanificareMonthlyViewModel}">
+            <views:PlanificareMonthlyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlanificareWeeklyViewModel}">
+            <views:PlanificareWeeklyView />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Segmented toggle: Lunar / Saptamanal -->
+        <Border Grid.Row="0" Margin="24,16,24,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <RadioButton Content="Lunar" Classes="Tab" GroupName="PlanView"
+                             Command="{Binding ShowLunarCommand}"
+                             IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Lunar}" />
+                <RadioButton Content="Saptamanal" Classes="Tab" GroupName="PlanView"
+                             Command="{Binding ShowSaptamanalCommand}"
+                             IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Saptamanal}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Sub-View Region -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentSubView}" />
+    </Grid>
+</UserControl>

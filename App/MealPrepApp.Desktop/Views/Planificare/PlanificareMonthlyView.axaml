@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Planificare"
+             xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareMonthlyView"
+             x:DataType="vm:PlanificareMonthlyViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.Styles>
+        <Style Selector="Button.DayCell">
+            <Setter Property="Background" Value="{StaticResource Cream2Brush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
+            <Setter Property="BorderThickness" Value="0.5" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="MinHeight" Value="80" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="Button.DayCell:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource MossLightBrush}" />
+        </Style>
+
+        <Style Selector="Button.MealChip">
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Padding" Value="5,2" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.MealChip:pointerover /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.85" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="24,8,24,16">
+        <!-- Month navigation -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
+            <Button DockPanel.Dock="Left" Content="◀" Classes="Secondary"
+                    Command="{Binding PrevMonthCommand}" />
+            <Button DockPanel.Dock="Left" Content="Azi" Classes="Secondary"
+                    Margin="8,0,0,0" Command="{Binding TodayCommand}" />
+            <Button DockPanel.Dock="Right" Content="▶" Classes="Secondary"
+                    Command="{Binding NextMonthCommand}" />
+            <TextBlock Text="{Binding MonthLabel}"
+                       FontWeight="Bold" FontSize="{StaticResource FontSizeHeader}"
+                       VerticalAlignment="Center" Margin="20,0,0,0" />
+        </DockPanel>
+
+        <!-- Weekday headers -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding WeekdayHeaders}" Margin="0,0,0,6">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="7" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" Classes="Muted"
+                               HorizontalAlignment="Center" FontWeight="SemiBold" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 6x7 day grid -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Days}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="6" Columns="7" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DayCellViewModel">
+                        <Button Classes="DayCell"
+                                Opacity="{Binding IsCurrentMonth, Converter={StaticResource BoolToOpacity}}"
+                                Command="{Binding ((vm:PlanificareMonthlyViewModel)DataContext).AddOnDayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}">
+                            <StackPanel Spacing="2">
+                                <Border Background="{Binding IsToday, Converter={StaticResource IsTodayToBrush}}"
+                                        CornerRadius="3" Padding="5,1" HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding DayNumber}" FontWeight="SemiBold" />
+                                </Border>
+                                <ItemsControl ItemsSource="{Binding Entries}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:MealPlanEntry">
+                                            <Button Classes="MealChip"
+                                                    Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}"
+                                                    Command="{Binding ((vm:PlanificareMonthlyViewModel)DataContext).EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="{Binding RecipeTitle}"
+                                                           Foreground="{StaticResource CreamBrush}"
+                                                           FontSize="{StaticResource FontSizeSmall}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

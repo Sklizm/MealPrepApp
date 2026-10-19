@@ -69,6 +69,7 @@ public partial class App : Application
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IFilePickerService, WpfFilePickerService>();
 
         // Shell — one per session; ShellViewModel is also the IShellNavigator.
         services.AddSingleton<ShellViewModel>();

@@ -79,11 +79,12 @@
                 <!-- Recipe photo -->
                 <Border Style="{StaticResource Card}" Margin="0,24,0,0" Padding="0"
                         HorizontalAlignment="Stretch"
-                        Visibility="{Binding DataContext.PhotoSource,
+                        Visibility="{Binding DataContext.PhotoBytes,
                                              RelativeSource={RelativeSource AncestorType=UserControl},
                                              Converter={StaticResource NotNullToVisibility}}">
-                    <Image Source="{Binding DataContext.PhotoSource,
-                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    <Image Source="{Binding DataContext.PhotoBytes,
+                                            RelativeSource={RelativeSource AncestorType=UserControl},
+                                            Converter={StaticResource ByteArrayToImageSource}}"
                            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=StackPanel}}"
                            Stretch="Uniform" />
                 </Border>

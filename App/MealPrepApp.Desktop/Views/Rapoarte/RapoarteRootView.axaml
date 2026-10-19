@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte"
+             xmlns:views="using:MealPrepApp.Desktop.Views.Rapoarte"
+             x:Class="MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView"
+             x:DataType="vm:RapoarteRootViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:StatisticiLunareViewModel}">
+            <views:StatisticiLunareView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlanSaptamanalPrintViewModel}">
+            <views:PlanSaptamanalPrintView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ListaCumparaturiPrintViewModel}">
+            <views:ListaCumparaturiPrintView />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Segmented toggle tabs -->
+        <Border Grid.Row="0" Margin="24,16,24,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <RadioButton Content="Statistici lunare" Classes="Tab" GroupName="ReportView"
+                             Command="{Binding ShowStatisticiCommand}"
+                             IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Statistici}" />
+                <RadioButton Content="Plan saptamanal" Classes="Tab" GroupName="ReportView"
+                             Command="{Binding ShowPlanPrintCommand}"
+                             IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=PlanPrint}" />
+                <RadioButton Content="Lista cumparaturi" Classes="Tab" GroupName="ReportView"
+                             Command="{Binding ShowListaPrintCommand}"
+                             IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=ListaPrint}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Sub-View Region -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentSubView}" />
+    </Grid>
+</UserControl>

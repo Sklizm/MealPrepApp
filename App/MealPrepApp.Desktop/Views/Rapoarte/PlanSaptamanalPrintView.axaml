@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte"
+             x:Class="MealPrepApp.Desktop.Views.Rapoarte.PlanSaptamanalPrintView"
+             x:DataType="vm:PlanSaptamanalPrintViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Text="Plan saptamanal"
+                   FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold"
+                   Margin="0,0,0,16" />
+
+        <!-- Toolbar -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,16" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
+                <Button Content="‹" Classes="Secondary" Command="{Binding PreviousWeekCommand}" />
+                <DatePicker SelectedDate="{Binding SelectedDate, Converter={StaticResource DateTimeToDateTimeOffset}}"
+                            VerticalAlignment="Center" />
+                <Button Content="›" Classes="Secondary" Command="{Binding NextWeekCommand}" />
+                <Button Content="Afiseaza" Classes="Primary" Command="{Binding GenereazaCommand}" />
+                <TextBlock Text="{Binding WeekLabel}" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="12,0,0,0" />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                <Button Content="Export Excel" Classes="Secondary"
+                        Command="{Binding ExportExcelCommand}"
+                        IsEnabled="{Binding Days.Count, Converter={StaticResource NonEmptyToBool}}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Error message -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding HasError}" />
+
+        <!-- Weekly Plan DataGrid -->
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Days}"
+                  IsReadOnly="True" CanUserResizeColumns="True"
+                  HeadersVisibility="Column" GridLinesVisibility="All">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Zi" Binding="{Binding Day}" Width="130" />
+                <DataGridTextColumn Header="Mic dejun" Binding="{Binding Breakfast}" Width="*" />
+                <DataGridTextColumn Header="Pranz" Binding="{Binding Lunch}" Width="*" />
+                <DataGridTextColumn Header="Cina" Binding="{Binding Dinner}" Width="*" />
+                <DataGridTextColumn Header="Gustare" Binding="{Binding Snack}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

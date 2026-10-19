@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Retete"
+             xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Retete.ReteteDetailView"
+             x:DataType="vm:ReteteDetailViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="32">
+        <!-- Error -->
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" VerticalAlignment="Top"
+                   IsVisible="{Binding HasError}" />
+
+        <ScrollViewer IsVisible="{Binding Recipe, Converter={StaticResource NotNullToBool}}">
+            <StackPanel MaxWidth="760" HorizontalAlignment="Left" Spacing="12">
+
+                <!-- Header: title + actions -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding Recipe.Title}" Classes="Title"
+                               TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="Secondary" Command="{Binding ToggleFavoriteCommand}"
+                                Content="{Binding IsFavorite, Converter={StaticResource StringEquals}, ConverterParameter=True, FallbackValue='☆ Favorite'}" />
+                        <Button Content="Adauga la plan" Classes="Primary"
+                                Command="{Binding AddToPlanCommand}" />
+                        <Button Content="Editeaza" Classes="Secondary"
+                                Command="{Binding EditCommand}" />
+                        <Button Content="Sterge" Classes="Danger"
+                                Command="{Binding DeleteCommand}" />
+                        <Button Content="Inapoi" Classes="Secondary"
+                                Command="{Binding BackCommand}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Meta row -->
+                <WrapPanel Margin="0,4,0,0">
+                    <Border Background="{StaticResource MossBrush}" CornerRadius="3" Padding="8,3"
+                            Margin="0,0,12,0"
+                            IsVisible="{Binding Recipe.CategoryName, Converter={StaticResource NotNullToBool}}">
+                        <TextBlock Text="{Binding Recipe.CategoryName}" Foreground="{StaticResource CreamBrush}"
+                                   FontSize="11" />
+                    </Border>
+                    <TextBlock Classes="Muted" Margin="0,0,12,0"
+                               Text="{Binding Recipe.PrepTimeMinutes, StringFormat='Preparare: {0} min'}" />
+                    <TextBlock Classes="Muted" Margin="0,0,12,0"
+                               Text="{Binding Recipe.CookTimeMinutes, StringFormat='Gatire: {0} min'}" />
+                    <TextBlock Classes="Muted" Margin="0,0,12,0"
+                               Text="{Binding Recipe.Servings, StringFormat='Portii: {0}'}" />
+                    <TextBlock Classes="Muted"
+                               Text="{Binding Recipe.AuthorUsername, StringFormat='Autor: {0}'}" />
+                </WrapPanel>
+
+                <!-- Recipe photo -->
+                <Border Classes="Card" Padding="0" ClipToBounds="True" MaxHeight="340"
+                        IsVisible="{Binding HasPhoto}">
+                    <Image Source="{Binding PhotoBytes, Converter={StaticResource ByteArrayToBitmap}}"
+                           Stretch="Uniform" />
+                </Border>
+
+                <!-- Photo actions -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Classes="Secondary" Command="{Binding ChoosePhotoCommand}"
+                            Content="{Binding HasPhoto, Converter={StaticResource StringEquals}, ConverterParameter=True, FallbackValue='Adauga poza'}" />
+                    <Button Content="Sterge poza" Classes="Danger"
+                            Command="{Binding DeletePhotoCommand}"
+                            IsVisible="{Binding HasPhoto}" />
+                </StackPanel>
+
+                <!-- Description -->
+                <StackPanel Spacing="4" IsVisible="{Binding Recipe.Description, Converter={StaticResource NotNullToBool}}">
+                    <TextBlock Text="Descriere" Classes="Header" />
+                    <TextBlock Text="{Binding Recipe.Description}" Classes="Body" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Instructions -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Instructiuni" Classes="Header" />
+                    <TextBlock Text="{Binding Recipe.Instructions}" Classes="Body" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Ingredients -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Ingrediente" Classes="Header" />
+                    <Border Classes="Card">
+                        <ItemsControl ItemsSource="{Binding Recipe.Ingredients}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:RecipeIngredientLine">
+                                    <Grid ColumnDefinitions="2*,60,60,3*" Margin="0,3">
+                                        <TextBlock Grid.Column="0" Text="{Binding IngredientName}" Classes="Body" />
+                                        <TextBlock Grid.Column="1" Classes="Body" HorizontalAlignment="Right" Margin="0,0,8,0"
+                                                   Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding UnitAbbreviation}" Classes="Muted" Margin="0,0,12,0" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Notes}" Classes="Muted" TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+
+                <!-- Nutrition -->
+                <StackPanel Spacing="6" IsVisible="{Binding Nutrition, Converter={StaticResource NotNullToBool}}">
+                    <TextBlock Text="Nutritie estimata" Classes="Header" />
+                    <Border Classes="Card">
+                        <UniformGrid Columns="4" Margin="4">
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Total kcal" Classes="Muted" />
+                                <TextBlock Text="{Binding Nutrition.TotalCalories, StringFormat='{}{0:0.##}'}" Classes="Body" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Proteine" Classes="Muted" />
+                                <TextBlock Text="{Binding Nutrition.TotalProteinGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,0">
+                                <TextBlock Text="Carbohidrati" Classes="Muted" />
+                                <TextBlock Text="{Binding Nutrition.TotalCarbsGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Grasimi" Classes="Muted" />
+                                <TextBlock Text="{Binding Nutrition.TotalFatGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </UniformGrid>
+                    </Border>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,95 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:MealPrepApp.Desktop.Converters"
+             xmlns:vm="using:MealPrepApp.ViewModels"
+             xmlns:authvm="using:MealPrepApp.ViewModels.Auth"
+             xmlns:retetevm="using:MealPrepApp.ViewModels.Retete"
+             xmlns:ingvm="using:MealPrepApp.ViewModels.Ingrediente"
+             xmlns:planvm="using:MealPrepApp.ViewModels.Planificare"
+             xmlns:rapvm="using:MealPrepApp.ViewModels.Rapoarte"
+             xmlns:views="using:MealPrepApp.Desktop.Views"
+             xmlns:authviews="using:MealPrepApp.Desktop.Views.Auth"
+             xmlns:reteteviews="using:MealPrepApp.Desktop.Views.Retete"
+             xmlns:ingviews="using:MealPrepApp.Desktop.Views.Ingrediente"
+             xmlns:planviews="using:MealPrepApp.Desktop.Views.Planificare"
+             xmlns:rapviews="using:MealPrepApp.Desktop.Views.Rapoarte"
+             x:Class="MealPrepApp.Desktop.App"
+             RequestedThemeVariant="Light">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Themes/Colors.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:InverseBooleanConverter x:Key="InverseBool" />
+            <conv:NotNullToBoolConverter x:Key="NotNullToBool" />
+            <conv:EmptyCollectionToBoolConverter x:Key="EmptyToBool" />
+            <conv:NonEmptyCollectionToBoolConverter x:Key="NonEmptyToBool" />
+            <conv:StringEqualsConverter x:Key="StringEquals" />
+            <conv:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmap" />
+            <conv:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffset" />
+            <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+            <conv:IsTodayToBrushConverter x:Key="IsTodayToBrush" />
+            <conv:CategoryIdToBrushConverter x:Key="CategoryIdToBrush" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="/Themes/Styles.axaml" />
+    </Application.Styles>
+
+    <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:AcasaViewModel}">
+            <views:AcasaView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type authvm:ProfileViewModel}">
+            <authviews:ProfileView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type retetevm:ReteteListViewModel}">
+            <reteteviews:ReteteListView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type retetevm:ReteteDetailViewModel}">
+            <reteteviews:ReteteDetailView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type retetevm:ReteteEditorViewModel}">
+            <reteteviews:ReteteEditorView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type ingvm:IngredienteRootViewModel}">
+            <ingviews:IngredienteRootView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type ingvm:IngredienteListViewModel}">
+            <ingviews:IngredienteListView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type ingvm:FrigiderViewModel}">
+            <ingviews:FrigiderView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type ingvm:ShoppingListViewModel}">
+            <ingviews:ShoppingListView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type planvm:PlanificareRootViewModel}">
+            <planviews:PlanificareRootView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type planvm:PlanificareWeeklyViewModel}">
+            <planviews:PlanificareWeeklyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type planvm:PlanificareMonthlyViewModel}">
+            <planviews:PlanificareMonthlyView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type rapvm:RapoarteRootViewModel}">
+            <rapviews:RapoarteRootView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type rapvm:StatisticiLunareViewModel}">
+            <rapviews:StatisticiLunareView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type rapvm:PlanSaptamanalPrintViewModel}">
+            <rapviews:PlanSaptamanalPrintView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type rapvm:ListaCumparaturiPrintViewModel}">
+            <rapviews:ListaCumparaturiPrintView />
+        </DataTemplate>
+    </Application.DataTemplates>
+
+</Application>

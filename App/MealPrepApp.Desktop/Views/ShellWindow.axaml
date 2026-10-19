@@ -1,0 +1,100 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shellvm="using:MealPrepApp.ViewModels.Shell"
+        x:Class="MealPrepApp.Desktop.Views.ShellWindow"
+        x:DataType="shellvm:ShellViewModel"
+        Title="Planificator de Retete si Mese"
+        Width="1040" Height="700"
+        MinWidth="940" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource CreamBrush}"
+        FontFamily="{StaticResource AppFontFamily}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="44">
+
+    <!-- macOS native top screen menu bar -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="Planificator">
+                <NativeMenu>
+                    <NativeMenuItem Header="Profil" Command="{Binding ShowProfileCommand}" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Iesi din cont" Command="{Binding SignOutCommand}" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Navigare">
+                <NativeMenu>
+                    <NativeMenuItem Header="Acasa" Command="{Binding ShowAcasaCommand}" />
+                    <NativeMenuItem Header="Retete" Command="{Binding ShowReteteCommand}" />
+                    <NativeMenuItem Header="Ingrediente" Command="{Binding ShowIngredienteCommand}" />
+                    <NativeMenuItem Header="Planificare" Command="{Binding ShowPlanificareCommand}" />
+                    <NativeMenuItem Header="Rapoarte" Command="{Binding ShowRapoarteCommand}" />
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Title bar with user menu -->
+        <Border Grid.Row="0" Background="{StaticResource DarkBrush}" Height="44">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Title (with left margin to avoid overlap with Mac traffic lights) -->
+                <TextBlock Grid.Column="0" Text="Planificator de Retete si Mese"
+                           Foreground="{StaticResource CreamBrush}"
+                           FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
+                           VerticalAlignment="Center" Margin="80,0,0,0" />
+
+                <!-- User actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0" Spacing="8">
+                    <Button Content="{Binding CurrentUsername}" Classes="Link"
+                            Foreground="{StaticResource CreamBrush}">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="Profil" Command="{Binding ShowProfileCommand}" />
+                                <MenuItem Header="Iesi din cont" Command="{Binding SignOutCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tab strip -->
+        <Border Grid.Row="1" Background="{StaticResource DarkBrush}" Height="44">
+            <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center" Spacing="4">
+                <RadioButton Content="Acasa" Classes="Tab" GroupName="Tabs"
+                             Command="{Binding ShowAcasaCommand}"
+                             IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Acasa}" />
+                <RadioButton Content="Retete" Classes="Tab" GroupName="Tabs"
+                             Command="{Binding ShowReteteCommand}"
+                             IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Retete}" />
+                <RadioButton Content="Ingrediente" Classes="Tab" GroupName="Tabs"
+                             Command="{Binding ShowIngredienteCommand}"
+                             IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Ingrediente}" />
+                <RadioButton Content="Planificare" Classes="Tab" GroupName="Tabs"
+                             Command="{Binding ShowPlanificareCommand}"
+                             IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Planificare}" />
+                <RadioButton Content="Rapoarte" Classes="Tab" GroupName="Tabs"
+                             Command="{Binding ShowRapoarteCommand}"
+                             IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Rapoarte}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content region (DataTemplates in App.axaml automatically resolve Views) -->
+        <ContentControl Grid.Row="2" Content="{Binding CurrentView}" />
+
+        <!-- Status bar -->
+        <Border Grid.Row="3" Background="{StaticResource DarkBrush}" Height="28">
+            <Grid Margin="12,0" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding StatusText}"
+                           Foreground="{StaticResource CreamBrush}"
+                           FontSize="{StaticResource FontSizeSmall}"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Planificator de Retete si Mese"
+                           Foreground="{StaticResource MossLightBrush}"
+                           FontSize="{StaticResource FontSizeSmall}"
+                           VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

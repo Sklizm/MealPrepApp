@@ -4,6 +4,7 @@
 # .NET build output (covers App/ and any future project)
 bin/
 obj/
+dist/
 .vs/
 
 # Local connection string — contains the mealprep_app password, never commit

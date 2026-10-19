@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte"
+             xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Rapoarte.ListaCumparaturiPrintView"
+             x:DataType="vm:ListaCumparaturiPrintViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Text="Lista de cumparaturi pentru tiparire"
+                   FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold"
+                   Margin="0,0,0,16" />
+
+        <!-- Toolbar -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,16" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="De la" Classes="Muted" VerticalAlignment="Center" />
+                <DatePicker SelectedDate="{Binding StartDate, Converter={StaticResource DateTimeToDateTimeOffset}}"
+                            VerticalAlignment="Center" />
+                <TextBlock Text="pana la" Classes="Muted" VerticalAlignment="Center" Margin="8,0,0,0" />
+                <DatePicker SelectedDate="{Binding EndDate, Converter={StaticResource DateTimeToDateTimeOffset}}"
+                            VerticalAlignment="Center" />
+                <Button Content="Genereaza" Classes="Primary" Margin="8,0,0,0"
+                        Command="{Binding GenereazaCommand}" />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                <Button Content="Export Excel" Classes="Secondary"
+                        Command="{Binding ExportExcelCommand}"
+                        IsEnabled="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Error message -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding HasError}" />
+
+        <!-- Content -->
+        <Grid Grid.Row="3">
+            <DataGrid ItemsSource="{Binding Rows}"
+                      IsReadOnly="True" CanUserResizeColumns="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                      IsVisible="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Ingredient" Binding="{Binding IngredientName}" Width="*" />
+                    <DataGridTextColumn Header="Necesar" Binding="{Binding NeededQty, StringFormat={}{0:0.##}}" Width="110" />
+                    <DataGridTextColumn Header="In frigider" Binding="{Binding OnHandQty, StringFormat={}{0:0.##}}" Width="110" />
+                    <DataGridTextColumn Header="De cumparat" Binding="{Binding ToBuyQty, StringFormat={}{0:0.##}}" Width="120" />
+                    <DataGridTextColumn Header="Unitate" Binding="{Binding UnitAbbreviation}" Width="100" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Empty / ungenerated state -->
+            <Border Background="{StaticResource Cream2Brush}" CornerRadius="8"
+                    Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsVisible="{Binding Rows.Count, Converter={StaticResource EmptyToBool}}">
+                <StackPanel HorizontalAlignment="Center" Spacing="6">
+                    <TextBlock Text="Selecteaza un interval si apasa Genereaza"
+                               FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Lista se calculeaza din mesele planificate, minus ce ai deja in frigider."
+                               Classes="Muted" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="380" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

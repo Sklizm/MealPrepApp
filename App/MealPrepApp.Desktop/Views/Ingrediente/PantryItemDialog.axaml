@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
+        xmlns:models="using:MealPrepApp.Models"
+        x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog"
+        x:DataType="vm:PantryItemDialogViewModel"
+        Title="{Binding Title}"
+        Width="420" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource CreamBrush}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Background="{StaticResource DarkBrush}" Height="40" Padding="16,0">
+            <TextBlock Text="{Binding Title}" Foreground="{StaticResource CreamBrush}"
+                       FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold"
+                       VerticalAlignment="Center" />
+        </Border>
+
+        <StackPanel Grid.Row="1" Margin="20" Spacing="8">
+            <TextBlock Text="Ingredient *" Classes="Muted" />
+            <ComboBox ItemsSource="{Binding Ingredients}"
+                      SelectedItem="{Binding SelectedIngredient}"
+                      IsEnabled="{Binding !IsEdit}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Ingredient">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock Text="Unitate *" Classes="Muted" />
+            <ComboBox ItemsSource="{Binding Units}"
+                      SelectedItem="{Binding SelectedUnit}"
+                      IsEnabled="{Binding !IsEdit}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Unit">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock Text="Cantitate *" Classes="Muted" />
+            <TextBox Text="{Binding Quantity}" Width="140" HorizontalAlignment="Left" />
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding HasError}" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="{StaticResource Cream2Brush}" Padding="16,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Renunta" Classes="Secondary" Click="OnCancelClick" />
+                <Button Content="Salveaza" Classes="Primary"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding !IsBusy}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

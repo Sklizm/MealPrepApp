@@ -1,0 +1,137 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         TextBlocks
+         ============================================================ -->
+    <Style Selector="TextBlock.Title">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.Header">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.Body">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.Muted">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{StaticResource MossDarkBrush}" />
+    </Style>
+
+    <!-- ============================================================
+         Buttons
+         ============================================================ -->
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="14,7" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <!-- Primary Button (Moss Green) -->
+    <Style Selector="Button.Primary, Button:not(.Secondary):not(.Danger):not(.Link):not(.Tab):not(.Chrome)">
+        <Setter Property="Background" Value="{StaticResource MossBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.Primary:pointerover, Button:not(.Secondary):not(.Danger):not(.Link):not(.Tab):not(.Chrome):pointerover">
+        <Setter Property="Opacity" Value="0.88" />
+    </Style>
+
+    <!-- Secondary Button (Cream / Outlined) -->
+    <Style Selector="Button.Secondary">
+        <Setter Property="Background" Value="{StaticResource CreamBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Danger Button (Red) -->
+    <Style Selector="Button.Danger">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- Link Button -->
+    <Style Selector="Button.Link">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MossDarkBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style Selector="Button.Link:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource MossBrush}" />
+    </Style>
+
+    <!-- Window Chrome Button (used for fallback windowing) -->
+    <Style Selector="Button.Chrome">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- ============================================================
+         TextBoxes
+         ============================================================ -->
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+        <Setter Property="Background" Value="#FFF7F2E4" />
+        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="CaretBrush" Value="{StaticResource DarkBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource MossLightBrush}" />
+    </Style>
+    <Style Selector="TextBox:focus">
+        <Setter Property="BorderBrush" Value="{StaticResource MossBrush}" />
+    </Style>
+
+    <!-- ============================================================
+         Card Panels
+         ============================================================ -->
+    <Style Selector="Border.Card">
+        <Setter Property="Background" Value="{StaticResource Cream2Brush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- ============================================================
+         Tab RadioButtons
+         ============================================================ -->
+    <Style Selector="RadioButton.Tab">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMenu}" />
+        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="18,8" />
+        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="RadioButton.Tab:checked /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource MossBrush}" />
+    </Style>
+    <Style Selector="RadioButton.Tab:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#33FFFFFF" />
+    </Style>
+
+</Styles>

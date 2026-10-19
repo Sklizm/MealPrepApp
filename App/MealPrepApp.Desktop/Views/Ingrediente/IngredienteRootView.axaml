@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
+             xmlns:views="using:MealPrepApp.Desktop.Views.Ingrediente"
+             x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteRootView"
+             x:DataType="vm:IngredienteRootViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:IngredienteListViewModel}">
+            <views:IngredienteListView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FrigiderViewModel}">
+            <views:FrigiderView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ShoppingListViewModel}">
+            <views:ShoppingListView />
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid ColumnDefinitions="200,*">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource DarkBrush}">
+            <StackPanel Margin="0,16,0,0" Spacing="4">
+                <RadioButton Content="Toate" Classes="Tab" GroupName="IngFilter"
+                             Command="{Binding ShowToateCommand}"
+                             IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Toate}" />
+                <RadioButton Content="Categorii" Classes="Tab" GroupName="IngFilter"
+                             Command="{Binding ShowCategoriiCommand}"
+                             IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Categorii}" />
+                <RadioButton Content="Frigider" Classes="Tab" GroupName="IngFilter"
+                             Command="{Binding ShowFrigiderCommand}"
+                             IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Frigider}" />
+                <RadioButton Content="Lista de cumparaturi" Classes="Tab" GroupName="IngFilter"
+                             Command="{Binding ShowCumparaturiCommand}"
+                             IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Sub-View Region -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentSubView}" />
+    </Grid>
+</UserControl>

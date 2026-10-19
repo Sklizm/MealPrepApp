@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MealPrepApp
+Comment=Cross-platform meal planning desktop application
+Exec=MealPrepApp.Desktop
+Icon=mealprep
+Terminal=false
+Categories=Utility;Office;
+StartupWMClass=MealPrepApp.Desktop

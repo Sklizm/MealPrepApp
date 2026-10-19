@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
+             x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView"
+             x:DataType="vm:ShoppingListViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="24" RowDefinitions="Auto,Auto,Auto,*">
+        <TextBlock Grid.Row="0" Text="Lista de cumparaturi" Classes="Title" Margin="0,0,0,16" />
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="0,0,0,16">
+            <TextBlock Grid.Column="0" Text="De la" Classes="Body" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding StartDate}" VerticalAlignment="Center" Width="140" />
+
+            <TextBlock Grid.Column="2" Text="pana la" Classes="Body" VerticalAlignment="Center" Margin="12,0,8,0" />
+            <CalendarDatePicker Grid.Column="3" SelectedDate="{Binding EndDate}" VerticalAlignment="Center" Width="140" />
+
+            <Button Grid.Column="4" Content="Genereaza" Classes="Primary"
+                    Command="{Binding GenerateCommand}" Margin="12,0,0,0" />
+
+            <Button Grid.Column="6" Content="Export Excel" Classes="Secondary"
+                    Command="{Binding ExportExcelCommand}"
+                    IsEnabled="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}" />
+        </Grid>
+
+        <!-- Error slot -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding HasError}" />
+
+        <Grid Grid.Row="3">
+            <DataGrid ItemsSource="{Binding Rows}"
+                      IsReadOnly="True"
+                      AutoGenerateColumns="False"
+                      CanUserResizeColumns="True"
+                      IsVisible="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Ingredient" Binding="{Binding IngredientName}" Width="*" />
+                    <DataGridTextColumn Header="Necesar" Binding="{Binding NeededQty, StringFormat={}{0:0.##}}" Width="110" />
+                    <DataGridTextColumn Header="In frigider" Binding="{Binding OnHandQty, StringFormat={}{0:0.##}}" Width="110" />
+                    <DataGridTextColumn Header="De cumparat" Binding="{Binding ToBuyQty, StringFormat={}{0:0.##}}" Width="120" />
+                    <DataGridTextColumn Header="Unitate" Binding="{Binding UnitAbbreviation}" Width="100" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Empty state -->
+            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsVisible="{Binding Rows.Count, Converter={StaticResource EmptyToBool}}">
+                <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
+                    <TextBlock Text="Selecteaza un interval si apasa Genereaza" Classes="Header" HorizontalAlignment="Center" />
+                    <TextBlock Text="Ingredientele necesare pentru mesele planificate vor aparea aici." Classes="Muted" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

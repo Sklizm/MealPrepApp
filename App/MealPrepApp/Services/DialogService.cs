@@ -1,13 +1,18 @@
 using System.Linq;
 using System.Windows;
+using MealPrepApp.ViewModels.Auth;
+using MealPrepApp.ViewModels.Ingrediente;
+using MealPrepApp.ViewModels.Planificare;
+using MealPrepApp.Views.Auth;
+using MealPrepApp.Views.Ingrediente;
+using MealPrepApp.Views.Planificare;
 using MealPrepApp.Views.Shared;
 
 namespace MealPrepApp.Services;
 
 /// <summary>
 /// Routes every confirm / error / info prompt through the styled
-/// <see cref="MessageDialog"/> so nothing in the app shows raw <see cref="MessageBox"/>
-/// chrome. Modal dialog opening (<see cref="ShowDialog{TWindow}"/>) is unchanged.
+/// <see cref="MessageDialog"/> and maps ViewModels to their WPF dialog windows.
 /// </summary>
 public sealed class DialogService : IDialogService
 {
@@ -19,6 +24,17 @@ public sealed class DialogService : IDialogService
 
     public void ShowInfo(string title, string message) =>
         MessageDialog.Show(MessageDialogKind.Info, title, message);
+
+    public bool ShowDialog(object viewModel) => viewModel switch
+    {
+        PlanMealDialogViewModel => ShowDialog<PlanMealDialog>(viewModel),
+        PantryItemDialogViewModel => ShowDialog<PantryItemDialog>(viewModel),
+        IngredientAddDialogViewModel => ShowDialog<IngredientAddDialog>(viewModel),
+        IngredientNutritionDialogViewModel => ShowDialog<IngredientNutritionDialog>(viewModel),
+        ChangePasswordViewModel => ShowDialog<ChangePasswordDialog>(viewModel),
+        ForgotPasswordViewModel => ShowDialog<ForgotPasswordDialog>(viewModel),
+        _ => throw new NotSupportedException($"No WPF dialog registered for ViewModel '{viewModel.GetType().Name}'.")
+    };
 
     public bool ShowDialog<TWindow>(object viewModel) where TWindow : Window, new()
     {

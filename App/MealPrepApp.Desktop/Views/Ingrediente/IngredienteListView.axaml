@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
+             xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView"
+             x:DataType="vm:IngredienteListViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="24" RowDefinitions="Auto,Auto,*">
+        <!-- Toolbar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,16">
+            <TextBlock Grid.Column="0" Text="Ingrediente" Classes="Title"
+                       VerticalAlignment="Center" Margin="0,0,24,0" />
+
+            <TextBox Grid.Column="1" Watermark="Cauta ingrediente..."
+                     Text="{Binding SearchTerm}"
+                     VerticalAlignment="Center" MaxWidth="320" HorizontalAlignment="Left" />
+
+            <ComboBox Grid.Column="2" ItemsSource="{Binding Categories}"
+                      SelectedItem="{Binding SelectedCategory}"
+                      VerticalAlignment="Center" Width="180" Margin="8,0,0,0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:IngredientCategory">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Button Grid.Column="3" Content="+ Adauga ingredient" Classes="Primary"
+                    Command="{Binding AddIngredientCommand}" Margin="8,0,0,0" />
+        </Grid>
+
+        <!-- Error slot -->
+        <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,0,0,8"
+                   IsVisible="{Binding HasError}" />
+
+        <!-- List / empty -->
+        <Grid Grid.Row="2">
+            <ScrollViewer IsVisible="{Binding Ingredients.Count, Converter={StaticResource NonEmptyToBool}}">
+                <ItemsControl ItemsSource="{Binding Ingredients}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:Ingredient">
+                            <Border Classes="Card" Padding="12,8" Margin="0,2">
+                                <Grid ColumnDefinitions="*,Auto,Auto,32">
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="Body" VerticalAlignment="Center" />
+
+                                    <Border Grid.Column="1" Background="{StaticResource DarkBrush}"
+                                            CornerRadius="3" Padding="6,2" Margin="0,0,8,0"
+                                            IsVisible="{Binding DefaultUnitAbbreviation, Converter={StaticResource NotNullToBool}}">
+                                        <TextBlock Text="{Binding DefaultUnitAbbreviation}" Foreground="{StaticResource CreamBrush}"
+                                                   FontSize="11" />
+                                    </Border>
+
+                                    <Button Grid.Column="2" Content="Nutritie" Classes="Secondary" Margin="0,0,8,0"
+                                            Command="{Binding $parent[ItemsControl].((vm:IngredienteListViewModel)DataContext).EditNutritionCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <Button Grid.Column="3" Content="✕" Classes="Link"
+                                            Foreground="{StaticResource DangerBrush}"
+                                            Command="{Binding $parent[ItemsControl].((vm:IngredienteListViewModel)DataContext).DeleteIngredientCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Empty state -->
+            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    IsVisible="{Binding Ingredients.Count, Converter={StaticResource EmptyToBool}}">
+                <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
+                    <TextBlock Text="Niciun ingredient" Classes="Header" HorizontalAlignment="Center" />
+                    <TextBlock Text="Adauga primul ingredient pentru a incepe." Classes="Muted" HorizontalAlignment="Center" />
+                    <Button Content="+ Adauga ingredient" Classes="Primary"
+                            HorizontalAlignment="Center" Margin="0,10,0,0"
+                            Command="{Binding AddIngredientCommand}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

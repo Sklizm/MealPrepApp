@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MealPrepApp.ViewModels.Retete"
+             xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Retete.ReteteEditorView"
+             x:DataType="vm:ReteteEditorViewModel"
+             Background="{StaticResource CreamBrush}">
+
+    <Grid Margin="32" RowDefinitions="Auto,*,Auto,Auto">
+        <TextBlock Grid.Row="0" Text="{Binding ScreenTitle}" Classes="Title" Margin="0,0,0,16" />
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel MaxWidth="760" HorizontalAlignment="Left" Spacing="10">
+                <!-- Title -->
+                <TextBlock Text="Titlu *" Classes="Muted" />
+                <TextBox Text="{Binding Title}" MaxLength="150" />
+
+                <!-- Category -->
+                <TextBlock Text="Categorie" Classes="Muted" />
+                <ComboBox Width="260" HorizontalAlignment="Left"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Category">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <!-- Times & Servings -->
+                <Grid ColumnDefinitions="Auto,Auto,Auto">
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0" Spacing="4">
+                        <TextBlock Text="Preparare (min)" Classes="Muted" />
+                        <TextBox Width="120" HorizontalAlignment="Left"
+                                 Text="{Binding PrepTimeMinutes}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0" Spacing="4">
+                        <TextBlock Text="Gatire (min)" Classes="Muted" />
+                        <TextBox Width="120" HorizontalAlignment="Left"
+                                 Text="{Binding CookTimeMinutes}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Portii" Classes="Muted" />
+                        <TextBox Width="120" HorizontalAlignment="Left"
+                                 Text="{Binding Servings}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Description -->
+                <TextBlock Text="Descriere" Classes="Muted" />
+                <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap"
+                         MinHeight="60" MaxLength="500" />
+
+                <!-- Instructions -->
+                <TextBlock Text="Instructiuni *" Classes="Muted" />
+                <TextBox Text="{Binding Instructions}" AcceptsReturn="True" TextWrapping="Wrap"
+                         MinHeight="100" />
+
+                <!-- Ingredients Header -->
+                <Grid Margin="0,8,0,4">
+                    <TextBlock Text="Ingrediente" Classes="Header" VerticalAlignment="Center" />
+                    <Button Content="+ Adauga ingredient" Classes="Secondary"
+                            HorizontalAlignment="Right" Command="{Binding AddIngredientRowCommand}" />
+                </Grid>
+
+                <!-- Ingredient Table Header -->
+                <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,4">
+                    <TextBlock Grid.Column="0" Text="Ingredient" Classes="Muted" />
+                    <TextBlock Grid.Column="1" Text="Unitate" Classes="Muted" Margin="6,0,0,0" />
+                    <TextBlock Grid.Column="2" Text="Cantitate" Classes="Muted" Margin="6,0,0,0" />
+                    <TextBlock Grid.Column="3" Text="Note" Classes="Muted" Margin="6,0,0,0" />
+                </Grid>
+
+                <!-- Ingredient Rows -->
+                <ItemsControl ItemsSource="{Binding IngredientRows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RecipeIngredientRowViewModel">
+                            <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,3">
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding AllIngredients}"
+                                          SelectedItem="{Binding SelectedIngredient}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Ingredient">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox Grid.Column="1" Margin="6,0,0,0"
+                                          ItemsSource="{Binding AllUnits}"
+                                          SelectedItem="{Binding SelectedUnit}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Unit">
+                                            <TextBlock Text="{Binding Abbreviation}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Grid.Column="2" Margin="6,0,0,0"
+                                         Text="{Binding Quantity}" />
+                                <TextBox Grid.Column="3" Margin="6,0,0,0"
+                                         Text="{Binding Notes}" />
+                                <Button Grid.Column="4" Content="✕" Classes="Link"
+                                        Foreground="{StaticResource DangerBrush}"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding RemoveCommand}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Niciun ingredient adaugat." Classes="Muted"
+                           IsVisible="{Binding IngredientRows.Count, Converter={StaticResource EmptyToBool}}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Error slot -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,12,0,0"
+                   IsVisible="{Binding HasError}" />
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0" Spacing="8">
+            <Button Content="Salveaza" Classes="Primary" Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding !IsBusy}" />
+            <Button Content="Salveaza ca draft" Classes="Secondary" Command="{Binding SaveDraftCommand}"
+                    IsEnabled="{Binding !IsBusy}" />
+            <Button Content="Renunta" Classes="Secondary" Command="{Binding CancelCommand}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
