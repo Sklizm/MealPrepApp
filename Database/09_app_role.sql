@@ -17,7 +17,7 @@
 
 :setvar AppLogin    mealprep_app
 :setvar AppRole     mealprep_app_role
-:setvar AppPassword ""
+:setvar AppPassword "MealPrepSecure2026!"
 
 USE master;
 GO
