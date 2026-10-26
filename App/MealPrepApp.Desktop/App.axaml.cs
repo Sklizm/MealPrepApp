@@ -32,11 +32,26 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var config = new ConfigurationBuilder()
+        var configBuilder = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile("appsettings.Local.json", optional: true)
-            .Build();
+            .AddJsonFile("appsettings.json", optional: false);
+
+        // Probe multiple locations for appsettings.Local.json so it loads reliably
+        // whether running via 'dotnet run' from root, IDE, or compiled bundle.
+        string[] localSettingsCandidates =
+        [
+            Path.Combine(AppContext.BaseDirectory, "appsettings.Local.json"),
+            Path.Combine(Directory.GetCurrentDirectory(), "appsettings.Local.json"),
+            Path.Combine(Directory.GetCurrentDirectory(), "App", "MealPrepApp.Desktop", "appsettings.Local.json")
+        ];
+
+        var localPath = localSettingsCandidates.FirstOrDefault(File.Exists);
+        if (localPath != null)
+        {
+            configBuilder.AddJsonFile(localPath, optional: true, reloadOnChange: false);
+        }
+
+        var config = configBuilder.Build();
 
         var services = new ServiceCollection();
         ConfigureServices(services, config);
@@ -57,6 +72,16 @@ public partial class App : Application
         var connectionString = config.GetConnectionString("MealPrepDB")
             ?? throw new InvalidOperationException(
                 "Connection string 'MealPrepDB' is missing. Set it in appsettings.Local.json.");
+
+        // Normalize common user error: Server=host:1433 instead of Server=host,1433
+        // In Microsoft.Data.SqlClient, a colon causes error 10061 (connection refused).
+        var serverColonMatch = System.Text.RegularExpressions.Regex.Match(connectionString, @"Server=([^;,]+):(\d+)");
+        if (serverColonMatch.Success)
+        {
+            connectionString = connectionString.Replace(
+                serverColonMatch.Value,
+                $"Server={serverColonMatch.Groups[1].Value},{serverColonMatch.Groups[2].Value}");
+        }
 
         // Data layer
         services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionString));
