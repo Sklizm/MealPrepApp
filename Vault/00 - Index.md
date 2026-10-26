@@ -57,6 +57,7 @@ Open the graph view to see how everything connects.
 - [[Sessions/2026-05-26 - Windows exe publishing]]
 - [[Sessions/2026-05-27 - Raport regenerated]]
 - [[Sessions/2026-05-27 - README and Romanian vault counterparts]]
+- [[Sessions/2026-10-19 - Cross-platform Avalonia client for macOS and NixOS]]
 
 ## Resume Protocol
 If you (Claude/Hermes) are picking this up in a new session:
