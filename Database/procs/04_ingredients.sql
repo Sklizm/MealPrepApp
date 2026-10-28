@@ -56,7 +56,8 @@ BEGIN
         u.Name         AS DefaultUnitName,
         u.Abbreviation AS DefaultUnitAbbreviation,
         i.IngredientCategoryID,
-        ic.Name        AS IngredientCategoryName
+        ic.Name        AS IngredientCategoryName,
+        CONVERT(BIT,CASE WHEN EXISTS(SELECT 1 FROM dbo.IngredientNutrition n WHERE n.IngredientID=i.IngredientID) THEN 1 ELSE 0 END) AS HasNutrition
     FROM dbo.Ingredients i
     LEFT JOIN dbo.Units u                ON u.UnitID                = i.DefaultUnitID
     LEFT JOIN dbo.IngredientCategories ic ON ic.IngredientCategoryID = i.IngredientCategoryID

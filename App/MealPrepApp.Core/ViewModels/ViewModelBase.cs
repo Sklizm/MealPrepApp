@@ -16,6 +16,8 @@ public abstract partial class ViewModelBase : ObservableObject
     private string? _errorMessage;
 
     /// <summary>True while there is an error message to show.</summary>
+    [ObservableProperty] private string? _notification;
+
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     partial void OnErrorMessageChanged(string? value) => OnPropertyChanged(nameof(HasError));

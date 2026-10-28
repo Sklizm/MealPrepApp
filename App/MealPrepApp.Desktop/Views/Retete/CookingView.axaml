@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Retete.CookingView" x:DataType="vm:CookingViewModel" Background="{DynamicResource AppBackground}">
+    <ScrollViewer>
+        <StackPanel Margin="32" Spacing="24">
+            <TextBlock Text="În bucătărie" Classes="Muted"/>
+            <TextBlock Text="{Binding Session.Recipe.Title}" Classes="Title" TextWrapping="Wrap"/>
+            <TextBlock Text="Bifele sunt temporare. Stocul din frigider se modifică doar prin acțiunea ta." Classes="Muted" TextWrapping="Wrap"/>
+            <WrapPanel>
+                <StackPanel Margin="0,0,24,8">
+                    <TextBlock Text="Porții"/>
+                    <NumericUpDown Value="{Binding Session.Servings}" Minimum="1" Maximum="1000" FormatString="0" Width="128" IsEnabled="{Binding Session.CanScale}" AutomationProperties.Name="Porții pentru gătit"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,24,8">
+                    <TextBlock Text="Temporizator (minute)"/>
+                    <NumericUpDown Value="{Binding Session.TimerMinutes}" Minimum="1" Maximum="1440" FormatString="0" Width="140" AutomationProperties.Name="Durata temporizatorului în minute"/>
+                </StackPanel>
+                <Button Classes="Primary" Content="Pornește" Command="{Binding Session.StartTimerCommand}" Margin="0,20,8,8"/>
+                <Button Content="Oprește" Classes="Secondary" Command="{Binding Session.StopTimerCommand}" Margin="0,20,8,8"/>
+            </WrapPanel>
+            <TextBlock Text="{Binding Session.TimerText}" FontSize="28"/>
+            <TextBlock Text="Temporizatorul continuă între pagini. Închiderea aplicației îl oprește." Classes="Muted" TextWrapping="Wrap"/>
+            <Border Classes="Card">
+                <ItemsControl ItemsSource="{Binding Session.Ingredients}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="services:CookingIngredient">
+                            <CheckBox IsChecked="{Binding IsChecked}" Margin="0,8">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <TextBlock Text="{Binding Name}" FontSize="18"/>
+                                    <TextBlock Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" FontSize="18"/>
+                                    <TextBlock Text="{Binding Unit}" FontSize="18"/>
+                                </StackPanel>
+                            </CheckBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+            <TextBlock Text="Mod de preparare" Classes="Header"/>
+            <ItemsControl ItemsSource="{Binding Session.Paragraphs}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="22" LineHeight="36" Margin="0,0,0,24"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

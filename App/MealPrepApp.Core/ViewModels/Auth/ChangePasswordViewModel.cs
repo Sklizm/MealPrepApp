@@ -50,13 +50,26 @@ public sealed partial class ChangePasswordViewModel : ViewModelBase
                 return false;
             }
 
-            await _users.ChangePasswordAsync(_session.CurrentUserId, _hasher.Hash(newPassword));
+            var history = await _users.GetPasswordHistoryAsync(_session.CurrentUserId);
+            if (history.Any(hash => _hasher.Verify(newPassword, hash)))
+            {
+                ErrorMessage = "Parola a fost folosita recent. Alege o parola diferita.";
+                return false;
+            }
+            await _users.ChangePasswordAsync(_session.CurrentUserId, _hasher.Hash(newPassword), user.PasswordHash);
             return true;
         }
         catch (AppDbException ex)
         {
             // 50001 → "this password was used recently".
             ErrorMessage = ex.FriendlyMessage;
+            return false;
+        }
+        catch (OperationCanceledException) { return false; }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
             return false;
         }
         finally

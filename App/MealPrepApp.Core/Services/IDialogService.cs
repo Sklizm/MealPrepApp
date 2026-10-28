@@ -1,23 +1,15 @@
 namespace MealPrepApp.Services;
 
-/// <summary>
-/// Modal user prompts: confirmations for destructive actions, error and info notices,
-/// and ViewModel-driven modal dialogs across Windows, macOS, and Linux.
-/// </summary>
+/// <summary>Awaitable platform prompts. Closing a dialog without confirmation returns false.</summary>
 public interface IDialogService
 {
-    /// <summary>Asks a yes/no question. Returns true when the user confirms.</summary>
-    bool Confirm(string title, string message);
-
-    /// <summary>Shows a blocking error notice (e.g. a friendly SqlException message).</summary>
-    void ShowError(string message);
-
-    /// <summary>Shows a blocking informational notice.</summary>
-    void ShowInfo(string title, string message);
-
-    /// <summary>
-    /// Opens the corresponding platform window modally with <paramref name="viewModel"/> as its DataContext.
-    /// Returns true when confirmed/completed successfully.
-    /// </summary>
-    bool ShowDialog(object viewModel);
+    async Task<LeaveDecision> ChooseLeaveAsync()
+    {
+        if (await ConfirmAsync("Modificări nesalvate", "Salvezi modificările într-o ciornă înainte de a pleca?")) return LeaveDecision.SaveDraft;
+        return await ConfirmAsync("Renunță la modificări", "Ștergi modificările nesalvate?") ? LeaveDecision.Discard : LeaveDecision.Stay;
+    }
+    Task<bool> ConfirmAsync(string title, string message);
+    Task ShowErrorAsync(string message);
+    Task ShowInfoAsync(string title, string message);
+    Task<bool> ShowDialogAsync(object viewModel);
 }

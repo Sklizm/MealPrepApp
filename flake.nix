@@ -7,7 +7,7 @@
   };
 
   outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -15,8 +15,7 @@
         };
 
         dotnet-sdk = with pkgs.dotnetCorePackages; combinePackages [
-          sdk_9_0
-          (sdk_10_0 or sdk_9_0)
+          sdk_10_0
         ];
 
         runtimeLibs = with pkgs; [
@@ -45,10 +44,16 @@
         packages.default = pkgs.buildDotnetModule {
           pname = "mealprep-desktop";
           version = "1.0.0";
-          src = ./.;
+          src = pkgs.lib.cleanSourceWith {
+            src = ./.;
+            filter = path: type:
+              pkgs.lib.cleanSourceFilter path type &&
+              !(builtins.elem (baseNameOf path) [ "appsettings.Local.json" "bin" "obj" "dist" ".env" ]);
+          };
+          nugetDeps = ./nix/deps.json;
           projectFile = "App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj";
           dotnet-sdk = dotnet-sdk;
-          dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0 or pkgs.dotnetCorePackages.runtime_9_0;
+          dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
           executables = [ "MealPrepApp.Desktop" ];
           runtimeDeps = runtimeLibs;
         };

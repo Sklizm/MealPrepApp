@@ -1,129 +1,79 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MealPrepApp.ViewModels.Retete"
-             xmlns:models="using:MealPrepApp.Models"
-             x:Class="MealPrepApp.Desktop.Views.Retete.ReteteDetailView"
-             x:DataType="vm:ReteteDetailViewModel"
-             Background="{StaticResource CreamBrush}">
-
-    <Grid Margin="32">
-        <!-- Error -->
-        <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
-                   TextWrapping="Wrap" VerticalAlignment="Top"
-                   IsVisible="{Binding HasError}" />
-
-        <ScrollViewer IsVisible="{Binding Recipe, Converter={StaticResource NotNullToBool}}">
-            <StackPanel MaxWidth="760" HorizontalAlignment="Left" Spacing="12">
-
-                <!-- Header: title + actions -->
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="{Binding Recipe.Title}" Classes="Title"
-                               TextWrapping="Wrap" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Classes="Secondary" Command="{Binding ToggleFavoriteCommand}"
-                                Content="{Binding IsFavorite, Converter={StaticResource StringEquals}, ConverterParameter=True, FallbackValue='☆ Favorite'}" />
-                        <Button Content="Adauga la plan" Classes="Primary"
-                                Command="{Binding AddToPlanCommand}" />
-                        <Button Content="Editeaza" Classes="Secondary"
-                                Command="{Binding EditCommand}" />
-                        <Button Content="Sterge" Classes="Danger"
-                                Command="{Binding DeleteCommand}" />
-                        <Button Content="Inapoi" Classes="Secondary"
-                                Command="{Binding BackCommand}" />
-                    </StackPanel>
-                </Grid>
-
-                <!-- Meta row -->
-                <WrapPanel Margin="0,4,0,0">
-                    <Border Background="{StaticResource MossBrush}" CornerRadius="3" Padding="8,3"
-                            Margin="0,0,12,0"
-                            IsVisible="{Binding Recipe.CategoryName, Converter={StaticResource NotNullToBool}}">
-                        <TextBlock Text="{Binding Recipe.CategoryName}" Foreground="{StaticResource CreamBrush}"
-                                   FontSize="11" />
-                    </Border>
-                    <TextBlock Classes="Muted" Margin="0,0,12,0"
-                               Text="{Binding Recipe.PrepTimeMinutes, StringFormat='Preparare: {0} min'}" />
-                    <TextBlock Classes="Muted" Margin="0,0,12,0"
-                               Text="{Binding Recipe.CookTimeMinutes, StringFormat='Gatire: {0} min'}" />
-                    <TextBlock Classes="Muted" Margin="0,0,12,0"
-                               Text="{Binding Recipe.Servings, StringFormat='Portii: {0}'}" />
-                    <TextBlock Classes="Muted"
-                               Text="{Binding Recipe.AuthorUsername, StringFormat='Autor: {0}'}" />
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteDetailView" x:DataType="vm:ReteteDetailViewModel" Background="{DynamicResource AppBackground}">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32">
+        <WrapPanel>
+            <Button Content="Înapoi la rețete" Classes="Link" Command="{Binding BackCommand}"/>
+            <Button Content="{Binding FavoriteLabel}" Classes="Secondary" Command="{Binding ToggleFavoriteCommand}" Margin="8,0,0,8"/>
+            <Button Content="Editează" Classes="Secondary" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
+            <Button Content="Șterge rețeta" Classes="Link" Command="{Binding DeleteCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
+        </WrapPanel>
+        <StackPanel Grid.Row="1">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="{DynamicResource Danger}" IsVisible="{Binding HasError}"/>
+            <Button Classes="Primary" Content="Reîncarcă" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="2">
+            <StackPanel Spacing="24" MaxWidth="1024" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding Recipe.CategoryName}" Foreground="{DynamicResource Accent}"/>
+                    <TextBlock Text="{Binding Recipe.Title}" Classes="Title" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Recipe.Description}" TextWrapping="Wrap"/>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding Recipe.PrepTimeMinutes, StringFormat='Preparare: {0} min'}" Classes="Muted" Margin="0,0,24,0"/>
+                        <TextBlock Text="{Binding Recipe.CookTimeMinutes, StringFormat='Gătire: {0} min'}" Classes="Muted" Margin="0,0,24,0"/>
+                        <TextBlock Text="{Binding Recipe.AuthorUsername, StringFormat='De {0}'}" Classes="Muted"/>
+                    </WrapPanel>
+                </StackPanel>
+                <WrapPanel>
+                    <Button Classes="Primary" Content="Gătește" Command="{Binding CookCommand}" Margin="0,0,8,8"/>
+                    <Button Content="Adaugă în plan" Classes="Secondary" Command="{Binding AddToPlanCommand}" Margin="0,0,8,8"/>
+                    <Button Content="{Binding PhotoLabel}" Classes="Link" Command="{Binding ChoosePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
+                    <Button Content="Șterge fotografia" Classes="Link" Command="{Binding DeletePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
                 </WrapPanel>
-
-                <!-- Recipe photo -->
-                <Border Classes="Card" Padding="0" ClipToBounds="True" MaxHeight="340"
-                        IsVisible="{Binding HasPhoto}">
-                    <Image Source="{Binding PhotoBytes, Converter={StaticResource ByteArrayToBitmap}}"
-                           Stretch="Uniform" />
+                <Border Classes="Card" Padding="0" Height="240" ClipToBounds="True" IsVisible="{Binding HasPhoto}">
+                    <images:RecipeImage Bytes="{Binding PhotoBytes}" Stretch="UniformToFill"/>
                 </Border>
-
-                <!-- Photo actions -->
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Classes="Secondary" Command="{Binding ChoosePhotoCommand}"
-                            Content="{Binding HasPhoto, Converter={StaticResource StringEquals}, ConverterParameter=True, FallbackValue='Adauga poza'}" />
-                    <Button Content="Sterge poza" Classes="Danger"
-                            Command="{Binding DeletePhotoCommand}"
-                            IsVisible="{Binding HasPhoto}" />
-                </StackPanel>
-
-                <!-- Description -->
-                <StackPanel Spacing="4" IsVisible="{Binding Recipe.Description, Converter={StaticResource NotNullToBool}}">
-                    <TextBlock Text="Descriere" Classes="Header" />
-                    <TextBlock Text="{Binding Recipe.Description}" Classes="Body" TextWrapping="Wrap" />
-                </StackPanel>
-
-                <!-- Instructions -->
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Instructiuni" Classes="Header" />
-                    <TextBlock Text="{Binding Recipe.Instructions}" Classes="Body" TextWrapping="Wrap" />
-                </StackPanel>
-
-                <!-- Ingredients -->
-                <StackPanel Spacing="6">
-                    <TextBlock Text="Ingrediente" Classes="Header" />
-                    <Border Classes="Card">
-                        <ItemsControl ItemsSource="{Binding Recipe.Ingredients}">
+                <Border Classes="Card">
+                    <StackPanel Spacing="16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Ingrediente" Classes="Header"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Porții" VerticalAlignment="Center"/>
+                                <NumericUpDown Value="{Binding SelectedServings}" Minimum="1" Maximum="1000" Increment="1" FormatString="0" Width="116" IsEnabled="{Binding CanScale}" AutomationProperties.Name="Număr de porții"/>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="Scalarea necesită un număr de porții de bază valid." Classes="Muted" IsVisible="{Binding CanScale, Converter={StaticResource InverseBool}}" TextWrapping="Wrap"/>
+                        <ItemsControl ItemsSource="{Binding ScaledIngredients}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:RecipeIngredientLine">
-                                    <Grid ColumnDefinitions="2*,60,60,3*" Margin="0,3">
-                                        <TextBlock Grid.Column="0" Text="{Binding IngredientName}" Classes="Body" />
-                                        <TextBlock Grid.Column="1" Classes="Body" HorizontalAlignment="Right" Margin="0,0,8,0"
-                                                   Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" />
-                                        <TextBlock Grid.Column="2" Text="{Binding UnitAbbreviation}" Classes="Muted" Margin="0,0,12,0" />
-                                        <TextBlock Grid.Column="3" Text="{Binding Notes}" Classes="Muted" TextWrapping="Wrap" />
+                                <DataTemplate x:DataType="services:CookingIngredient">
+                                    <Grid ColumnDefinitions="*,Auto,80" Margin="0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}"/>
+                                            <TextBlock Text="{Binding Notes}" Classes="Muted" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Unit}" Margin="8,0,0,0" Classes="Muted"/>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </Border>
+                    </StackPanel>
+                </Border>
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Mod de preparare" Classes="Header"/>
+                    <TextBlock Text="{Binding Recipe.Instructions}" TextWrapping="Wrap" FontSize="16" LineHeight="28"/>
                 </StackPanel>
-
-                <!-- Nutrition -->
-                <StackPanel Spacing="6" IsVisible="{Binding Nutrition, Converter={StaticResource NotNullToBool}}">
-                    <TextBlock Text="Nutritie estimata" Classes="Header" />
-                    <Border Classes="Card">
-                        <UniformGrid Columns="4" Margin="4">
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="Total kcal" Classes="Muted" />
-                                <TextBlock Text="{Binding Nutrition.TotalCalories, StringFormat='{}{0:0.##}'}" Classes="Body" FontWeight="SemiBold" />
-                            </StackPanel>
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="Proteine" Classes="Muted" />
-                                <TextBlock Text="{Binding Nutrition.TotalProteinGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
-                            </StackPanel>
-                            <StackPanel Margin="0,0,12,0">
-                                <TextBlock Text="Carbohidrati" Classes="Muted" />
-                                <TextBlock Text="{Binding Nutrition.TotalCarbsGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="Grasimi" Classes="Muted" />
-                                <TextBlock Text="{Binding Nutrition.TotalFatGrams, StringFormat='{}{0:0.##} g'}" Classes="Body" FontWeight="SemiBold" />
-                            </StackPanel>
-                        </UniformGrid>
-                    </Border>
-                </StackPanel>
-
+                <Border Classes="Card" IsVisible="{Binding ScaledNutrition, Converter={StaticResource NotNullToBool}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Nutriție estimată • total pentru porțiile selectate" Classes="Header" TextWrapping="Wrap"/>
+                        <WrapPanel>
+                            <TextBlock Text="{Binding ScaledNutrition.TotalCalories, StringFormat='{}{0:0.##} kcal'}" Margin="0,0,24,0"/>
+                            <TextBlock Text="{Binding ScaledNutrition.TotalProteinGrams, StringFormat='Proteine: {0:0.##} g'}" Margin="0,0,24,0"/>
+                            <TextBlock Text="{Binding ScaledNutrition.TotalCarbsGrams, StringFormat='Carbohidrați: {0:0.##} g'}" Margin="0,0,24,0"/>
+                            <TextBlock Text="{Binding ScaledNutrition.TotalFatGrams, StringFormat='Grăsimi: {0:0.##} g'}"/>
+                        </WrapPanel>
+                        <TextBlock Text="Estimare incompletă: unele ingrediente nu au date nutritive sau unități compatibile." Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding ScaledNutrition.HasCompleteNutrition, Converter={StaticResource InverseBool}}"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

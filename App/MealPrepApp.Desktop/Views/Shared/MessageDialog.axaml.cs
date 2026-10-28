@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
+
 
 namespace MealPrepApp.Desktop.Views.Shared;
 
@@ -18,7 +18,7 @@ public partial class MessageDialog : Window
         InitializeComponent();
     }
 
-    public static bool ShowModal(MessageDialogKind kind, string title, string message,
+    public static async Task<bool> ShowModalAsync(MessageDialogKind kind, string title, string message,
         string? okText = null, string? cancelText = null)
     {
         var dlg = new MessageDialog();
@@ -27,16 +27,7 @@ public partial class MessageDialog : Window
         dlg.Configure(kind, okText, cancelText);
 
         var owner = ActiveOwner();
-        if (owner is not null)
-        {
-            var frame = new DispatcherFrame();
-            dlg.Closed += (_, _) => frame.Continue = false;
-            dlg.Show(owner);
-            Dispatcher.UIThread.PushFrame(frame);
-            return dlg._dialogResult;
-        }
-
-        return false;
+        return owner is not null && await dlg.ShowDialog<bool>(owner);
     }
 
     private void Configure(MessageDialogKind kind, string? okText, string? cancelText)
@@ -44,7 +35,7 @@ public partial class MessageDialog : Window
         switch (kind)
         {
             case MessageDialogKind.Error:
-                if (Application.Current?.TryFindResource("DangerBrush", out var danger) == true && danger is IBrush db)
+                if (Application.Current?.TryFindResource("Danger", out var danger) == true && danger is IBrush db)
                     HeaderBorder.Background = db;
                 HeaderGlyph.IsVisible = true;
                 OkButton.Content = okText ?? "OK";
@@ -68,13 +59,13 @@ public partial class MessageDialog : Window
     private void OnOkClick(object? sender, RoutedEventArgs e)
     {
         _dialogResult = true;
-        Close();
+        Close(_dialogResult);
     }
 
     private void OnCancelClick(object? sender, RoutedEventArgs e)
     {
         _dialogResult = false;
-        Close();
+        Close(_dialogResult);
     }
 
     private static Window? ActiveOwner()

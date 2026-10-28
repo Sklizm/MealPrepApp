@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using System.Collections;
 using System.Globalization;
 using System.IO;
@@ -21,7 +22,7 @@ public sealed class NotNullToBoolConverter : IValueConverter
         value is not null;
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class EmptyCollectionToBoolConverter : IValueConverter
@@ -35,7 +36,7 @@ public sealed class EmptyCollectionToBoolConverter : IValueConverter
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class NonEmptyCollectionToBoolConverter : IValueConverter
@@ -49,7 +50,7 @@ public sealed class NonEmptyCollectionToBoolConverter : IValueConverter
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class StringEqualsConverter : IValueConverter
@@ -58,29 +59,7 @@ public sealed class StringEqualsConverter : IValueConverter
         string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.Ordinal);
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
-}
-
-public sealed class ByteArrayToBitmapConverter : IValueConverter
-{
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is not byte[] { Length: > 0 } bytes)
-            return null;
-
-        try
-        {
-            using var stream = new MemoryStream(bytes);
-            return new Bitmap(stream);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class DateTimeToDateTimeOffsetConverter : IValueConverter
@@ -90,7 +69,7 @@ public sealed class DateTimeToDateTimeOffsetConverter : IValueConverter
         if (value is DateTime dt)
         {
             if (dt == DateTime.MinValue) return null;
-            return new DateTimeOffset(dt, TimeSpan.Zero);
+            return new DateTimeOffset(DateTime.SpecifyKind(dt.Date, DateTimeKind.Unspecified), TimeZoneInfo.Local.GetUtcOffset(dt.Date));
         }
         return null;
     }
@@ -98,7 +77,7 @@ public sealed class DateTimeToDateTimeOffsetConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is DateTimeOffset dto)
-            return dto.DateTime;
+            return DateTime.SpecifyKind(dto.Date, DateTimeKind.Unspecified);
         return DateTime.Today;
     }
 }
@@ -109,43 +88,27 @@ public sealed class BoolToOpacityConverter : IValueConverter
         value is true ? 1.0 : 0.4;
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class IsTodayToBrushConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        value is true ? Avalonia.Media.Brush.Parse("#D6DFBE") : Avalonia.Media.Brushes.Transparent;
+        value is true && Avalonia.Application.Current?.TryFindResource("Selection",out var brush)==true ? brush : Avalonia.Media.Brushes.Transparent;
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 
 public sealed class CategoryIdToBrushConverter : IValueConverter
 {
-    private static readonly Avalonia.Media.IBrush Breakfast = Avalonia.Media.Brush.Parse("#C97A63");
-    private static readonly Avalonia.Media.IBrush Lunch = Avalonia.Media.Brush.Parse("#5E8A75");
-    private static readonly Avalonia.Media.IBrush Dinner = Avalonia.Media.Brush.Parse("#3D5A80");
-    private static readonly Avalonia.Media.IBrush Snack = Avalonia.Media.Brush.Parse("#DDA15E");
-    private static readonly Avalonia.Media.IBrush DefaultBrush = Avalonia.Media.Brush.Parse("#4A5320");
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is int id)
-        {
-            return id switch
-            {
-                1 => Breakfast,
-                2 => Lunch,
-                3 => Dinner,
-                4 => Snack,
-                _ => DefaultBrush
-            };
-        }
-        return DefaultBrush;
+        var key=value is int id ? id switch {1=>"MealBreakfast",2=>"MealLunch",3=>"MealDinner",4=>"MealSnack",5=>"MealDessert",6=>"MealDrink",_=>"MealLunch"} : "MealLunch";
+        return Avalonia.Application.Current?.TryFindResource(key,out var brush)==true ? brush : Avalonia.Media.Brushes.DarkGreen;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        throw new NotSupportedException();
+        Avalonia.Data.BindingOperations.DoNothing;
 }
 

@@ -39,29 +39,9 @@ public partial class LoginWindow : Window
     private void ShowRegister() =>
         Host.Content = new RegisterView { DataContext = _registerViewModel };
 
-    private async void ShowForgotPasswordDialog()
-    {
-        var dialog = new ForgotPasswordDialog
-        {
-            DataContext = App.Services.GetRequiredService<ForgotPasswordViewModel>()
-        };
-        dialog.PrefillIdentifier(_loginViewModel.Identifier);
+    private void ShowForgotPasswordDialog() =>
+        _ = MealPrepApp.Desktop.Services.UiOperation.RunAsync(() => App.Services.GetRequiredService<MealPrepApp.Services.IDialogService>()
+            .ShowInfoAsync("Recuperare cont", "Contacteaza administratorul pentru recuperarea contului."));
 
-        var result = await dialog.ShowDialog<bool>(this);
-        if (result)
-        {
-            MessageDialog.ShowModal(
-                MessageDialogKind.Info,
-                "Parola resetata",
-                "Parola a fost resetata. Te poti conecta cu parola noua.");
-        }
-    }
-
-    private void OpenShell()
-    {
-        var shell = App.Services.GetRequiredService<ShellWindow>();
-        shell.DataContext = App.Services.GetRequiredService<ShellViewModel>();
-        shell.Show();
-        Close();
-    }
+    private void OpenShell() => MealPrepApp.Desktop.Services.WindowCoordinator.ShowShell();
 }

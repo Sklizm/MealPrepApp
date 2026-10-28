@@ -16,16 +16,22 @@ namespace MealPrepApp.Services;
 /// </summary>
 public sealed class DialogService : IDialogService
 {
-    public bool Confirm(string title, string message) =>
-        MessageDialog.Show(MessageDialogKind.Confirm, title, message, okText: "Da", cancelText: "Nu");
+    public Task<bool> ConfirmAsync(string title, string message) =>
+        Task.FromResult(MessageDialog.Show(MessageDialogKind.Confirm, title, message, okText: "Da", cancelText: "Nu"));
 
-    public void ShowError(string message) =>
+    public Task ShowErrorAsync(string message)
+    {
         MessageDialog.Show(MessageDialogKind.Error, "Eroare", message);
+        return Task.CompletedTask;
+    }
 
-    public void ShowInfo(string title, string message) =>
+    public Task ShowInfoAsync(string title, string message)
+    {
         MessageDialog.Show(MessageDialogKind.Info, title, message);
+        return Task.CompletedTask;
+    }
 
-    public bool ShowDialog(object viewModel) => viewModel switch
+    public Task<bool> ShowDialogAsync(object viewModel) => Task.FromResult(viewModel switch
     {
         PlanMealDialogViewModel => ShowDialog<PlanMealDialog>(viewModel),
         PantryItemDialogViewModel => ShowDialog<PantryItemDialog>(viewModel),
@@ -34,7 +40,7 @@ public sealed class DialogService : IDialogService
         ChangePasswordViewModel => ShowDialog<ChangePasswordDialog>(viewModel),
         ForgotPasswordViewModel => ShowDialog<ForgotPasswordDialog>(viewModel),
         _ => throw new NotSupportedException($"No WPF dialog registered for ViewModel '{viewModel.GetType().Name}'.")
-    };
+    });
 
     public bool ShowDialog<TWindow>(object viewModel) where TWindow : Window, new()
     {
@@ -43,7 +49,8 @@ public sealed class DialogService : IDialogService
             DataContext = viewModel,
             Owner = ActiveOwner(),
         };
-        return window.ShowDialog() == true;
+        try { return window.ShowDialog() == true; }
+        finally { if (viewModel is IDisposable disposable) disposable.Dispose(); }
     }
 
     private static Window? ActiveOwner()

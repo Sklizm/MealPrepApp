@@ -44,6 +44,7 @@
 -- ===== Phase N: nutrition =====
 :r 17_unit_conversions.sql
 :r 18_ingredient_nutrition.sql
+:r 19_shopping_snapshots.sql
 :r seeds/ingredient_nutrition_seed.sql
 
 -- ===== Phase 2 + 3 + 4 + H + N: stored-proc API =====
@@ -61,6 +62,8 @@
 :r procs/12_recipe_drafts.sql
 :r procs/13_recipe_photos.sql
 :r procs/14_nutrition.sql
+:r procs/15_shopping_snapshots.sql
+:r procs/16_week_copy.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

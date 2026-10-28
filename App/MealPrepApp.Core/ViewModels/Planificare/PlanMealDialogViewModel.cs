@@ -19,7 +19,7 @@ namespace MealPrepApp.ViewModels.Planificare;
 /// button that calls <c>sp_UnplanMeal</c>.</item>
 /// </list>
 /// </summary>
-public sealed partial class PlanMealDialogViewModel : ViewModelBase
+public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
 {
     private readonly MealPlanRepository _mealPlan;
     private readonly RecipeRepository _recipes;
@@ -146,6 +146,12 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -160,8 +166,16 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
     {
         if (_suppressSearch || IsEdit) return;
         _searchCts?.Cancel();
+        _searchCts?.Dispose();
         _searchCts = new CancellationTokenSource();
         _ = DebouncedSearchAsync(value, _searchCts.Token);
+    }
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = null;
     }
 
     private async Task DebouncedSearchAsync(string term, CancellationToken token)
@@ -179,14 +193,15 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
 
         try
         {
-            var matches = await _recipes.SearchRecipesByTitleAsync(term);
+            var matches = await _recipes.SearchRecipesByTitleAsync(term, cancellationToken: token);
             if (token.IsCancellationRequested) return;
             RecipeResults.Clear();
             foreach (var r in matches) RecipeResults.Add(r);
         }
+        catch (OperationCanceledException) { }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            if (!token.IsCancellationRequested) ErrorMessage = ex.FriendlyMessage;
         }
     }
 
@@ -241,6 +256,12 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -252,7 +273,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
     {
         if (!IsEdit || !_editingEntryId.HasValue) return;
 
-        if (!_dialog.Confirm("Sterge masa planificata",
+        if (!await _dialog.ConfirmAsync("Sterge masa planificata",
                 "Sigur vrei sa stergi aceasta masa din plan?"))
             return;
 
@@ -265,6 +286,12 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {

@@ -21,13 +21,28 @@ namespace MealPrepApp.Desktop;
 
 public partial class App : Application
 {
-    private IServiceProvider _services = null!;
+    public PresentationPreferences Preferences { get; private set; }=null!;
+    private ServiceProvider _services = null!;
+    internal IServiceScope? SessionScope { get; set; }
 
-    public static IServiceProvider Services => ((App)Current!)._services;
+    public static IServiceProvider Services => ((App)Current!).SessionScope?.ServiceProvider ?? ((App)Current!)._services;
 
     public override void Initialize()
     {
+        var culture=System.Globalization.CultureInfo.GetCultureInfo("ro-RO");
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture=culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture=culture;
         AvaloniaXamlLoader.Load(this);
+        var preferences=new PresentationPreferences();
+        void ApplyTheme() => RequestedThemeVariant=preferences.Theme switch { Appearance.Light=>Avalonia.Styling.ThemeVariant.Light, Appearance.Dark=>Avalonia.Styling.ThemeVariant.Dark, _=>Avalonia.Styling.ThemeVariant.Default };
+        void ApplyMotion()
+        {
+            Resources["MotionDuration"]=preferences.ReducedMotion ? TimeSpan.Zero : TimeSpan.FromMilliseconds(100);
+            Resources["MotionEnabled"]=!preferences.ReducedMotion;
+        }
+        ApplyTheme(); ApplyMotion();
+        preferences.PropertyChanged += (_,e) => { if(e.PropertyName==nameof(preferences.Theme)) ApplyTheme(); if(e.PropertyName==nameof(preferences.ReducedMotion))ApplyMotion(); };
+        Preferences=preferences;
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -51,6 +66,10 @@ public partial class App : Application
             configBuilder.AddJsonFile(localPath, optional: true, reloadOnChange: false);
         }
 
+        var userSettings = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "MealPrepApp", "appsettings.Local.json");
+        configBuilder.AddJsonFile(userSettings, optional: true);
         var config = configBuilder.Build();
 
         var services = new ServiceCollection();
@@ -59,11 +78,11 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var loginWindow = _services.GetRequiredService<LoginWindow>();
-            desktop.MainWindow = loginWindow;
-            loginWindow.Show();
+            WindowCoordinator.ShowLogin();
         }
 
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            lifetime.Exit += (_, _) => { SessionScope?.Dispose(); _services.Dispose(); };
         base.OnFrameworkInitializationCompleted();
     }
 
@@ -73,16 +92,10 @@ public partial class App : Application
             ?? throw new InvalidOperationException(
                 "Connection string 'MealPrepDB' is missing. Set it in appsettings.Local.json.");
 
-        // Normalize common user error: Server=host:1433 instead of Server=host,1433
-        // In Microsoft.Data.SqlClient, a colon causes error 10061 (connection refused).
-        var serverColonMatch = System.Text.RegularExpressions.Regex.Match(connectionString, @"Server=([^;,]+):(\d+)");
-        if (serverColonMatch.Success)
-        {
-            connectionString = connectionString.Replace(
-                serverColonMatch.Value,
-                $"Server={serverColonMatch.Groups[1].Value},{serverColonMatch.Groups[2].Value}");
-        }
+        // SqlClient validates aliases, IPv6 and quoting without regex rewriting.
+        _ = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString);
 
+        services.AddSingleton(config);
         // Data layer
         services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionString));
 
@@ -101,15 +114,18 @@ public partial class App : Application
         services.AddSingleton<NutritionRepository>();
 
         // Services
-        services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton(Current is App app ? app.Preferences : new PresentationPreferences());
+        services.AddScoped<CookingSession>();
+        services.AddScoped<NotificationCenter>();
+        services.AddScoped<ISessionService, SessionService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
-        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddScoped<INavigationService, NavigationService>();
         services.AddSingleton<IDialogService, DesktopDialogService>();
         services.AddSingleton<IFilePickerService, DesktopFilePickerService>();
 
         // Shell
-        services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<IShellNavigator>(sp => sp.GetRequiredService<ShellViewModel>());
+        services.AddScoped<ShellViewModel>();
+        services.AddScoped<IShellNavigator>(sp => sp.GetRequiredService<ShellViewModel>());
 
         // ViewModels
         services.AddTransient<LoginViewModel>();

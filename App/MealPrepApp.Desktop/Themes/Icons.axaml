@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StreamGeometry x:Key="IconHome">M3,10 L12,3 21,10 M5,9 V21 H10 V15 H14 V21 H19 V9</StreamGeometry>
+    <StreamGeometry x:Key="IconRecipe">M5,3 H18 V21 H5 Z M9,7 H15 M9,11 H15 M9,15 H13</StreamGeometry>
+    <StreamGeometry x:Key="IconPlan">M3,5 H21 V21 H3 Z M7,2 V8 M17,2 V8 M3,10 H21 M8,14 H10 M14,14 H16 M8,18 H10</StreamGeometry>
+    <StreamGeometry x:Key="IconFridge">M5,2 H19 V22 H5 Z M5,9 H19 M8,5 V7 M8,12 V16</StreamGeometry>
+    <StreamGeometry x:Key="IconShopping">M3,7 H21 L19,21 H5 Z M8,8 V6 A4,4 0 0 1 16,6 V8</StreamGeometry>
+    <StreamGeometry x:Key="IconIngredient">M5,20 C3,8 12,3 21,3 C21,15 16,22 5,20 Z M5,20 L16,9</StreamGeometry>
+    <StreamGeometry x:Key="IconReport">M4,3 V21 H22 M8,17 V12 M13,17 V7 M18,17 V4</StreamGeometry>
+    <StreamGeometry x:Key="IconProfile">M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7 M4,22 V19 C4,12 20,12 20,19 V22</StreamGeometry>
+    <StreamGeometry x:Key="IconSettings">M4,7 H20 M4,17 H20 M9,3 V11 M16,13 V21</StreamGeometry>
+    <StreamGeometry x:Key="IconClose">M5,5 L19,19 M19,5 L5,19</StreamGeometry>
+    <StreamGeometry x:Key="IconBack">M15,5 L8,12 15,19</StreamGeometry>
+    <StreamGeometry x:Key="IconNext">M9,5 L16,12 9,19</StreamGeometry>
+    <StreamGeometry x:Key="IconMore">M5,11 V13 M12,11 V13 M19,11 V13</StreamGeometry>
+</ResourceDictionary>

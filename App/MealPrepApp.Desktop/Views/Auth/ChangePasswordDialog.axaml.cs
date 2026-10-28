@@ -23,7 +23,7 @@ public partial class ChangePasswordDialog : Window
             if (changed)
             {
                 Tag = true;
-                Close();
+                Close(true);
             }
         }
     }
@@ -31,6 +31,6 @@ public partial class ChangePasswordDialog : Window
     private void OnCancelClick(object? sender, RoutedEventArgs e)
     {
         Tag = false;
-        Close();
+        Close(false);
     }
 }

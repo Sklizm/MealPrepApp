@@ -97,6 +97,12 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -145,6 +151,12 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {

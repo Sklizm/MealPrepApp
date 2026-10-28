@@ -18,6 +18,7 @@ public sealed class RecipeListItem
     public byte[]? PhotoData { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? FavoritedAt { get; set; }
+    public string? MatchLabel { get; set; }
     public int TotalCount { get; set; }
 }
 

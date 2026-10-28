@@ -1,75 +1,51 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
-        xmlns:models="using:MealPrepApp.Models"
-        x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredientNutritionDialog"
-        x:DataType="vm:IngredientNutritionDialogViewModel"
-        Title="Nutritie ingredient"
-        Width="420" SizeToContent="Height"
-        CanResize="False"
-        WindowStartupLocation="CenterOwner"
-        Background="{StaticResource CreamBrush}">
-
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredientNutritionDialog" x:DataType="vm:IngredientNutritionDialogViewModel" Title="Nutritie ingredient" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
-        <Border Grid.Row="0" Background="{StaticResource DarkBrush}" Height="40" Padding="16,0">
-            <TextBlock Text="Nutritie ingredient" Foreground="{StaticResource CreamBrush}"
-                       FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold"
-                       VerticalAlignment="Center" />
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
+            <TextBlock Text="Nutriție ingredient" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
         </Border>
-
         <StackPanel Grid.Row="1" Margin="20" Spacing="8">
-            <TextBlock Text="{Binding IngredientName}" Classes="Header" />
-            <TextBlock Text="Completeaza valorile nutritionale pentru o cantitate standard."
-                       Classes="Muted" TextWrapping="Wrap" />
-
+            <TextBlock Text="{Binding IngredientName}" Classes="Header"/>
+            <TextBlock Text="Completeaza valorile nutritionale pentru o cantitate standard." Classes="Muted" TextWrapping="Wrap"/>
             <Grid ColumnDefinitions="*,12,*">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Cantitate baza" Classes="Muted" />
-                    <TextBox Text="{Binding BasisQuantity}" />
+                    <TextBlock Text="Cantitate baza" Classes="Muted"/>
+                    <TextBox Text="{Binding BasisQuantity}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Text="Unitate baza" Classes="Muted" />
-                    <ComboBox ItemsSource="{Binding Units}"
-                              SelectedItem="{Binding SelectedUnit}" HorizontalAlignment="Stretch">
+                    <TextBlock Text="Unitate baza" Classes="Muted"/>
+                    <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="models:Unit">
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding Name}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
             </Grid>
-
             <StackPanel Spacing="4">
-                <TextBlock Text="Calorii" Classes="Muted" />
-                <TextBox Text="{Binding Calories}" />
+                <TextBlock Text="Calorii" Classes="Muted"/>
+                <TextBox Text="{Binding Calories}"/>
             </StackPanel>
-
             <Grid ColumnDefinitions="*,10,*,10,*">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Proteine (g)" Classes="Muted" />
-                    <TextBox Text="{Binding ProteinGrams}" />
+                    <TextBlock Text="Proteine (g)" Classes="Muted"/>
+                    <TextBox Text="{Binding ProteinGrams}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Text="Carbohidrati (g)" Classes="Muted" />
-                    <TextBox Text="{Binding CarbsGrams}" />
+                    <TextBlock Text="Carbohidrati (g)" Classes="Muted"/>
+                    <TextBox Text="{Binding CarbsGrams}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="4" Spacing="4">
-                    <TextBlock Text="Grasimi (g)" Classes="Muted" />
-                    <TextBox Text="{Binding FatGrams}" />
+                    <TextBlock Text="Grasimi (g)" Classes="Muted"/>
+                    <TextBox Text="{Binding FatGrams}"/>
                 </StackPanel>
             </Grid>
-
-            <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
-                       IsVisible="{Binding HasError}" Margin="0,4,0,0" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
         </StackPanel>
-
-        <Border Grid.Row="2" Background="{StaticResource Cream2Brush}" Padding="16,10">
+        <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Content="Renunta" Classes="Secondary" Click="OnCancelClick" />
-                <Button Content="Salveaza" Classes="Primary" Command="{Binding SaveCommand}"
-                        IsEnabled="{Binding !IsBusy}" />
+                <Button Content="Renunță" Classes="Secondary" Click="OnCancelClick"/>
+                <Button Content="Salvează" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
             </StackPanel>
         </Border>
     </Grid>

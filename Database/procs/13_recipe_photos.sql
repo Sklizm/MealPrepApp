@@ -11,7 +11,8 @@ CREATE OR ALTER PROCEDURE dbo.sp_SetRecipePhoto
     @RecipeID    INT,
     @UserID      INT,
     @ImageData   VARBINARY(MAX),
-    @ContentType NVARCHAR(100)
+    @ContentType NVARCHAR(100),
+    @ThumbnailData VARBINARY(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -31,12 +32,13 @@ BEGIN
         IF EXISTS (SELECT 1 FROM dbo.RecipePhotos WHERE RecipeID = @RecipeID)
             UPDATE dbo.RecipePhotos
             SET ImageData   = @ImageData,
+                ThumbnailData = @ThumbnailData,
                 ContentType = @ContentType,
                 UpdatedAt   = SYSUTCDATETIME()
             WHERE RecipeID = @RecipeID;
         ELSE
-            INSERT INTO dbo.RecipePhotos (RecipeID, ImageData, ContentType)
-            VALUES (@RecipeID, @ImageData, @ContentType);
+            INSERT INTO dbo.RecipePhotos (RecipeID, ImageData, ContentType, ThumbnailData)
+            VALUES (@RecipeID, @ImageData, @ContentType, @ThumbnailData);
 
         EXEC dbo.sp_WriteAudit
             @UserID     = @UserID,

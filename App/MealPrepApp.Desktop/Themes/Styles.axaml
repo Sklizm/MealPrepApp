@@ -1,137 +1,125 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!-- ============================================================
-         TextBlocks
-         ============================================================ -->
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:MealPrepApp.Desktop.Controls">
+    <Style Selector="ScrollViewer">
+        <Setter Property="controls:ScrollMemory.Enabled" Value="True"/>
+    </Style>
+    <Style Selector="Window, UserControl">
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
     <Style Selector="TextBlock.Title">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+        <Setter Property="FontSize" Value="28"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
-
     <Style Selector="TextBlock.Header">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
-
     <Style Selector="TextBlock.Body">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
-        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
+        <Setter Property="FontSize" Value="14"/>
     </Style>
-
     <Style Selector="TextBlock.Muted">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
-        <Setter Property="Foreground" Value="{StaticResource MossDarkBrush}" />
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
     </Style>
-
-    <!-- ============================================================
-         Buttons
-         ============================================================ -->
     <Style Selector="Button">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="14,7" />
-        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
-
-    <!-- Primary Button (Moss Green) -->
-    <Style Selector="Button.Primary, Button:not(.Secondary):not(.Danger):not(.Link):not(.Tab):not(.Chrome)">
-        <Setter Property="Background" Value="{StaticResource MossBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
+    <Style Selector="Button.Primary"><Setter Property="Background" Value="{DynamicResource ActionPrimary}"/><Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/></Style>
+    <Style Selector="CalendarDatePicker"><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/><Setter Property="Background" Value="{DynamicResource Surface}"/></Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ActionHover}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
     </Style>
-    <Style Selector="Button.Primary:pointerover, Button:not(.Secondary):not(.Danger):not(.Link):not(.Tab):not(.Chrome):pointerover">
-        <Setter Property="Opacity" Value="0.88" />
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ActionPressed}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
     </Style>
-
-    <!-- Secondary Button (Cream / Outlined) -->
-    <Style Selector="Button.Secondary">
-        <Setter Property="Background" Value="{StaticResource CreamBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource DarkBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
+    <Style Selector="Button.Secondary, Button.Link">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
-
-    <!-- Danger Button (Red) -->
-    <Style Selector="Button.Danger">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-    </Style>
-
-    <!-- Link Button -->
     <Style Selector="Button.Link">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource MossDarkBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="2" />
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
     </Style>
-    <Style Selector="Button.Link:pointerover">
-        <Setter Property="Foreground" Value="{StaticResource MossBrush}" />
+    <Style Selector="Button.Danger">
+        <Setter Property="Background" Value="{DynamicResource Danger}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnDanger}"/>
     </Style>
-
-    <!-- Window Chrome Button (used for fallback windowing) -->
-    <Style Selector="Button.Chrome">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Width" Value="46" />
-        <Setter Property="Height" Value="44" />
-        <Setter Property="FontSize" Value="14" />
+    <Style Selector="Button.Danger:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Danger}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnDanger}"/>
     </Style>
-
-    <!-- ============================================================
-         TextBoxes
-         ============================================================ -->
+    <Style Selector="Button:disabled">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+    <Style Selector="Button:focus-visible, RadioButton:focus-visible">
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
+    </Style>
+    <Style Selector="TextBox, ComboBox, NumericUpDown, AutoCompleteBox">
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
+    </Style>
     <Style Selector="TextBox">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
-        <Setter Property="Foreground" Value="{StaticResource DarkBrush}" />
-        <Setter Property="Background" Value="#FFF7F2E4" />
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Padding" Value="8,5" />
-        <Setter Property="CaretBrush" Value="{StaticResource DarkBrush}" />
-        <Setter Property="SelectionBrush" Value="{StaticResource MossLightBrush}" />
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource Selection}"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
     </Style>
-    <Style Selector="TextBox:focus">
-        <Setter Property="BorderBrush" Value="{StaticResource MossBrush}" />
+    <Style Selector="TextBox:focus, TextBox:focus-within">
+        <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
     </Style>
-
-    <!-- ============================================================
-         Card Panels
-         ============================================================ -->
+    <Style Selector="TextBox:error, NumericUpDown:error">
+        <Setter Property="BorderBrush" Value="{DynamicResource Danger}"/>
+    </Style>
     <Style Selector="Border.Card">
-        <Setter Property="Background" Value="{StaticResource Cream2Brush}" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
     </Style>
-
-    <!-- ============================================================
-         Tab RadioButtons
-         ============================================================ -->
     <Style Selector="RadioButton.Tab">
-        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeMenu}" />
-        <Setter Property="Foreground" Value="{StaticResource CreamBrush}" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Padding" Value="18,8" />
-        <Setter Property="Margin" Value="2,0" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Theme" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Name="PART_Border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="12,8">
+                    <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="MinHeight" Value="40"/>
     </Style>
-    <Style Selector="RadioButton.Tab:checked /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource MossBrush}" />
+    <Style Selector="RadioButton.Tab:checked">
+        <Setter Property="Background" Value="{DynamicResource Selection}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
-    <Style Selector="RadioButton.Tab:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#33FFFFFF" />
+    <Style Selector="RadioButton.Tab:pointerover">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
     </Style>
-
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="RowHeight" Value="44"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
+    </Style>
+    <Style Selector="Button /template/ ContentPresenter">
+        <Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="{DynamicResource MotionDuration}"/></Transitions></Setter>
+    </Style>
+    <Style Selector="RadioButton.Tab /template/ Border"><Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="{DynamicResource MotionDuration}"/></Transitions></Setter></Style>
+    <Style Selector="ProgressBar"><Setter Property="Value" Value="50"/></Style>
 </Styles>

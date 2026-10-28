@@ -26,7 +26,7 @@
                 IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
 
         <Button Content="Ai uitat parola?" Style="{StaticResource LinkButton}"
-                Margin="0,12,0,0" Command="{Binding ForgotPasswordCommand}" />
+                Margin="0,12,0,0" Command="{Binding ForgotPasswordCommand}" IsEnabled="False" ToolTip="Contacteaza administratorul pentru recuperarea contului." />
 
         <Button Content="Cont nou? Inregistreaza-te" Style="{StaticResource LinkButton}"
                 Margin="0,8,0,0" Command="{Binding SwitchToRegisterCommand}" />

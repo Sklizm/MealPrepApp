@@ -1,58 +1,52 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!-- ============================================================
-         Palette — olive / cream / dark brown (from AppColors)
-         ============================================================ -->
-    <Color x:Key="MossColor">#FF8C9657</Color>
-    <Color x:Key="MossDarkColor">#FF6B7340</Color>
-    <Color x:Key="MossLightColor">#FFB5BE88</Color>
-    <Color x:Key="DarkColor">#FF2E2820</Color>
-    <Color x:Key="CreamColor">#FFF0E5C7</Color>
-    <Color x:Key="Cream2Color">#FFE8DDB8</Color>
-    <Color x:Key="SidebarColor">#FFDDD5B0</Color>
-    <Color x:Key="SearchBgColor">#FF9AA070</Color>
-    <Color x:Key="TableAltColor">#FFE8E4CC</Color>
-    <Color x:Key="TableSelColor">#FFC8D4A0</Color>
-    <Color x:Key="DividerColor">#FFA0A078</Color>
-
-    <!-- Meal-slot accent colors -->
-    <Color x:Key="MealBreakfastColor">#FFB5D4B5</Color>
-    <Color x:Key="MealLunchColor">#FFA8C4E0</Color>
-    <Color x:Key="MealDinnerColor">#FFE0B8A8</Color>
-    <Color x:Key="MealSnackColor">#FFE8D89A</Color>
-
-    <!-- Semantic accents -->
-    <Color x:Key="DangerColor">#FF8A2010</Color>
-    <Color x:Key="WarningColor">#FFC0A040</Color>
-
-    <!-- Brushes -->
-    <SolidColorBrush x:Key="MossBrush" Color="{StaticResource MossColor}" />
-    <SolidColorBrush x:Key="MossDarkBrush" Color="{StaticResource MossDarkColor}" />
-    <SolidColorBrush x:Key="MossLightBrush" Color="{StaticResource MossLightColor}" />
-    <SolidColorBrush x:Key="DarkBrush" Color="{StaticResource DarkColor}" />
-    <SolidColorBrush x:Key="CreamBrush" Color="{StaticResource CreamColor}" />
-    <SolidColorBrush x:Key="Cream2Brush" Color="{StaticResource Cream2Color}" />
-    <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
-    <SolidColorBrush x:Key="SearchBgBrush" Color="{StaticResource SearchBgColor}" />
-    <SolidColorBrush x:Key="TableAltBrush" Color="{StaticResource TableAltColor}" />
-    <SolidColorBrush x:Key="TableSelBrush" Color="{StaticResource TableSelColor}" />
-    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
-    <SolidColorBrush x:Key="MealBreakfastBrush" Color="{StaticResource MealBreakfastColor}" />
-    <SolidColorBrush x:Key="MealLunchBrush" Color="{StaticResource MealLunchColor}" />
-    <SolidColorBrush x:Key="MealDinnerBrush" Color="{StaticResource MealDinnerColor}" />
-    <SolidColorBrush x:Key="MealSnackBrush" Color="{StaticResource MealSnackColor}" />
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
-
-    <!-- Typography: San Francisco / Inter / system font stack -->
-    <FontFamily x:Key="AppFontFamily">avares://Avalonia.Fonts.Inter/Assets#Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Cantarell, sans-serif</FontFamily>
-
-    <x:Double x:Key="FontSizeTitle">18</x:Double>
-    <x:Double x:Key="FontSizeHeader">14</x:Double>
-    <x:Double x:Key="FontSizeAction">15</x:Double>
-    <x:Double x:Key="FontSizeMenu">15</x:Double>
-    <x:Double x:Key="FontSizeBody">13</x:Double>
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="AppBackground" Color="#F8F7F4"/>
+            <SolidColorBrush x:Key="Surface" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="SurfaceSecondary" Color="#EEF2EC"/>
+            <SolidColorBrush x:Key="TextPrimary" Color="#202923"/>
+            <SolidColorBrush x:Key="TextSecondary" Color="#5F6B63"/>
+            <SolidColorBrush x:Key="ActionPrimary" Color="#28654B"/>
+            <SolidColorBrush x:Key="OnPrimary" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="Accent" Color="#A64F35"/>
+            <SolidColorBrush x:Key="Danger" Color="#A52D36"/>
+            <SolidColorBrush x:Key="OnDanger" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="Divider" Color="#D3DBD1"/>
+            <SolidColorBrush x:Key="ActionHover" Color="#1E523C"/>
+            <SolidColorBrush x:Key="ActionPressed" Color="#173E2E"/>
+            <SolidColorBrush x:Key="Selection" Color="#DCECDF"/>
+            <SolidColorBrush x:Key="Focus" Color="#28654B"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="AppBackground" Color="#151C18"/>
+            <SolidColorBrush x:Key="Surface" Color="#1D2721"/>
+            <SolidColorBrush x:Key="SurfaceSecondary" Color="#26332B"/>
+            <SolidColorBrush x:Key="TextPrimary" Color="#EDF2EC"/>
+            <SolidColorBrush x:Key="TextSecondary" Color="#A6B4A9"/>
+            <SolidColorBrush x:Key="ActionPrimary" Color="#8BC5A3"/>
+            <SolidColorBrush x:Key="OnPrimary" Color="#11251A"/>
+            <SolidColorBrush x:Key="Accent" Color="#D9987E"/>
+            <SolidColorBrush x:Key="Danger" Color="#F3A2A8"/>
+            <SolidColorBrush x:Key="OnDanger" Color="#391217"/>
+            <SolidColorBrush x:Key="Divider" Color="#48594C"/>
+            <SolidColorBrush x:Key="ActionHover" Color="#A1D4B6"/>
+            <SolidColorBrush x:Key="ActionPressed" Color="#71B28C"/>
+            <SolidColorBrush x:Key="Selection" Color="#344F3D"/>
+            <SolidColorBrush x:Key="Focus" Color="#8BC5A3"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    <SolidColorBrush x:Key="MealBreakfast" Color="#8B4331"/>
+    <SolidColorBrush x:Key="MealLunch" Color="#28654B"/>
+    <SolidColorBrush x:Key="MealDinner" Color="#365776"/>
+    <SolidColorBrush x:Key="MealSnack" Color="#78531A"/>
+    <SolidColorBrush x:Key="MealDessert" Color="#694770"/>
+    <SolidColorBrush x:Key="MealDrink" Color="#315F6B"/>
+    <SolidColorBrush x:Key="OnMeal" Color="White"/>
+    <FontFamily x:Key="AppFontFamily">avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
+    <x:Double x:Key="FontSizeTitle">28</x:Double>
+    <x:Double x:Key="FontSizeHeader">20</x:Double>
+    <x:Double x:Key="FontSizeAction">14</x:Double>
+    <x:Double x:Key="FontSizeMenu">14</x:Double>
+    <x:Double x:Key="FontSizeBody">14</x:Double>
     <x:Double x:Key="FontSizeSmall">12</x:Double>
-
 </ResourceDictionary>

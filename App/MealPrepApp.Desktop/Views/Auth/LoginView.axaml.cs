@@ -16,7 +16,7 @@ public partial class LoginView : UserControl
         if (DataContext is LoginViewModel vm)
         {
             var password = PasswordBox.Text ?? "";
-            _ = vm.LoginAsync(password);
+            _ = MealPrepApp.Desktop.Services.UiOperation.RunAsync(() => vm.LoginAsync(password));
         }
     }
 }

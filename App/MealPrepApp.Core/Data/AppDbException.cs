@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using MealPrepApp.Services;
 
 namespace MealPrepApp.Data;
 
@@ -20,6 +21,7 @@ public sealed class AppDbException : Exception
     public AppDbException(SqlException inner)
         : base(inner.Message, inner)
     {
+        AppDiagnostics.Record(inner);
         ErrorNumber = inner.Number;
         IsKnown = DbExceptionMapper.IsKnown(inner.Number);
 

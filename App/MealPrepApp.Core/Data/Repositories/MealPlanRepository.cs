@@ -46,4 +46,6 @@ public sealed class MealPlanRepository : RepositoryBase
     public Task<IReadOnlyList<MealPlanEntry>> GetMonthlyPlanAsync(int userId, int year, int month) =>
         QueryProcAsync<MealPlanEntry>("sp_GetMonthlyPlan",
             new { UserID = userId, Year = year, Month = month });
+    public Task<IReadOnlyList<WeekCopyPreview>> PreviewWeekCopyAsync(int userId,DateTime source,DateTime target)=>QueryProcAsync<WeekCopyPreview>("sp_PreviewWeekCopy",new {UserID=userId,Source=source.Date,Target=target.Date});
+    public Task<int> CopyWeekAsync(int userId,DateTime source,DateTime target,byte[] previewToken)=>ExecuteScalarProcAsync<int>("sp_CopyWeek",new {UserID=userId,Source=source.Date,Target=target.Date,PreviewToken=previewToken});
 }

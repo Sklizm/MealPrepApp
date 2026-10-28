@@ -1,0 +1,12 @@
+[
+  {
+    "path": "dist/mac/MealPrepApp.app/Contents/MacOS/MealPrepApp.Desktop",
+    "bytes": 124712,
+    "sha256": "d204e43994298ad9bb60cc2dbeee37b074c0eb0b1e4fb254fc524496452dcb90"
+  },
+  {
+    "path": "dist/linux/MealPrepApp.Desktop",
+    "bytes": 78192,
+    "sha256": "2bfc327375b607ddbeb6e2f68503f580e767b6dfb51d728bf7a5e1c6590146e5"
+  }
+]

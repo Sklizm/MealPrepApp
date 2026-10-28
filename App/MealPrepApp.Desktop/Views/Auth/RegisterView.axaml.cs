@@ -17,7 +17,7 @@ public partial class RegisterView : UserControl
         {
             var p1 = PasswordBox.Text ?? "";
             var p2 = ConfirmPasswordBox.Text ?? "";
-            _ = vm.RegisterAsync(p1, p2);
+            _ = MealPrepApp.Desktop.Services.UiOperation.RunAsync(() => vm.RegisterAsync(p1, p2));
         }
     }
 }

@@ -1,254 +1,183 @@
-# MealPrepApp — Cross-Platform Meal Planning & Nutrition Tracker
+# MealPrepApp
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![Avalonia UI](https://img.shields.io/badge/Avalonia%20UI-11.2-8E44AD?logo=avalonia)](https://avaloniaui.net/)
-[![WPF](https://img.shields.io/badge/WPF-Windows-0078D7?logo=windows)](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/)
-[![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC292B?logo=microsoftsqlserver)](https://www.microsoft.com/sql-server)
-[![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux%20(NixOS)%20%7C%20Windows-brightgreen)](#multi-device-topology)
+Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Server database. Built for the UTM software engineering practicum.
 
-**MealPrepApp** is an enterprise-grade desktop meal planning, recipe inventory, pantry tracker, and nutritional estimation application. Originally created for Windows with WPF, it features a modern multi-project cross-platform architecture running natively on **macOS (Apple Silicon)**, **Linux (NixOS / Wayland)**, and **Windows**, powered 24/7 by a central **SQL Server** database on a home server.
+- **macOS Apple Silicon and Linux x64:** Avalonia 11.3 Desktop client with Romanian labels, native window decorations, Inter typography and warm System / Light / Dark themes.
+- **Windows:** the original WPF client is retained for grading and shares Core logic. The Desktop redesign does not replace its interface.
+- **Database:** SQL Server 2022, accessed through stored procedures with UTC timestamps, mutation auditing and recipe concurrency checks.
 
----
+![Home in the light theme](docs/redesign/screenshots/home-Light-1280-100.png)
 
-## Multi-Device Topology
+[Recipe detail](docs/redesign/screenshots/recipe-Dark-1280-100.png) · [Weekly planner](docs/redesign/screenshots/planner-Light-1280-100.png) · [Design and rollout](docs/redesign/README.md) · [Validation evidence](docs/redesign/validation.md)
 
-```mermaid
-graph TD
-    subgraph ExecutionHost ["24/7 Home Server (Host)"]
-        DB["MealPrepDB Container<br/>(SQL Server 2022 on Port 1433)<br/>• Stored Procedure-only API<br/>• Automated Audit Logging<br/>• Persistent Storage Volume"]
-    end
+## Features
 
-    subgraph ClientEndpoints ["Client Endpoints"]
-        Mac["MacBook (macOS Apple Silicon)<br/>MealPrepApp.app (Avalonia UI 11)<br/>• Native Window Chrome & Traffic Lights<br/>• Top NativeMenu Bar<br/>• Self-Contained Bundle"]
-        Nix["Workstation (NixOS + Umbriel & Noctalia)<br/>mealprep-desktop (Avalonia UI 11)<br/>• Native Wayland & Hyprland Integration<br/>• Nix Flake & devShell with Skia Libs"]
-        Win["Windows Endpoint (Grading / Practica)<br/>MealPrepApp (WPF net10.0-windows)<br/>• Preserved Windows Practica Client<br/>• Shared MealPrepApp.Core Logic"]
-    end
+- Browse recipes with combined search, category, sorting, favorites, recent recipes and drafts; switch between cards and lists.
+- Edit recipes with searchable ingredient selection, numeric inputs and draft/discard/stay guards for unsaved edits. Manage photos from saved recipe details.
+- Scale displayed ingredients and nutrition using decimal arithmetic without changing the saved recipe. Missing nutrition data remains labelled.
+- Cook with readable instruction paragraphs, temporary ingredient checkboxes and a manual timer that continues across navigation while the app stays open. Closing the app or signing out ends the cooking session.
+- Plan weeks or months, use a narrow agenda, move or duplicate meals, and preview a week copy before saving. Copies preserve existing target meals and skip exact duplicates.
+- Search and group pantry stock and catalog ingredients, and edit pantry quantities directly.
+- Save shopping-list snapshots and purchase state per user across clients. Generate a new list without losing the old one, filter purchases, export Excel or copy plain text.
+- Explicitly import a shopping item into the pantry once per snapshot item. Checking a purchase or cooking ingredient does not change stock. Only supported compatible units are normalized; incompatible units remain separate.
+- View nutrition estimates, category distributions and recipe/ingredient rankings with readable tables.
 
-    Mac -->|"LAN / Tailscale (1433)"| DB
-    Nix -->|"LAN / Tailscale (1433)"| DB
-    Win -->|"LAN / Tailscale (1433)"| DB
+## Repository
+
+| Path | Purpose |
+|---|---|
+| `App/MealPrepApp.Core/` | Shared models, presentation logic, services and Dapper repositories; no UI framework dependency |
+| `App/MealPrepApp.Desktop/` | Avalonia views, semantic themes, icons, settings and native dialogs |
+| `App/MealPrepApp/` | Windows WPF practica client |
+| `Database/` | Schema, stored procedures, seeds and additive migrations |
+| `Tests/` | Headless UI/Core regressions, isolated SQL tests and updater checks |
+| `scripts/` | Packaging, Linux launcher installation and backup-first database updates |
+| `nix/` | [Nix setup and dependency bootstrap](nix/README.md) |
+| `docs/redesign/` | [Screenshots, implementation notes and acceptance flow](docs/redesign/README.md) |
+| `Raport/` | [Romanian academic report generator](Raport/README.md) |
+| `Vault/` | Historical project notes and decisions |
+
+## Build and run
+
+Install the .NET 10 SDK; `global.json` selects the 10.0 SDK family. Run these commands from the repository root. Self-contained packages include the runtime, but building requires the SDK and a successful NuGet restore.
+
+### macOS Apple Silicon
+
+Build on the Mac or cross-publish from a .NET host, then create a transfer archive:
+
+```bash
+bash scripts/build-mac.sh -m:1 &&
+tar -czf dist/MealPrepApp-macos-arm64.tar.gz -C dist/mac MealPrepApp.app
 ```
 
----
+Transfer the archive to the Mac, extract it and replace the previous app. Launch on macOS:
 
-## Solution Architecture
-
-The solution uses a clean, decoupled MVVM architecture targeting `.NET 10`:
-
-```text
-MealPrepApp/
-├── App/
-│   ├── MealPrepApp.Core/          # Target: net10.0 (Pure C# Library)
-│   │   ├── Models/                # 12 domain DTOs (Recipe, Ingredient, Pantry, MealPlan, Nutrition)
-│   │   ├── Data/                  # SqlConnectionFactory, Dapper repositories, custom exceptions
-│   │   ├── Services/              # Cross-platform abstractions (IFilePickerService, IDialogService, Session)
-│   │   └── ViewModels/            # 37 ViewModels decoupled from platform APIs
-│   │
-│   ├── MealPrepApp.Desktop/       # Target: net10.0 (Avalonia UI 11.2)
-│   │   ├── Views/                 # ShellWindow, Auth, Acasa, Retete, Ingrediente, Planificare, Rapoarte
-│   │   ├── Themes/                # Forest, Moss, Cream, and Dark visual design system
-│   │   ├── Converters/            # Platform converters (Image, Date, Opacity, Category Brushes)
-│   │   ├── Services/              # DesktopDialogService, DesktopFilePickerService (IStorageProvider)
-│   │   └── Assets/                # Info.plist (macOS), mealprep.desktop (Linux)
-│   │
-│   └── MealPrepApp/               # Target: net10.0-windows (WPF Practica Client)
-│       ├── Views/                 # Preserved WPF XAML windows and user controls
-│       └── Services/              # WpfFilePickerService, WPF DialogService
-│
-├── Database/                      # SQL Server 2022 schema, procs, seeds, and run_all.sql
-├── scripts/
-│   ├── build-mac.sh               # Builds self-contained MealPrepApp.app bundle for macOS (arm64)
-│   └── build-linux.sh             # Publishes standalone Linux x64 binary
-├── docker-compose.db.yml          # Home server Docker Compose service for SQL Server 2022
-├── flake.nix                      # NixOS flake with required graphics & font libraries
-├── shell.nix                      # Classic Nix development shell
-├── MealPrepApp.slnx               # Modern unified .NET 10 solution file
-└── Vault/                         # Project memory & design decisions (Obsidian)
+```bash
+open dist/mac/MealPrepApp.app
 ```
 
----
+The script produces `dist/mac/MealPrepApp.app`; the separate `tar` command produces the archive. The bundle uses native window decorations, a native menu and file pickers. Packaging does not sign or notarize it.
 
-## Core Features
+### Linux x64
 
-### 1. User Authentication & Security
-- **Proc-Only Database API:** Direct table access (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) is explicitly `DENIED` to the application login. All operations run through parameterized stored procedures.
-- **BCrypt Password Hashing:** Salted hashing with client-side verification.
-- **Account Lockout:** 5 consecutive failed login attempts trigger an automatic 15-minute SQL-level account lockout.
-- **Password History:** Enforces password rotation by preventing reuse of the last 3 passwords.
-- **Audit Logging:** Every mutating database action writes an event to `AuditLog`.
+```bash
+bash scripts/build-linux.sh -m:1
+./dist/linux/MealPrepApp.Desktop
+```
 
-### 2. Recipes & Smart Inventory
-- **Full Recipe Management:** Preparation time, cooking time, category, instructions, notes, and structured ingredient rows.
-- **Optimistic Concurrency:** Uses SQL Server `ROWVERSION` (`TIMESTAMP`) tokens to detect and prevent stale overwrite conflicts.
-- **Photo Storage:** Stores optimized JPEG image bytes directly in the database.
-- **Recipe Drafts:** Save work-in-progress recipes and resume editing later.
-- **Ingredient Matching:** "What can I cook with these ingredients?" multi-parameter search.
+To install a launcher pointing to this folder:
 
-### 3. Fridge (`Frigider`) & Dynamic Shopping Lists
-- **Pantry Tracking:** Real-time user inventory with unit conversions (g/kg, ml/l).
-- **Intelligent Upsert:** Adding existing ingredients in the fridge increments quantities automatically.
-- **Automated Shopping List:** Calculates total ingredients required for planned meals across a custom date range, automatically subtracting what is already on hand in the fridge.
-- **Excel Export:** Generates formatted `.xlsx` spreadsheets using `ClosedXML`.
+```bash
+bash scripts/install-linux.sh
+```
 
-### 4. Interactive Meal Planning
-- **Weekly View:** 7-day × 4-slot grid (Breakfast, Lunch, Dinner, Snack) with colored meal category badges.
-- **Monthly Calendar:** 6×7 interactive calendar grid with per-day meal badges and today-highlighting.
-- **Fast Rescheduling:** Drag, edit, or reassign meals on the fly.
+Keep the published folder at that location, or rerun the installer after moving it. Linux uses **X11 / XWayland**, including under Hyprland; this version has no native Wayland backend. NixOS users should follow the [Nix README](nix/README.md) for native-library dependencies and the package bootstrap.
 
-### 5. Nutrition Analysis
-- **Automatic Calculations:** Caloric, protein, carbohydrate, and fat breakdown per recipe and per serving.
-- **Unit Normalization:** Automatic conversion between weight, volume, and count units.
-- **Missing Data Alerts:** Flags ingredients missing nutritional baselines rather than guessing values.
+### Development
 
-### 6. Reports & Statistics
-- **Monthly Overview:** Headline KPIs for total meals planned, distinct recipes cooked, and ingredient variety.
-- **Category Breakdown:** Distribution of breakfasts, lunches, dinners, and snacks.
-- **Top Rankings:** Top 5 planned recipes and Top 10 frequently used ingredients.
-- **Printable Overviews:** Dedicated views for weekly meal printouts and shopping lists.
+```bash
+dotnet run --project App/MealPrepApp.Desktop
+```
 
----
+### Windows WPF
 
-## Getting Started
+On Windows with the .NET 10 SDK:
 
-### 1. Database Setup (Home Server)
+```powershell
+dotnet build App/MealPrepApp/MealPrepApp.csproj -c Release
+dotnet run --project App/MealPrepApp/MealPrepApp.csproj
+```
 
-Launch the SQL Server 2022 container:
+To publish the practica executable, run `App\publish-windows-exe.cmd`. Output: `App/publish/MealPrepApp-win-x64/MealPrepApp.exe`.
+
+## Connection settings
+
+Deploy the database before using the client. Desktop loads `appsettings.json`, the first matching development/local override, then the per-user override. Configure the connection through **Setări** after signing in, or create the per-user file before the first login:
+
+| Platform | Typical per-user directory |
+|---|---|
+| macOS | `~/Library/Application Support/MealPrepApp/` |
+| Linux | `~/.local/share/MealPrepApp/` |
+
+The actual directory follows .NET `LocalApplicationData` and platform environment settings. Put `appsettings.Local.json` there using `App/MealPrepApp.Desktop/appsettings.Local.template.json` as a template. Development also probes `App/MealPrepApp.Desktop/appsettings.Local.json` when launched from the repository root. WPF uses its own local template under `App/MealPrepApp/`.
+
+```json
+{
+  "ConnectionStrings": {
+    "MealPrepDB": "Server=<server-tailscale-ip>,1433;Database=MealPrepDB;User Id=mealprep_app;Password=<deployment-password>;TrustServerCertificate=True;Encrypt=True"
+  }
+}
+```
+
+For the home-server deployment, obtain its current Tailscale IPv4 on the server with `tailscale ip -4`. The client must be able to reach that host on TCP 1433. Use a comma before the SQL port. Connection changes saved in settings require restarting the app.
+
+Local credentials are gitignored and excluded from published packages. Theme, recipe-view and reduced-motion choices live separately in `preferences.json`. Redacted diagnostics live in the per-user `MealPrepApp/logs/` directory.
+
+## Database setup and upgrades
+
+Docker Compose starts SQL Server; it does not automatically execute `run_all.sql`.
+
+### Existing database
+
+Run the disposable suite first from a Docker-capable shell. After it passes, close desktop clients and apply both updates on the database host:
+
+```bash
+bash scripts/test-database.sh &&
+bash scripts/update-database.sh mealprep-db &&
+bash scripts/update-database.sh mealprep-db 20261028_cooking_redesign.sql
+```
+
+Each update creates a copy-only checksum backup, verifies it and copies it to gitignored `backups/` before migration. Backup failure stops the update. These migrations preserve existing users, data and login credentials; the second adds saved shopping lists and week copying. Use this path for an existing deployment. [Detailed rollout and acceptance checks](docs/redesign/README.md#database-rollout).
+
+### New database
+
+Set `MSSQL_SA_PASSWORD` in the deployment environment, then start the container:
 
 ```bash
 docker compose -f docker-compose.db.yml up -d
 ```
 
-Initialize the database schema, stored procedures, and initial seed data:
+Once SQL Server is ready, initialize from the mounted schema directory, supplying a separate application-login password. The command below prompts for it and keeps the administrator password inside the container:
 
 ```bash
-docker exec -w /docker-entrypoint-initdb.d mealprep-db \
-  /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'MealPrepSecure2026!' -C -b -i run_all.sql
+read -r -s -p 'New application-login password: ' MEALPREP_APP_PASSWORD
+printf '\n'
+printf '%s\n' "$MEALPREP_APP_PASSWORD" |
+  docker exec -i -w /docker-entrypoint-initdb.d mealprep-db sh -c '
+    IFS= read -r MEALPREP_APP_PASSWORD
+    export SQLCMDPASSWORD="$MSSQL_SA_PASSWORD"
+    exec /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b \
+      -v AppPassword="$MEALPREP_APP_PASSWORD" -i run_all.sql
+  '
+unset MEALPREP_APP_PASSWORD
 ```
 
-The script is **completely idempotent** and safe to execute against an existing database.
+Use a SQL-policy-compliant password without single quotes or newlines: the initialization script interpolates it into the login-creation SQL. `run_all.sql` includes schema, seeds and procedures; repeatability is covered by the disposable test suite. Existing login passwords are not rotated by initialization. Credential rotation is a separate deployment operation.
 
----
-
-### 2. Local Configuration
-
-Both the Avalonia desktop app and the WPF app read connection settings from `appsettings.Local.json` (which is gitignored to keep credentials private).
-
-Copy the template:
+## Verification
 
 ```bash
-cp App/MealPrepApp.Desktop/appsettings.Local.template.json App/MealPrepApp.Desktop/appsettings.Local.json
+dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
+dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release
+python3 Tests/Scripts/test_database_update.py
+python3 Tests/Scripts/check_redesign_contrast.py
+bash scripts/test-database.sh
 ```
 
-Edit `appsettings.Local.json` with your home server's IP (or Tailscale IP):
-
-```json
-{
-  "ConnectionStrings": {
-    "MealPrepDB": "Server=192.168.100.109,1433;Database=MealPrepDB;User Id=mealprep_app;Password=MealPrepSecure2026!;TrustServerCertificate=True;Encrypt=True"
-  }
-}
-```
-
----
-
-## Building & Running
-
-### macOS (Apple Silicon MacBook)
-
-To build the self-contained `.app` bundle:
+The direct runner works in environments where VSTest cannot create its local TCP listener. It does not replace standard test discovery. To regenerate the screenshot matrix from database-free fixtures:
 
 ```bash
-./scripts/build-mac.sh
+dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --screenshots
 ```
 
-This creates:
-```text
-dist/mac/MealPrepApp.app
-```
-Double-click or launch from terminal:
-```bash
-open dist/mac/MealPrepApp.app
-```
+The redesign has a successful Release build, **21 direct regression checks**, **28 contrast checks**, **72 shell renders** across two themes, three sizes and three render DPIs, and successful macOS/Linux packaging. GitHub Actions is configured for cross-platform tests, Windows WPF compilation, packaging and disposable SQL checks.
 
-**macOS Features:**
-- Extends window content into title bar with native macOS traffic lights (Close, Minimize, Zoom).
-- Top screen `NativeMenu` integration for application menu items.
-- High-DPI Retina support and native file picker sheets.
+The complete expanded SQL suite, WPF compilation and full native macOS/Hyprland acceptance flow still require verification outside the restricted build environment. Codrin reports the rebuilt app looks good; this does not establish every acceptance check. The agent has not applied the database migrations. See [current evidence and limitations](docs/redesign/validation.md) and the [earlier compatibility repair history](docs/compatibility-repair.md).
 
----
+## Architecture and scope
 
-### NixOS (Workstation with Umbriel & Noctalia)
+Core remains platform-neutral, and repositories call parameterized stored procedures rather than direct table DML. The application database role denies direct table access. Stored procedures enforce recipe ownership and optimistic concurrency, record mutation audits and use UTC timestamps.
 
-Using Nix Flakes:
+The existing architecture trusts desktop clients with shared database access and user IDs; UI sign-in is not a server-enforced authentication boundary. Household sharing, expiry batches, nutrition goals, URL import, AI planning and a web frontend are outside this redesign.
 
-```bash
-# Enter the reproducible dev environment with all Skia/Wayland libraries:
-nix develop
-
-# Run the desktop app:
-dotnet run --project App/MealPrepApp.Desktop
-```
-
-Or using classic `nix-shell`:
-
-```bash
-nix-shell --run "dotnet run --project App/MealPrepApp.Desktop"
-```
-
-To build a standalone package via Nix:
-
-```bash
-nix build
-```
-
----
-
-### Linux (Generic x64 Standalone)
-
-To produce a single-file executable for Linux:
-
-```bash
-./scripts/build-linux.sh
-```
-
-Output binary:
-```bash
-./dist/linux/MealPrepApp.Desktop
-```
-
----
-
-### Windows (Original WPF Practica Project)
-
-To run the WPF application on Windows:
-
-```cmd
-cd App\MealPrepApp
-dotnet run
-```
-
-To publish the standalone Windows `.exe`:
-
-```cmd
-App\publish-windows-exe.cmd
-```
-
-Output:
-```text
-App\publish\MealPrepApp-win-x64\MealPrepApp.exe
-```
-
----
-
-## Architectural Rules
-
-- **Zero Direct Table DML:** Only stored procedures may be called from C# repositories.
-- **Portable ViewModels:** ViewModels in `MealPrepApp.Core` must never reference WPF (`System.Windows`), Avalonia (`Avalonia.*`), or platform-specific file dialogs.
-- **UTC Everywhere:** Timestamps are stored in UTC (`SYSUTCDATETIME()`) and converted to local time in the UI presentation layer.
-- **Auditing:** All inserts, updates, and deletes record user identity and execution metadata in `AuditLog`.
-
----
-
-## License
-
-Created for academic coursework and practica at the Technical University of Moldova (UTM), Faculty of Computers, Informatics and Microelectronics (FCIM).
+Created for coursework at the Technical University of Moldova, FCIM.

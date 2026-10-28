@@ -58,13 +58,14 @@ public sealed class RecipeRepository : RepositoryBase
         ExecuteProcAsync("sp_DeleteRecipe", new { RecipeID = recipeId, UserID = userId });
 
     /// <summary>Inserts or replaces the single stored photo for a recipe. Owner-only in SQL.</summary>
-    public Task SetRecipePhotoAsync(int recipeId, int userId, byte[] imageData, string contentType) =>
+    public Task SetRecipePhotoAsync(int recipeId, int userId, byte[] imageData, string contentType, byte[]? thumbnailData = null) =>
         ExecuteProcAsync("sp_SetRecipePhoto", new
         {
             RecipeID = recipeId,
             UserID = userId,
             ImageData = imageData,
-            ContentType = contentType
+            ContentType = contentType,
+            ThumbnailData = thumbnailData
         });
 
     /// <summary>Loads the stored photo for a recipe, or null when the recipe has no photo.</summary>
@@ -88,15 +89,22 @@ public sealed class RecipeRepository : RepositoryBase
             return recipe;
         });
 
+    public Task<IReadOnlyList<RecipeListItem>> BrowseAsync(
+        int userId, string mode, string term, int? categoryId, int pageNumber, int pageSize,
+        CancellationToken cancellationToken = default, string sort="Cele mai noi") =>
+        QueryProcAsync<RecipeListItem>("sp_BrowseRecipes",
+            new { UserID = userId, Mode = mode, Term = term, CategoryID = categoryId,
+                PageNumber = pageNumber, PageSize = pageSize, Sort=sort }, cancellationToken);
+
     public Task<IReadOnlyList<RecipeListItem>> GetRecipesAsync(
         int? userId = null, int? categoryId = null, int pageNumber = 1, int pageSize = 20) =>
         QueryProcAsync<RecipeListItem>("sp_GetRecipes",
             new { UserID = userId, CategoryID = categoryId, PageNumber = pageNumber, PageSize = pageSize });
 
     public Task<IReadOnlyList<RecipeListItem>> SearchRecipesByTitleAsync(
-        string term, int pageNumber = 1, int pageSize = 20) =>
+        string term, int pageNumber = 1, int pageSize = 20, CancellationToken cancellationToken = default) =>
         QueryProcAsync<RecipeListItem>("sp_SearchRecipesByTitle",
-            new { Term = term, PageNumber = pageNumber, PageSize = pageSize });
+            new { Term = term, PageNumber = pageNumber, PageSize = pageSize }, cancellationToken);
 
     /// <summary>"What can I make with…?" — passes the ids as the <c>dbo.IntList</c> table-valued parameter.</summary>
     public Task<IReadOnlyList<RecipeFindResult>> FindRecipesByIngredientsAsync(

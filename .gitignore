@@ -26,3 +26,6 @@ Vault/.trash/
 *.bak
 *.swp
 .DS_Store
+
+# Local database backups contain private application data.
+/backups/

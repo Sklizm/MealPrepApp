@@ -17,10 +17,11 @@ public sealed class DesktopFilePickerService : IFilePickerService
         var file = await sp.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = title,
-            SuggestedFileName = defaultFileName
+            SuggestedFileName = defaultFileName,
+            FileTypeChoices = ParseFilter(filter)
         });
 
-        return file?.Path.LocalPath;
+        return file?.TryGetLocalPath();
     }
 
     public async Task<string?> OpenFileDialogAsync(string title, string filter)
@@ -32,10 +33,20 @@ public sealed class DesktopFilePickerService : IFilePickerService
         var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = title,
-            AllowMultiple = false
+            AllowMultiple = false,
+            FileTypeFilter = ParseFilter(filter)
         });
 
-        return files.FirstOrDefault()?.Path.LocalPath;
+        return files.FirstOrDefault()?.TryGetLocalPath();
+    }
+
+    internal static IReadOnlyList<FilePickerFileType> ParseFilter(string filter)
+    {
+        var parts = filter.Split('|');
+        var types = new List<FilePickerFileType>();
+        for (var i = 0; i + 1 < parts.Length; i += 2)
+            types.Add(new FilePickerFileType(parts[i]) { Patterns = parts[i + 1].Split(';') });
+        return types;
     }
 
     private static TopLevel? GetTopLevel()

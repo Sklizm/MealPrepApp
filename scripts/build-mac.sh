@@ -17,17 +17,14 @@ dotnet publish "$REPO_ROOT/App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj" \
     -c Release \
     -r osx-arm64 \
     --self-contained true \
-    -p:PublishSingleFile=true \
-    -o "$MACOS_DIR"
+    -p:PublishSingleFile=false \
+    -o "$MACOS_DIR" \
+    "$@"
 
 cp "$REPO_ROOT/App/MealPrepApp.Desktop/Assets/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
 
 chmod +x "$MACOS_DIR/MealPrepApp.Desktop"
 
-# If local config exists, copy it into bundle as template
-if [ -f "$REPO_ROOT/App/MealPrepApp.Desktop/appsettings.Local.json" ]; then
-    cp "$REPO_ROOT/App/MealPrepApp.Desktop/appsettings.Local.json" "$MACOS_DIR/"
-fi
 
 echo "=== Build Complete! ==="
 echo "Application bundle created at: $APP_BUNDLE"

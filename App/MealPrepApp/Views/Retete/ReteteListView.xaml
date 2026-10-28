@@ -83,6 +83,9 @@
                 <RadioButton Content="Drafts" Style="{StaticResource SideNavRadio}" GroupName="ReteteFilter"
                              Command="{Binding ShowDraftsCommand}"
                              IsChecked="{Binding ActiveFilter, Mode=OneWay, Converter={StaticResource StringEquals}, ConverterParameter=Drafts}" />
+                <Button Content="Pagina precedenta" Command="{Binding PreviousPageCommand}" />
+                <TextBlock Text="{Binding PageNumber}" />
+                <Button Content="Pagina urmatoare" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}" />
             </StackPanel>
         </Border>
 

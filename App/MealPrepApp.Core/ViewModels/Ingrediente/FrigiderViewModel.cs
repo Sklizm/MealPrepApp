@@ -24,6 +24,25 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
     private readonly IDialogService _dialog;
     private readonly IServiceProvider _services;
 
+    [ObservableProperty] private bool _useGrouping;
+    public IEnumerable<PantryGroup> Groups=>VisibleItems.GroupBy(i=>i.CategoryName).Select(g=>new PantryGroup(g.Key,g));
+    [ObservableProperty] private string _searchTerm="";
+    [ObservableProperty] private string _sortOrder="Ingredient";
+    public IReadOnlyList<string> SortOrders {get;}=new[]{"Ingredient","Cantitate","Adăugat recent"};
+    public IEnumerable<PantryItem> VisibleItems => (SortOrder switch {"Cantitate"=>Items.OrderBy(i=>i.Quantity),"Adăugat recent"=>Items.OrderByDescending(i=>i.AddedAt),_=>Items.OrderBy(i=>i.IngredientName)}).Where(i=>i.IngredientName.Contains(SearchTerm,StringComparison.CurrentCultureIgnoreCase));
+    partial void OnSearchTermChanged(string value){OnPropertyChanged(nameof(VisibleItems));OnPropertyChanged(nameof(Groups));}
+    partial void OnSortOrderChanged(string value){OnPropertyChanged(nameof(VisibleItems));OnPropertyChanged(nameof(Groups));}
+    [RelayCommand] private Task Retry()=>RefreshAsync();
+    [RelayCommand] private async Task SaveQuantity(PantryItem? item)
+    {
+        if(item is null || IsBusy)return;
+        if(item.Quantity<=0){ErrorMessage="Cantitatea trebuie să fie pozitivă.";return;}
+        IsBusy=true;ClearError();
+        try {await _pantry.UpdatePantryQuantityAsync(item.UserPantryID,_session.CurrentUserId,item.Quantity);Notification="Cantitatea a fost actualizată.";}
+        catch(AppDbException ex){ErrorMessage=ex.FriendlyMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Cantitatea nu a putut fi actualizată.";}
+        finally{IsBusy=false;}
+    }
     public ObservableCollection<PantryItem> Items { get; } = new();
 
     public FrigiderViewModel(
@@ -40,6 +59,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         _session = session;
         _dialog = dialog;
         _services = services;
+        Items.CollectionChanged+=(_,_)=>{OnPropertyChanged(nameof(VisibleItems));OnPropertyChanged(nameof(Groups));};
     }
 
     public Task LoadAsync() => RefreshAsync();
@@ -59,6 +79,12 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -70,7 +96,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
     {
         var vm = _services.GetRequiredService<PantryItemDialogViewModel>();
         await vm.InitForAddAsync();
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 
@@ -80,7 +106,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         if (item is null) return;
         var vm = _services.GetRequiredService<PantryItemDialogViewModel>();
         await vm.InitForEditAsync(item);
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 
@@ -88,7 +114,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
     private async Task RemoveItem(PantryItem? item)
     {
         if (item is null) return;
-        if (!_dialog.Confirm("Sterge din frigider", $"Sterge \"{item.IngredientName}\" din frigider?"))
+        if (!await _dialog.ConfirmAsync("Sterge din frigider", $"Sterge \"{item.IngredientName}\" din frigider?"))
             return;
 
         IsBusy = true;
@@ -99,7 +125,13 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         }
         catch (AppDbException ex)
         {
-            _dialog.ShowError(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -107,3 +139,5 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         }
     }
 }
+
+public sealed class PantryGroup(string name,IEnumerable<PantryItem> items):ObservableCollection<PantryItem>(items){public string Name {get;}=name;}

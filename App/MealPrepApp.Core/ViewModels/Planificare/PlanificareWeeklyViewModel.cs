@@ -23,6 +23,46 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
     private readonly IDialogService _dialog;
     private readonly ISessionService _session;
 
+    public WeekCellViewModel DefaultCell=>new(){Date=WeekStart,CategoryId=MealSlots.DefaultSlotId};
+    public ObservableCollection<MealPlanEntry> AgendaEntries {get;}=new();
+    public ObservableCollection<MealPlanEntry> SupplementaryEntries {get;}=new();
+    [ObservableProperty] private bool _agendaView;
+    [ObservableProperty] private DateTime _copyTarget=MealSlots.MondayOf(DateTime.Today).AddDays(7);
+    [RelayCommand] private Task Retry()=>RefreshAsync();
+    [RelayCommand] private async Task DuplicateEntry(MealPlanEntry? entry)
+    {
+        if(entry is null) return;
+        try {
+            var vm=_services.GetRequiredService<PlanMealDialogViewModel>();
+            await vm.InitForAddAsync(entry.PlannedDate.AddDays(1),entry.CategoryID,new RecipeListItem{RecipeID=entry.RecipeID,Title=entry.RecipeTitle,Servings=entry.Servings,CategoryID=entry.CategoryID});
+            vm.Servings=entry.Servings;vm.Notes=entry.Notes;
+            if(await _dialog.ShowDialogAsync(vm)) await RefreshAsync();
+        } catch(Exception ex) {AppDiagnostics.Record(ex);ErrorMessage="Masa nu a putut fi duplicată.";}
+    }
+    public async Task MoveEntryAsync(MealPlanEntry entry,DateTime date,int categoryId)
+    {
+        try {await _mealPlan.UpdatePlannedMealAsync(entry.MealPlanEntryID,_session.CurrentUserId,categoryId,date,entry.Servings,entry.Notes);await RefreshAsync();}
+        catch(AppDbException ex) {ErrorMessage=ex.FriendlyMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Masa nu a putut fi mutată. Încearcă din nou.";}
+    }
+    [RelayCommand] private async Task CopyWeek()
+    {
+        if(IsBusy) return;
+        ClearError();IsBusy=true;
+        try
+        {
+            var target=MealSlots.MondayOf(CopyTarget);
+            var preview=await _mealPlan.PreviewWeekCopyAsync(_session.CurrentUserId,WeekStart,target);
+            if(preview.Count==0){Notification="Săptămâna sursă nu conține mese.";return;}
+            var details=string.Join("\n",preview.Select(p=>$"{p.PlannedDate:dd.MM} • {p.CategoryName} • {p.RecipeTitle} ({p.Servings?.ToString() ?? "porții implicite"}){(p.IsDuplicate ? " — există deja, se omite" : "")}"));
+            if(!await _dialog.ConfirmAsync("Previzualizare copiere săptămână",details+"\n\nMesele existente se păstrează. Copiezi aceste mese?")) return;
+            var count=await _mealPlan.CopyWeekAsync(_session.CurrentUserId,WeekStart,target,preview[0].PreviewToken);
+            Notification=$"{count} mese copiate. Mesele existente au fost păstrate.";
+        }
+        catch(AppDbException ex){ErrorMessage=ex.FriendlyMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Săptămâna nu a putut fi copiată. Reîncearcă previzualizarea.";}
+        finally {IsBusy=false;}
+    }
     public ObservableCollection<WeekRowViewModel> Rows { get; } = new();
 
     /// <summary>The four slot column headers, resolved from the loaded categories.</summary>
@@ -79,6 +119,9 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
             WeekLabel = MealSlots.WeekLabel(WeekStart);
             var entries = await _mealPlan.GetWeeklyPlanAsync(_session.CurrentUserId, WeekStart);
 
+            AgendaEntries.Clear(); SupplementaryEntries.Clear();
+            foreach(var entry in entries.OrderBy(e=>e.PlannedDate).ThenBy(e=>e.CategoryID))
+            {AgendaEntries.Add(entry);if(!MealSlots.WeeklyColumnIds.Contains(entry.CategoryID)) SupplementaryEntries.Add(entry);}
             // (date, slot) → entries
             var byCell = entries
                 .GroupBy(e => (e.PlannedDate.Date, e.CategoryID))
@@ -106,6 +149,12 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -138,7 +187,7 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         if (cell is null) return;
         var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
         await vm.InitForAddAsync(cell.Date, cell.CategoryId);
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 
@@ -148,7 +197,7 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         if (entry is null) return;
         var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
         await vm.InitForEditAsync(entry);
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 }

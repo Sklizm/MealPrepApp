@@ -3,6 +3,7 @@ namespace MealPrepApp.Models;
 /// <summary>Row from <c>sp_GetIngredients</c> — ingredient with its default unit and category.</summary>
 public sealed class Ingredient
 {
+    public bool HasNutrition {get;set;}
     public int IngredientID { get; set; }
     public string Name { get; set; } = "";
     public int? DefaultUnitID { get; set; }

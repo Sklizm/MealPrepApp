@@ -1,57 +1,69 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
-             x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView"
-             x:DataType="vm:ShoppingListViewModel"
-             Background="{StaticResource CreamBrush}">
-
-    <Grid Margin="24" RowDefinitions="Auto,Auto,Auto,*">
-        <TextBlock Grid.Row="0" Text="Lista de cumparaturi" Classes="Title" Margin="0,0,0,16" />
-
-        <!-- Toolbar -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="0,0,0,16">
-            <TextBlock Grid.Column="0" Text="De la" Classes="Body" VerticalAlignment="Center" Margin="0,0,8,0" />
-            <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding StartDate}" VerticalAlignment="Center" Width="140" />
-
-            <TextBlock Grid.Column="2" Text="pana la" Classes="Body" VerticalAlignment="Center" Margin="12,0,8,0" />
-            <CalendarDatePicker Grid.Column="3" SelectedDate="{Binding EndDate}" VerticalAlignment="Center" Width="140" />
-
-            <Button Grid.Column="4" Content="Genereaza" Classes="Primary"
-                    Command="{Binding GenerateCommand}" Margin="12,0,0,0" />
-
-            <Button Grid.Column="6" Content="Export Excel" Classes="Secondary"
-                    Command="{Binding ExportExcelCommand}"
-                    IsEnabled="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}" />
-        </Grid>
-
-        <!-- Error slot -->
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
-                   TextWrapping="Wrap" Margin="0,0,0,8"
-                   IsVisible="{Binding HasError}" />
-
-        <Grid Grid.Row="3">
-            <DataGrid ItemsSource="{Binding Rows}"
-                      IsReadOnly="True"
-                      AutoGenerateColumns="False"
-                      CanUserResizeColumns="True"
-                      IsVisible="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Ingredient" Binding="{Binding IngredientName}" Width="*" />
-                    <DataGridTextColumn Header="Necesar" Binding="{Binding NeededQty, StringFormat={}{0:0.##}}" Width="110" />
-                    <DataGridTextColumn Header="In frigider" Binding="{Binding OnHandQty, StringFormat={}{0:0.##}}" Width="110" />
-                    <DataGridTextColumn Header="De cumparat" Binding="{Binding ToBuyQty, StringFormat={}{0:0.##}}" Width="120" />
-                    <DataGridTextColumn Header="Unitate" Binding="{Binding UnitAbbreviation}" Width="100" />
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <!-- Empty state -->
-            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    IsVisible="{Binding Rows.Count, Converter={StaticResource EmptyToBool}}">
-                <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                    <TextBlock Text="Selecteaza un interval si apasa Genereaza" Classes="Header" HorizontalAlignment="Center" />
-                    <TextBlock Text="Ingredientele necesare pentru mesele planificate vor aparea aici." Classes="Muted" HorizontalAlignment="Center" />
-                </StackPanel>
-            </Border>
-        </Grid>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView" x:DataType="vm:ShoppingListViewModel" Background="{DynamicResource AppBackground}">
+    <Grid Margin="32" RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <StackPanel Spacing="8">
+            <TextBlock Text="Cumpărături" Classes="Title"/>
+            <TextBlock Text="O listă salvată pentru fiecare plan. Bifează, apoi adaugă explicit cumpărăturile în frigider." Classes="Muted" TextWrapping="Wrap"/>
+        </StackPanel>
+        <WrapPanel Grid.Row="1" Margin="0,16">
+            <CalendarDatePicker SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="De la"/>
+            <CalendarDatePicker SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="Până la"/>
+            <Button Classes="Primary" Content="Generează o listă nouă" Command="{Binding GenerateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
+            <Button Content="Export Excel" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
+            <Button Content="Copiază textul" Classes="Secondary" Click="CopyText" Margin="0,0,8,8"/>
+        </WrapPanel>
+        <StackPanel Grid.Row="2" Spacing="8">
+            <ComboBox IsEnabled="{Binding !IsBusy}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="Liste salvate">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:ShoppingSnapshot">
+                        <TextBlock Text="{Binding Label}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <WrapPanel>
+                <ComboBox ItemsSource="{Binding PurchaseFilters}" SelectedItem="{Binding PurchaseFilter}" Width="160" AutomationProperties.Name="Filtrează cumpărăturile"/>
+                <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="16,0"/>
+            </WrapPanel>
+            <TextBlock Text="Se normalizează doar unitățile de masă și volum compatibile. Celelalte unități rămân separate; cantitățile de cumpărat se rotunjesc în sus la 0,01." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+            <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="4" Margin="0,16,0,0">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ShoppingGroup">
+                            <StackPanel Margin="0,0,0,24" Spacing="8">
+                                <TextBlock Text="{Binding Name}" Classes="Header"/>
+                                <ItemsControl ItemsSource="{Binding}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ShoppingListRow">
+                                            <Border Classes="Card" Margin="0,4">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <CheckBox IsChecked="{Binding IsPurchased, Mode=OneWay}" Command="{Binding DataContext.TogglePurchasedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding IngredientName}"/>
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <TextBlock Text="{Binding ToBuyQty, StringFormat='{}{0:0.##}'}"/>
+                                                                <TextBlock Text="{Binding UnitAbbreviation}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </CheckBox>
+                                                    <Button Grid.Column="1" Content="{Binding ImportLabel}" Classes="Secondary" IsEnabled="{Binding CanImport}" Command="{Binding DataContext.ImportItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Niciun articol în această vizualizare. Generează o listă sau schimbă filtrul." Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding Groups.Count, Converter={StaticResource EmptyToBool}}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

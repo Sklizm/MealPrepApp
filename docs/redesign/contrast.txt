@@ -1,0 +1,30 @@
+Light
+  TextPrimary / AppBackground: 13.97:1
+  TextPrimary / Surface: 14.97:1
+  TextSecondary / SurfaceSecondary: 4.92:1
+  TextSecondary / Surface: 5.57:1
+  OnPrimary / ActionPrimary: 6.88:1
+  OnPrimary / ActionHover: 9.02:1
+  OnPrimary / ActionPressed: 11.90:1
+  OnDanger / Danger: 6.93:1
+  Danger / Surface: 6.93:1
+  Accent / Surface: 5.54:1
+  TextPrimary / Selection: 12.19:1
+Dark
+  TextPrimary / AppBackground: 15.29:1
+  TextPrimary / Surface: 13.57:1
+  TextSecondary / SurfaceSecondary: 6.11:1
+  TextSecondary / Surface: 7.13:1
+  OnPrimary / ActionPrimary: 8.14:1
+  OnPrimary / ActionHover: 9.67:1
+  OnPrimary / ActionPressed: 6.48:1
+  OnDanger / Danger: 8.28:1
+  Danger / Surface: 7.73:1
+  Accent / Surface: 6.41:1
+  TextPrimary / Selection: 7.94:1
+OnMeal / MealBreakfast: 7.13:1
+OnMeal / MealLunch: 6.88:1
+OnMeal / MealDinner: 7.55:1
+OnMeal / MealSnack: 6.88:1
+OnMeal / MealDessert: 7.68:1
+OnMeal / MealDrink: 7.05:1

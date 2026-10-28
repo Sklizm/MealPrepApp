@@ -30,7 +30,7 @@ public sealed partial class RapoarteRootViewModel : ViewModelBase, IAsyncLoadabl
         _services = services;
     }
 
-    public Task LoadAsync() => ShowStatisticiCommand.ExecuteAsync(null);
+    public Task LoadAsync() => CurrentSubView is null ? ShowStatisticiCommand.ExecuteAsync(null) : Task.CompletedTask;
 
     [RelayCommand]
     private async Task ShowStatistici()

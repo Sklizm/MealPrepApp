@@ -11,8 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MealPrepApp.ViewModels.Shell;
 
 /// <summary>
-/// Drives the application shell: the top tab strip, the content region, the status bar,
-/// and the user dropdown. Singleton — there is exactly one shell per session.
+/// Drives sidebar navigation, session feedback and the shared cooking session.
+/// Scoped to a single signed-in user.
 /// </summary>
 public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
 {
@@ -22,6 +22,11 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
 
     /// <summary>Raised when the user signs out; the shell window returns to the login window.</summary>
     public event EventHandler? SignOutRequested;
+    public event EventHandler? SettingsRequested;
+    public NotificationCenter Notifications {get;}
+    public CookingSession Cooking { get; }
+    [RelayCommand] private void ShowSettings() => SettingsRequested?.Invoke(this,EventArgs.Empty);
+    [RelayCommand] private Task ResumeCooking() => _navigation.NavigateToAsync(new CookingViewModel(Cooking));
 
     /// <summary>Raised when the user asks to change their password; the shell window opens the dialog.</summary>
     public event EventHandler? ChangePasswordRequested;
@@ -42,7 +47,13 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
         _navigation = navigation;
         _session = session;
         _services = services;
-        _navigation.CurrentViewChanged += (_, _) => CurrentView = _navigation.CurrentView;
+        Notifications=services.GetService<NotificationCenter>() ?? new NotificationCenter();
+        Cooking=services.GetService<CookingSession>() ?? new CookingSession();
+        _navigation.CurrentViewChanged += (_, _) =>
+        {
+            CurrentView=_navigation.CurrentView;
+            ActiveTab=CurrentView switch { AcasaViewModel=>"Acasa", ReteteListViewModel or ReteteDetailViewModel or ReteteEditorViewModel or CookingViewModel=>"Retete", FrigiderViewModel=>"Frigider", ShoppingListViewModel=>"Cumparaturi", IngredienteRootViewModel or IngredienteListViewModel=>"Ingrediente", PlanificareRootViewModel=>"Planificare", RapoarteRootViewModel=>"Rapoarte", _=>"" };
+        };
     }
 
     /// <summary>Called before the shell window is shown — opens the Acasa dashboard.</summary>
@@ -54,7 +65,6 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowAcasa()
     {
-        ActiveTab = "Acasa";
         StatusText = "Acasa";
         await _navigation.NavigateToAsync<AcasaViewModel>();
     }
@@ -62,7 +72,6 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowRetete()
     {
-        ActiveTab = "Retete";
         StatusText = "Sectiunea Retete";
         await _navigation.NavigateToAsync<ReteteListViewModel>();
     }
@@ -70,15 +79,15 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowIngrediente()
     {
-        ActiveTab = "Ingrediente";
         StatusText = "Sectiunea Ingrediente";
-        await _navigation.NavigateToAsync<IngredienteRootViewModel>();
+        await _navigation.NavigateToAsync<IngredienteListViewModel>();
     }
 
+    [RelayCommand] private Task ShowFrigider() => _navigation.NavigateToAsync<FrigiderViewModel>();
+    [RelayCommand] private Task ShowCumparaturi() => _navigation.NavigateToAsync<ShoppingListViewModel>();
     [RelayCommand]
     private async Task ShowPlanificare()
     {
-        ActiveTab = "Planificare";
         StatusText = "Sectiunea Planificare";
         await _navigation.NavigateToAsync<PlanificareRootViewModel>();
     }
@@ -86,7 +95,6 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowRapoarte()
     {
-        ActiveTab = "Rapoarte";
         StatusText = "Rapoarte si statistici";
         await _navigation.NavigateToAsync<RapoarteRootViewModel>();
     }
@@ -94,7 +102,6 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowProfile()
     {
-        ActiveTab = "";
         StatusText = "Profil";
         var profileViewModel = _services.GetRequiredService<ProfileViewModel>();
         profileViewModel.ChangePasswordRequested += (_, _) => ChangePasswordRequested?.Invoke(this, EventArgs.Empty);
@@ -103,18 +110,36 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     }
 
     [RelayCommand]
-    private void SignOut()
+    private async Task SignOut()
     {
+        if(CurrentView is ILeaveGuard guard && !await guard.CanLeaveAsync()) return;
         _session.SignOut();
         SignOutRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public Task ShowSectionAsync(string section) => section switch
+    public async Task ShowSectionAsync(string section)
     {
-        "Retete" => ShowReteteCommand.ExecuteAsync(null),
-        "Ingrediente" => ShowIngredienteCommand.ExecuteAsync(null),
-        "Planificare" => ShowPlanificareCommand.ExecuteAsync(null),
-        "Rapoarte" => ShowRapoarteCommand.ExecuteAsync(null),
-        _ => ShowAcasaCommand.ExecuteAsync(null),
-    };
+        var parts=section.Split(':',3);
+        if(parts[0]=="Retete")
+        {
+            await ShowReteteCommand.ExecuteAsync(null);
+            if(CurrentView is ReteteListViewModel recipes && parts.Length>1)
+            {
+                recipes.ActiveFilter=parts[1]=="Cauta" ? "Toate" : parts[1];
+                recipes.SearchTerm=parts.Length>2 ? parts[2] : "";
+                recipes.SelectedCategory=recipes.Categories.FirstOrDefault(c=>c.CategoryID==0);
+                await recipes.ApplyDestinationAsync();
+            }
+            return;
+        }
+        await (parts[0] switch
+        {
+            "Frigider"=>ShowFrigiderCommand.ExecuteAsync(null),
+            "Cumparaturi"=>ShowCumparaturiCommand.ExecuteAsync(null),
+            "Ingrediente"=>ShowIngredienteCommand.ExecuteAsync(null),
+            "Planificare"=>ShowPlanificareCommand.ExecuteAsync(null),
+            "Rapoarte"=>ShowRapoarteCommand.ExecuteAsync(null),
+            _=>ShowAcasaCommand.ExecuteAsync(null)
+        });
+    }
 }

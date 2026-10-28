@@ -1,35 +1,21 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="MealPrepApp.Desktop.Views.Shared.MessageDialog"
-        Title="Mesaj"
-        Width="420"
-        SizeToContent="Height"
-        CanResize="False"
-        WindowStartupLocation="CenterOwner"
-        Background="{StaticResource CreamBrush}">
-
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.Shared.MessageDialog" Title="Mesaj" Width="420" SizeToContent="Height" MaxHeight="640" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Header -->
-        <Border x:Name="HeaderBorder" Grid.Row="0" Background="{StaticResource DarkBrush}" Height="40" Padding="14,0">
+        <Border x:Name="HeaderBorder" Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="14,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="HeaderGlyph" Text="⚠ " Foreground="{StaticResource CreamBrush}"
-                           IsVisible="False" FontWeight="Bold" FontSize="15" />
-                <TextBlock x:Name="HeaderText" Text="Titlu" Foreground="{StaticResource CreamBrush}"
-                           FontWeight="Bold" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock x:Name="HeaderGlyph" Text="!" Foreground="{DynamicResource TextPrimary}" IsVisible="False" FontWeight="Bold" FontSize="15"/>
+                <TextBlock x:Name="HeaderText" Text="Titlu" Foreground="{DynamicResource TextPrimary}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
-
         <!-- Body -->
-        <TextBlock x:Name="MessageBody" Grid.Row="1" Text="Mesaj"
-                   Foreground="{StaticResource DarkBrush}"
-                   FontSize="13" TextWrapping="Wrap"
-                   Margin="20,18,20,14" />
-
+        <ScrollViewer Grid.Row="1" MaxHeight="460">
+            <TextBlock x:Name="MessageBody" Text="Mesaj" Foreground="{DynamicResource TextPrimary}" FontSize="13" TextWrapping="Wrap" Margin="20,18,20,14"/>
+        </ScrollViewer>
         <!-- Actions -->
-        <Border Grid.Row="2" Background="{StaticResource Cream2Brush}" Padding="14,10">
+        <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="14,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button x:Name="CancelButton" Content="Nu" Classes="Secondary" Click="OnCancelClick" />
-                <Button x:Name="OkButton" Content="Da" Classes="Primary" Click="OnOkClick" />
+                <Button x:Name="CancelButton" Content="Nu" Classes="Secondary" Click="OnCancelClick"/>
+                <Button x:Name="OkButton" Content="Da" Classes="Primary" Click="OnOkClick"/>
             </StackPanel>
         </Border>
     </Grid>

@@ -19,8 +19,8 @@ public sealed class IngredientRepository : RepositoryBase
         });
 
     /// <summary><paramref name="ingredientCategoryId"/> null returns every ingredient.</summary>
-    public Task<IReadOnlyList<Ingredient>> GetIngredientsAsync(int? ingredientCategoryId = null) =>
-        QueryProcAsync<Ingredient>("sp_GetIngredients", new { IngredientCategoryID = ingredientCategoryId });
+    public Task<IReadOnlyList<Ingredient>> GetIngredientsAsync(int? ingredientCategoryId = null, CancellationToken cancellationToken = default) =>
+        QueryProcAsync<Ingredient>("sp_GetIngredients", new { IngredientCategoryID = ingredientCategoryId }, cancellationToken);
 
     public Task<IReadOnlyList<IngredientSearchResult>> SearchIngredientsAsync(string term) =>
         QueryProcAsync<IngredientSearchResult>("sp_SearchIngredients", new { Term = term });

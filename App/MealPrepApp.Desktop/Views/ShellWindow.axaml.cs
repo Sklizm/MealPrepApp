@@ -1,4 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.VisualTree;
+using MealPrepApp.Desktop.Services;
 using MealPrepApp.Desktop.Views.Auth;
 using MealPrepApp.ViewModels.Auth;
 using MealPrepApp.ViewModels.Shell;
@@ -9,27 +12,73 @@ namespace MealPrepApp.Desktop.Views;
 public partial class ShellWindow : Window
 {
     private ShellViewModel? _viewModel;
+    private readonly Avalonia.Threading.DispatcherTimer _timer=new() { Interval=TimeSpan.FromSeconds(1) };
+    private bool _allowClose;
+    private bool _checkingClose;
 
     public ShellWindow()
     {
         InitializeComponent();
-        Opened += async (_, _) =>
+        SizeChanged += (_,_) => { var compact=Bounds.Width<1050; Classes.Set("Compact",compact); NavigationPanel.Width=compact ? 44 : 196; };
+        _timer.Tick += (_,_) => { if(DataContext is ShellViewModel vm) vm.Cooking.Tick(); };
+        Closing += async (_,e) =>
+        {
+            if(_allowClose || DataContext is not ShellViewModel vm || vm.CurrentView is not MealPrepApp.Services.ILeaveGuard guard) return;
+            e.Cancel=true;
+            if(_checkingClose) return;
+            _checkingClose=true;
+            try { if(await guard.CanLeaveAsync()) { _allowClose=true; Close(); } } finally { _checkingClose=false; }
+        };
+        Opened += (_, _) => _ = UiOperation.RunAsync(async () =>
         {
             if (DataContext is ShellViewModel vm)
             {
                 _viewModel = vm;
+                _timer.Start();
+                vm.SettingsRequested += OnSettingsRequested;
                 vm.SignOutRequested += OnSignOutRequested;
                 vm.ChangePasswordRequested += OnChangePasswordRequested;
                 await vm.InitializeAsync();
             }
+        });
+        Closed += (_, _) =>
+        {
+            _timer.Stop();
+            if (_viewModel is null) return;
+            _viewModel.SettingsRequested -= OnSettingsRequested;
+            _viewModel.SignOutRequested -= OnSignOutRequested;
+            _viewModel.ChangePasswordRequested -= OnChangePasswordRequested;
         };
     }
 
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if(DataContext is not ShellViewModel vm)return;
+        var primary=e.KeyModifiers.HasFlag(KeyModifiers.Control)||e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+        if(primary && e.Key==Key.F)
+        {
+            var search=PageContent.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(t=>t.Name=="SearchBox" || t.Watermark?.StartsWith("Caut") == true);
+            if(search!=null){search.Focus();search.SelectAll();e.Handled=true;}
+        }
+        if(primary && e.Key==Key.S && vm.CurrentView is MealPrepApp.ViewModels.Retete.ReteteEditorViewModel editor)
+        {editor.SaveCommand.Execute(null);e.Handled=true;}
+        if(e.Key==Key.Left && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+        {
+            if(vm.CurrentView is MealPrepApp.ViewModels.Retete.ReteteDetailViewModel detail)detail.BackCommand.Execute(null);
+            else if(vm.CurrentView is MealPrepApp.ViewModels.Retete.ReteteEditorViewModel editing)editing.CancelCommand.Execute(null);
+            e.Handled=true;
+        }
+    }
+    private void OnSettingsRequested(object? sender,EventArgs e)
+    {
+        var dialog=new SettingsWindow();
+        _ = UiOperation.RunAsync(() => dialog.ShowDialog(this));
+    }
     private void OnSignOutRequested(object? sender, EventArgs e)
     {
-        var loginWindow = App.Services.GetRequiredService<LoginWindow>();
-        loginWindow.Show();
-        Close();
+        _allowClose=true;
+        WindowCoordinator.ShowLogin();
     }
 
     private void OnChangePasswordRequested(object? sender, EventArgs e)
@@ -38,6 +87,6 @@ public partial class ShellWindow : Window
         {
             DataContext = App.Services.GetRequiredService<ChangePasswordViewModel>()
         };
-        dialog.ShowDialog(this);
+        _ = UiOperation.RunAsync(() => dialog.ShowDialog(this));
     }
 }

@@ -1,41 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:authvm="using:MealPrepApp.ViewModels.Auth"
-             x:Class="MealPrepApp.Desktop.Views.Auth.ProfileView"
-             x:DataType="authvm:ProfileViewModel"
-             Background="{StaticResource CreamBrush}">
-
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.ProfileView" x:DataType="authvm:ProfileViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32">
         <StackPanel MaxWidth="460" HorizontalAlignment="Left" Spacing="6">
-            <TextBlock Text="Profil" Classes="Title" Margin="0,0,0,16" />
-
+            <TextBlock Text="Profil" Classes="Title" Margin="0,0,0,16"/>
             <Border Classes="Card" DataContext="{Binding Profile}">
                 <StackPanel Spacing="4">
-                    <TextBlock Text="Nume utilizator" Classes="Muted" />
-                    <TextBlock Text="{Binding Username}" Classes="Body" Margin="0,0,0,8" />
-
-                    <TextBlock Text="Email" Classes="Muted" />
-                    <TextBlock Text="{Binding Email}" Classes="Body" Margin="0,0,0,8" />
-
-                    <TextBlock Text="Cont creat" Classes="Muted" />
-                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
-                               Classes="Body" Margin="0,0,0,8" />
-
-                    <TextBlock Text="Ultima conectare" Classes="Muted" />
-                    <TextBlock Text="{Binding LastLoginAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
-                               Classes="Body" />
+                    <TextBlock Text="Nume utilizator" Classes="Muted"/>
+                    <TextBlock Text="{Binding Username}" Classes="Body" Margin="0,0,0,8"/>
+                    <TextBlock Text="Email" Classes="Muted"/>
+                    <TextBlock Text="{Binding Email}" Classes="Body" Margin="0,0,0,8"/>
+                    <TextBlock Text="Cont creat" Classes="Muted"/>
+                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" Classes="Body" Margin="0,0,0,8"/>
+                    <TextBlock Text="Ultima conectare" Classes="Muted"/>
+                    <TextBlock Text="{Binding LastLoginAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" Classes="Body"/>
                 </StackPanel>
             </Border>
-
-            <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
-                       IsVisible="{Binding HasError}" Margin="0,8,0,0" />
-
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,8,0,0"/>
             <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
-                <Button Content="Schimba parola" Classes="Secondary"
-                        Command="{Binding ChangePasswordCommand}" />
-                <Button Content="Iesi din cont" Classes="Danger"
-                        Command="{Binding SignOutCommand}" />
+                <Button Content="Schimba parola" Classes="Secondary" Command="{Binding ChangePasswordCommand}"/>
+                <Button Content="Iesi din cont" Classes="Danger" Command="{Binding SignOutCommand}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

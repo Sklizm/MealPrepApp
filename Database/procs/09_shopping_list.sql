@@ -31,7 +31,7 @@ BEGIN
             SUM(
                 ri.Quantity
                 * ISNULL(mpe.Servings, 1)
-                / NULLIF(r.Servings, 0)
+                / COALESCE(NULLIF(r.Servings, 0), 1)
             ) AS NeededQty
         FROM dbo.MealPlanEntries mpe
         JOIN dbo.Recipes r            ON r.RecipeID = mpe.RecipeID

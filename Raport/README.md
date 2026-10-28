@@ -33,11 +33,28 @@ libreoffice --headless --convert-to pdf Raport/Raport_practica.docx
 | `content_anexe.py` | anexe: A1 listing complet (citit din fișierele reale), A2 Claude Code/Codex/Hermes Agent, A3 Obsidian, A4 Git, A5 checklist cerințe |
 | `assets/` | diagrame și capturi de ecran (de adăugat) |
 
-Listingul de cod din anexe este **citit direct din fișierele reale** ale proiectului la generare, deci
-rămâne mereu sincronizat cu codul.
+Listingurile sunt citite din fișierele existente la generare, însă lista de căi este fixă
+în `content_anexe.py`. După separarea în Core/Desktop/WPF, unele căi istorice nu mai există
+și sunt omise de generator. Actualizați lista înainte de a afirma că anexele acoperă codul curent.
 
 ## De completat manual (în Word)
 
 1. **Foaia de titlu** — se înlocuiesc câmpurile `[...]` cu modelul oficial al instituției.
 2. **Capturile de ecran** — se lipesc în chenarele „Figura N — …” (capturi de pe VM-ul Windows).
 3. **Cuprinsul** — clic dreapta pe cuprins › *Update Field* (sau `F9`) pentru a-l popula/actualiza.
+
+## Starea documentației după redesign
+
+Clientul Avalonia pentru macOS/Linux are acum teme System/Light/Dark, navigare laterală,
+scalarea porțiilor, mod de gătit, planificare săptămânală și liste de cumpărături salvate.
+Clientul WPF rămâne pentru evaluarea practicii. Acest README actualizează instrucțiunile;
+raportul `.docx` și proza din `content.py` nu au fost regenerate sau rescrise automat.
+
+- [Arhitectura, compilarea și configurarea curentă](../README.md)
+- [Implementarea și capturile Avalonia](../docs/redesign/README.md)
+- [Dovezi de validare și verificări rămase](../docs/redesign/validation.md)
+
+Capturile din `docs/redesign/screenshots/` provin din randări headless cu date demonstrative.
+Etichetați-le ca atare dacă le folosiți în raport. Pentru demonstrarea clientului WPF,
+folosiți capturi native din Windows; pentru macOS/Linux, completați verificările native.
+Nu prezentați migrarea bazei de date sau testele SQL noi ca executate fără dovezile respective.

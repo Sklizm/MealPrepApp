@@ -1,150 +1,114 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte"
-             xmlns:models="using:MealPrepApp.Models"
-             x:Class="MealPrepApp.Desktop.Views.Rapoarte.StatisticiLunareView"
-             x:DataType="vm:StatisticiLunareViewModel"
-             Background="{StaticResource CreamBrush}">
-
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Rapoarte.StatisticiLunareView" x:DataType="vm:StatisticiLunareViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Styles>
         <Style Selector="Border.StatCard">
-            <Setter Property="Background" Value="{StaticResource Cream2Brush}" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="18,16" />
-            <Setter Property="Margin" Value="0,0,16,0" />
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="18,16"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
         </Style>
         <Style Selector="TextBlock.StatNumber">
-            <Setter Property="FontSize" Value="32" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="{StaticResource MossDarkBrush}" />
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         </Style>
         <Style Selector="Border.SlotChip">
-            <Setter Property="Background" Value="{StaticResource Cream2Brush}" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="14,10" />
-            <Setter Property="Margin" Value="0,0,10,10" />
+            <Setter Property="Background" Value="{DynamicResource Surface}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Margin" Value="0,0,10,10"/>
         </Style>
     </UserControl.Styles>
-
     <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
         <!-- Title -->
-        <TextBlock Grid.Row="0" Text="Statistici lunare"
-                   FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold"
-                   Margin="0,0,0,16" />
-
+        <TextBlock Grid.Row="0" Text="Statistici lunare" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Month picker toolbar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
-            <TextBlock Text="Luna" Classes="Muted" VerticalAlignment="Center" />
+            <TextBlock Text="Luna" Classes="Muted" VerticalAlignment="Center"/>
             <ComboBox Width="160" ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:MonthOption">
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Name}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <ComboBox Width="100" ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}" />
-            <Button Content="Afiseaza" Classes="Primary" Margin="8,0,0,0"
-                    Command="{Binding AfiseazaCommand}"
-                    IsEnabled="{Binding !IsBusy}" />
+            <ComboBox Width="100" ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}"/>
+            <Button Content="Afiseaza" Classes="Primary" Margin="8,0,0,0" Command="{Binding AfiseazaCommand}" IsEnabled="{Binding !IsBusy}"/>
         </StackPanel>
-
         <!-- Error message -->
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
-                   TextWrapping="Wrap" Margin="0,0,0,8"
-                   IsVisible="{Binding HasError}" />
-
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
         <!-- Content -->
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"
-                      IsVisible="{Binding HasData}">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" IsVisible="{Binding HasData}">
             <StackPanel Spacing="16">
                 <!-- Headline KPI tiles -->
                 <UniformGrid Rows="1" Columns="3" Margin="0,0,-16,0">
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.TotalMealsPlanned, FallbackValue=0}" Classes="StatNumber" />
-                            <TextBlock Text="Mese planificate" Classes="Muted" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding Stats.TotalMealsPlanned, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="Mese planificate" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.DistinctRecipes, FallbackValue=0}" Classes="StatNumber" />
-                            <TextBlock Text="Retete distincte" Classes="Muted" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding Stats.DistinctRecipes, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="Rețete distincte" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.DistinctIngredients, FallbackValue=0}" Classes="StatNumber" />
-                            <TextBlock Text="Ingrediente distincte" Classes="Muted" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding Stats.DistinctIngredients, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="Ingrediente distincte" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
-
                 <!-- Per-slot breakdown -->
-                <TextBlock Text="Pe categorii de masa" FontWeight="SemiBold"
-                           FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0" />
+                <TextBlock Text="Pe categorii de masa" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0"/>
                 <ItemsControl ItemsSource="{Binding SlotCounts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" />
+                            <WrapPanel Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:SlotCount">
                             <Border Classes="SlotChip">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="{Binding Label}" />
-                                    <TextBlock Text="{Binding Count}" FontWeight="Bold"
-                                               Foreground="{StaticResource MossDarkBrush}" />
+                                <StackPanel Spacing="8" Width="180">
+                                    <ProgressBar Value="{Binding Count}" Maximum="{Binding DataContext.Stats.TotalMealsPlanned, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" Height="8"/>
+                                    <TextBlock Text="{Binding Label}"/>
+                                    <TextBlock Text="{Binding Count}" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-
                 <!-- Top recipes + top ingredients side by side -->
-                <Grid ColumnDefinitions="*,16,*" Margin="0,8,0,0">
+                <StackPanel Spacing="24" Margin="0,8,0,0">
                     <StackPanel Grid.Column="0" Spacing="8">
-                        <TextBlock Text="Top 5 retete planificate" FontWeight="SemiBold"
-                                   FontSize="{StaticResource FontSizeHeader}" />
-                        <DataGrid ItemsSource="{Binding TopRecipes}"
-                                  IsReadOnly="True" CanUserResizeColumns="True"
-                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                                  MinHeight="180">
+                        <TextBlock Text="Top 5 retete planificate" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
+                        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopRecipes}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Reteta" Binding="{Binding Title}" Width="*" />
-                                <DataGridTextColumn Header="Categorie" Binding="{Binding CategoryName}" Width="130" />
-                                <DataGridTextColumn Header="Planificari" Binding="{Binding PlannedCount}" Width="100" />
+                                <DataGridTextColumn Header="Reteta" Binding="{Binding Title}" Width="*"/>
+                                <DataGridTextColumn Header="Categorie" Binding="{Binding CategoryName}" Width="130"/>
+                                <DataGridTextColumn Header="Planificari" Binding="{Binding PlannedCount}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
-
                     <StackPanel Grid.Column="2" Spacing="8">
-                        <TextBlock Text="Top 10 ingrediente folosite" FontWeight="SemiBold"
-                                   FontSize="{StaticResource FontSizeHeader}" />
-                        <DataGrid ItemsSource="{Binding TopIngredients}"
-                                  IsReadOnly="True" CanUserResizeColumns="True"
-                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                                  MinHeight="180">
+                        <TextBlock Text="Top 10 ingrediente folosite" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
+                        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopIngredients}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Ingredient" Binding="{Binding Name}" Width="*" />
-                                <DataGridTextColumn Header="Aparitii" Binding="{Binding UsageCount}" Width="100" />
+                                <DataGridTextColumn Header="Ingredient" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="Aparitii" Binding="{Binding UsageCount}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
-                </Grid>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
-
         <!-- Empty state -->
-        <Border Grid.Row="3" Background="{StaticResource Cream2Brush}" CornerRadius="8"
-                Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center"
-                IsVisible="{Binding ShowEmptyState}">
+        <Border Grid.Row="3" Background="{DynamicResource Surface}" CornerRadius="8" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding ShowEmptyState}">
             <StackPanel HorizontalAlignment="Center" Spacing="6">
-                <TextBlock Text="Nu sunt mese planificate in luna selectata"
-                           FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"
-                           HorizontalAlignment="Center" />
-                <TextBlock Text="Planifica mese din sectiunea Planificare pentru a vedea statistici aici."
-                           Classes="Muted" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="380" />
+                <TextBlock Text="Nu sunt mese planificate in luna selectata" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Planifica mese din sectiunea Planificare pentru a vedea statistici aici." Classes="Muted" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="380"/>
             </StackPanel>
         </Border>
     </Grid>

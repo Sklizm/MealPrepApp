@@ -22,7 +22,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRAN;
 
-        MERGE dbo.UserPantry AS target
+        MERGE dbo.UserPantry WITH (HOLDLOCK) AS target
         USING (SELECT @UserID AS UserID, @IngredientID AS IngredientID, @UnitID AS UnitID) AS src
         ON target.UserID = src.UserID
            AND target.IngredientID = src.IngredientID
@@ -144,6 +144,7 @@ BEGIN
         p.UserPantryID,
         p.IngredientID,
         i.Name          AS IngredientName,
+        COALESCE(ic.Name,N'Fără categorie') AS CategoryName,
         p.UnitID,
         u.Name          AS UnitName,
         u.Abbreviation  AS UnitAbbreviation,
@@ -153,6 +154,7 @@ BEGIN
     FROM dbo.UserPantry p
     JOIN dbo.Ingredients i ON i.IngredientID = p.IngredientID
     JOIN dbo.Units u       ON u.UnitID       = p.UnitID
+    LEFT JOIN dbo.IngredientCategories ic ON ic.IngredientCategoryID=i.IngredientCategoryID
     WHERE p.UserID = @UserID
     ORDER BY i.Name, u.Abbreviation;
 END

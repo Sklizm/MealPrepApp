@@ -117,7 +117,7 @@ BEGIN
         IF @OwnerID <> @UserID
             THROW 50002, N'Not authorized to modify this recipe', 1;
 
-        IF @CurrentRV <> @RowVersion
+        IF @RowVersion IS NULL OR @CurrentRV <> @RowVersion
             THROW 50004, N'Stale row — recipe was modified by another session', 1;
 
         UPDATE dbo.Recipes
@@ -129,7 +129,10 @@ BEGIN
             CookTimeMinutes = @CookTimeMinutes,
             Servings        = @Servings,
             UpdatedAt       = SYSUTCDATETIME()
-        WHERE RecipeID = @RecipeID;
+        WHERE RecipeID = @RecipeID AND UserID = @UserID AND RowVersion = @RowVersion;
+
+        IF @@ROWCOUNT = 0
+            THROW 50004, N'Stale row — recipe was modified by another session', 1;
 
         IF @IngredientsJson IS NOT NULL
         BEGIN

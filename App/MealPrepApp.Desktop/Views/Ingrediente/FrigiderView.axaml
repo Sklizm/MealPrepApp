@@ -1,58 +1,88 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente"
-             xmlns:models="using:MealPrepApp.Models"
-             x:Class="MealPrepApp.Desktop.Views.Ingrediente.FrigiderView"
-             x:DataType="vm:FrigiderViewModel"
-             Background="{StaticResource CreamBrush}">
-
-    <Grid Margin="24" RowDefinitions="Auto,Auto,*">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.FrigiderView" x:DataType="vm:FrigiderViewModel" Background="{DynamicResource AppBackground}">
+    <Grid Margin="24" RowDefinitions="Auto,Auto,Auto,*">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
-            <TextBlock Grid.Column="0" Text="Frigider" Classes="Title" VerticalAlignment="Center" />
-            <Button Grid.Column="2" Content="+ Adauga in frigider" Classes="Primary"
-                    Command="{Binding AddItemCommand}" />
+            <TextBlock Grid.Column="0" Text="Frigider" Classes="Title" VerticalAlignment="Center"/>
+            <Button Grid.Column="2" Content="+ Adaugă in frigider" Classes="Primary" Command="{Binding AddItemCommand}"/>
         </Grid>
-
-        <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
-                   TextWrapping="Wrap" Margin="0,0,0,8"
-                   IsVisible="{Binding HasError}" />
-
-        <Grid Grid.Row="2">
-            <DataGrid ItemsSource="{Binding Items}"
-                      IsReadOnly="True"
-                      AutoGenerateColumns="False"
-                      CanUserResizeColumns="True"
-                      IsVisible="{Binding Items.Count, Converter={StaticResource NonEmptyToBool}}">
+        <WrapPanel Grid.Row="1" Margin="0,0,0,16">
+            <TextBox Text="{Binding SearchTerm}" Watermark="Caută în frigider…" Width="240" Margin="0,0,8,8" AutomationProperties.Name="Caută în frigider"/>
+            <ComboBox ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" Width="180" Margin="0,0,8,8" AutomationProperties.Name="Sortează frigiderul"/>
+            <CheckBox Content="Pe categorii" IsChecked="{Binding UseGrouping}" Margin="0,0,8,8"/>
+            <Button Content="Reîncarcă" Classes="Secondary" Command="{Binding RetryCommand}" Margin="0,0,8,8"/>
+        </WrapPanel>
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <Grid Grid.Row="3">
+            <DataGrid ItemsSource="{Binding VisibleItems}" IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True" IsVisible="{Binding !UseGrouping}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Ingredient" Binding="{Binding IngredientName}" Width="*" />
-                    <DataGridTextColumn Header="Cantitate" Binding="{Binding Quantity, StringFormat={}{0:0.##}}" Width="100" />
-                    <DataGridTextColumn Header="Unitate" Binding="{Binding UnitAbbreviation}" Width="100" />
-                    <DataGridTextColumn Header="Adaugat" Binding="{Binding AddedAt, StringFormat='{}{0:dd.MM.yyyy}'}" Width="120" />
-                    <DataGridTemplateColumn Header="" Width="160">
+                    <DataGridTextColumn Header="Ingredient" Binding="{Binding IngredientName}" Width="*"/>
+                    <DataGridTemplateColumn Header="Cantitate" Width="220">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="models:PantryItem">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <NumericUpDown Value="{Binding Quantity}" Minimum="0.01" Maximum="99999999" FormatString="0.##" Width="112" AutomationProperties.Name="Cantitate în frigider"/>
+                                    <Button Content="Salvează" Classes="Secondary" Command="{Binding $parent[DataGrid].DataContext.SaveQuantityCommand}" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Unitate" Binding="{Binding UnitAbbreviation}" Width="100"/>
+                    <DataGridTextColumn Header="Adaugat" Binding="{Binding AddedAt, StringFormat='{}{0:dd.MM.yyyy}'}" Width="120"/>
+                    <DataGridTemplateColumn Header="" Width="184">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="models:PantryItem">
                                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="4,0">
-                                    <Button Content="Editeaza" Classes="Secondary" Padding="8,3" FontSize="11"
-                                            Command="{Binding $parent[DataGrid].((vm:FrigiderViewModel)DataContext).EditItemCommand}"
-                                            CommandParameter="{Binding}" />
-                                    <Button Content="Sterge" Classes="Danger" Padding="8,3" FontSize="11"
-                                            Command="{Binding $parent[DataGrid].((vm:FrigiderViewModel)DataContext).RemoveItemCommand}"
-                                            CommandParameter="{Binding}" />
+                                    <Button Content="Editează" Classes="Secondary" Padding="8,3" FontSize="11" Command="{Binding $parent[DataGrid].DataContext.EditItemCommand}" CommandParameter="{Binding}"/>
+                                    <Button AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Danger" Padding="8,3" FontSize="11" Command="{Binding $parent[DataGrid].DataContext.RemoveItemCommand}" CommandParameter="{Binding}">
+                                        <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
+                                    </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-
-            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    IsVisible="{Binding Items.Count, Converter={StaticResource EmptyToBool}}">
+            <ScrollViewer IsVisible="{Binding UseGrouping}">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PantryGroup">
+                            <StackPanel Spacing="8" Margin="0,0,0,24">
+                                <TextBlock Text="{Binding Name}" Classes="Header"/>
+                                <ItemsControl ItemsSource="{Binding}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:PantryItem">
+                                            <Border Classes="Card" Margin="0,4">
+                                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding IngredientName}"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="{Binding Quantity, StringFormat='{}{0:0.##}'}"/>
+                                                            <TextBlock Text="{Binding UnitAbbreviation}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="Editează" Classes="Secondary" Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="8,0"/>
+                                                    <Button Grid.Column="2" Content="Șterge" Classes="Link" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border.IsVisible>
+                    <MultiBinding Converter="{StaticResource ShowEmpty}">
+                        <Binding Path="Items.Count"/>
+                        <Binding Path="IsBusy"/>
+                        <Binding Path="HasError"/>
+                    </MultiBinding>
+                </Border.IsVisible>
                 <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                    <TextBlock Text="Frigiderul este gol" Classes="Header" HorizontalAlignment="Center" />
-                    <TextBlock Text="Adauga produsele pe care le ai in stoc." Classes="Muted" HorizontalAlignment="Center" />
-                    <Button Content="+ Adauga in frigider" Classes="Primary"
-                            HorizontalAlignment="Center" Margin="0,10,0,0"
-                            Command="{Binding AddItemCommand}" />
+                    <TextBlock Text="Frigiderul este gol" Classes="Header" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Adaugă produsele pe care le ai in stoc." Classes="Muted" HorizontalAlignment="Center"/>
+                    <Button Content="+ Adaugă in frigider" Classes="Primary" HorizontalAlignment="Center" Margin="0,10,0,0" Command="{Binding AddItemCommand}"/>
                 </StackPanel>
             </Border>
         </Grid>

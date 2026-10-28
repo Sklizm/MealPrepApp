@@ -30,13 +30,10 @@ public sealed class UserRepository : RepositoryBase
         QuerySingleOrDefaultProcAsync<UserProfile>("sp_GetUserProfile", new { UserID = userId });
 
     /// <summary>Changes the password. Throws <see cref="AppDbException"/> with error 50001 if the
-    /// new hash matches any of the last five passwords.</summary>
-    public Task ChangePasswordAsync(int userId, string newPasswordHash) =>
-        ExecuteProcAsync("sp_ChangePassword", new { UserID = userId, NewPasswordHash = newPasswordHash });
+    /// credentials changed concurrently. Reuse is checked with BCrypt in the service.</summary>
+    public Task ChangePasswordAsync(int userId, string newPasswordHash, string expectedPasswordHash) =>
+        ExecuteProcAsync("sp_ChangePassword", new { UserID = userId, NewPasswordHash = newPasswordHash, ExpectedPasswordHash = expectedPasswordHash });
 
-    /// <summary>Resets a forgotten password from the login window. Throws <see cref="AppDbException"/>
-    /// with error 50005 if the identifier/email pair does not match an account.</summary>
-    public Task ResetForgottenPasswordAsync(string usernameOrEmail, string email, string newPasswordHash) =>
-        ExecuteProcAsync("sp_ResetForgottenPassword",
-            new { UsernameOrEmail = usernameOrEmail, Email = email, NewPasswordHash = newPasswordHash });
+    public Task<IReadOnlyList<string>> GetPasswordHistoryAsync(int userId) =>
+        QueryProcAsync<string>("sp_GetPasswordHistory", new { UserID = userId });
 }

@@ -57,6 +57,12 @@ public sealed partial class RegisterViewModel : ViewModelBase
                 ? "Numele de utilizator sau emailul este deja folosit."
                 : ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;

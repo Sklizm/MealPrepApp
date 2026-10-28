@@ -80,11 +80,11 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
 
             SlotCounts.Clear();
             SlotCounts.Add(new SlotCount("Mic dejun", stats.BreakfastCount));
-            SlotCounts.Add(new SlotCount("Pranz", stats.LunchCount));
-            SlotCounts.Add(new SlotCount("Cina", stats.DinnerCount));
+            SlotCounts.Add(new SlotCount("Prânz", stats.LunchCount));
+            SlotCounts.Add(new SlotCount("Cină", stats.DinnerCount));
             SlotCounts.Add(new SlotCount("Gustare", stats.SnackCount));
             SlotCounts.Add(new SlotCount("Desert", stats.DessertCount));
-            SlotCounts.Add(new SlotCount("Bautura", stats.DrinkCount));
+            SlotCounts.Add(new SlotCount("Băutură", stats.DrinkCount));
 
             var topRecipes = await _reports.GetTopRecipesAsync(userId, year, month, topN: 5);
             TopRecipes.Clear();
@@ -102,8 +102,13 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
-            HasData = false;
             ShowEmptyState = false;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -123,4 +128,4 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
 public sealed record MonthOption(int Number, string Name);
 
 /// <summary>One row of the per-slot breakdown (e.g. "Pranz" → 7).</summary>
-public sealed record SlotCount(string Label, int Count);
+public sealed record SlotCount(string Label, int Count) { public int CategoryID=>Label switch {"Mic dejun"=>1,"Prânz"=>2,"Cină"=>3,"Gustare"=>4,"Desert"=>5,"Băutură"=>6,_=>0}; }

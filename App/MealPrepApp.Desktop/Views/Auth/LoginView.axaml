@@ -1,33 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:authvm="using:MealPrepApp.ViewModels.Auth"
-             x:Class="MealPrepApp.Desktop.Views.Auth.LoginView"
-             x:DataType="authvm:LoginViewModel">
-
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.LoginView" x:DataType="authvm:LoginViewModel">
     <StackPanel Spacing="10">
-        <TextBlock Text="Conectare" Classes="Title" Margin="0,0,0,8" />
-
-        <TextBlock Text="Utilizator sau email" Classes="Muted" />
-        <TextBox Text="{Binding Identifier}" />
-
-        <TextBlock Text="Parola" Classes="Muted" />
-        <TextBox x:Name="PasswordBox" PasswordChar="*" />
-
-        <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
-                   IsVisible="{Binding HasError}" />
-
-        <Button Content="Conectare" Classes="Primary" Height="38"
-                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                Click="OnLoginClick"
-                IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0" />
-
-        <Button Content="Ai uitat parola?" Classes="Link"
-                HorizontalAlignment="Center"
-                Command="{Binding ForgotPasswordCommand}" />
-
-        <Button Content="Cont nou? Inregistreaza-te" Classes="Link"
-                HorizontalAlignment="Center"
-                Command="{Binding SwitchToRegisterCommand}" />
+        <TextBlock Text="Conectare" Classes="Title" Margin="0,0,0,8"/>
+        <TextBlock Text="Utilizator sau email" Classes="Muted"/>
+        <TextBox Text="{Binding Identifier}"/>
+        <TextBlock Text="Parolă" Classes="Muted"/>
+        <TextBox x:Name="PasswordBox" PasswordChar="*" RevealPassword="{Binding #PasswordBoxVisible.IsChecked}"/>
+        <CheckBox Name="PasswordBoxVisible" Content="Arată parola"/>
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+        <Button Content="Conectare" Classes="Primary" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnLoginClick" IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0"/>
+        <Button Content="Ai uitat parola?" Classes="Link" HorizontalAlignment="Center" Command="{Binding ForgotPasswordCommand}" IsEnabled="False" ToolTip.Tip="Contacteaza administratorul pentru recuperarea contului."/>
+        <Button Content="Cont nou? Înregistrează-te" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToRegisterCommand}"/>
     </StackPanel>
 </UserControl>

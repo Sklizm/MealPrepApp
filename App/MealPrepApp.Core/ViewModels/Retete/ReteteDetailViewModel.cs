@@ -42,11 +42,31 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     [ObservableProperty]
     private RecipeNutritionSummary? _nutrition;
 
+    public CookingSession Cooking { get; }
+    [ObservableProperty] private decimal _selectedServings=1;
+    public bool CanScale => Recipe?.Servings is > 0;
+    public bool CanEdit => Recipe?.UserID == _session.CurrentUserId;
+    public string FavoriteLabel => IsFavorite ? "Elimină din favorite" : "Adaugă la favorite";
+    public string PhotoLabel => HasPhoto ? "Schimbă fotografia" : "Adaugă fotografie";
+    public RecipeNutritionSummary? ScaledNutrition => Nutrition is null ? null : ServingCalculator.Scale(Nutrition, CanScale ? ServingCalculator.Factor(Recipe!.Servings, SelectedServings) : 1);
+    public IReadOnlyList<CookingIngredient> ScaledIngredients => Recipe?.Ingredients.Select(i=> new CookingIngredient { Name=i.IngredientName, Quantity=i.Quantity*(CanScale ? ServingCalculator.Factor(Recipe.Servings, SelectedServings) : 1), Unit=i.UnitAbbreviation, Notes=i.Notes }).ToArray() ?? Array.Empty<CookingIngredient>();
+    partial void OnSelectedServingsChanged(decimal value) { if(value is <=0 or >1000) { SelectedServings=1; return; } OnPropertyChanged(nameof(ScaledIngredients)); OnPropertyChanged(nameof(ScaledNutrition)); }
+    partial void OnRecipeChanged(RecipeFull? value) { SelectedServings=value?.Servings is >0 ? value.Servings.Value : 1; foreach(var name in new[]{nameof(CanScale),nameof(CanEdit),nameof(ScaledIngredients)}) OnPropertyChanged(name); }
+    partial void OnNutritionChanged(RecipeNutritionSummary? value) => OnPropertyChanged(nameof(ScaledNutrition));
+    partial void OnIsFavoriteChanged(bool value) => OnPropertyChanged(nameof(FavoriteLabel));
+    [RelayCommand] private Task Cook()
+    {
+        if(Recipe is null) return Task.CompletedTask;
+        Cooking.StartRecipe(Recipe,SelectedServings);
+        return _navigation.NavigateToAsync(new CookingViewModel(Cooking));
+    }
+    [RelayCommand] private Task Retry() => LoadAsync();
     public bool HasPhoto => PhotoBytes is not null && PhotoBytes.Length > 0;
 
     partial void OnPhotoBytesChanged(byte[]? value)
     {
         OnPropertyChanged(nameof(HasPhoto));
+        OnPropertyChanged(nameof(PhotoLabel));
     }
 
     public ReteteDetailViewModel(
@@ -57,7 +77,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         INavigationService navigation,
         IDialogService dialog,
         IServiceProvider services,
-        IFilePickerService filePicker)
+        IFilePickerService filePicker, CookingSession? cooking=null)
     {
         _recipes = recipes;
         _nutritionRepository = nutrition;
@@ -67,6 +87,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         _dialog = dialog;
         _services = services;
         _filePicker = filePicker;
+        Cooking=cooking ?? new CookingSession();
     }
 
     public async Task LoadAsync()
@@ -95,6 +116,12 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -111,7 +138,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            _dialog.ShowError(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -133,7 +166,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         if (Recipe is null)
             return;
 
-        var confirmed = _dialog.Confirm(
+        var confirmed = await _dialog.ConfirmAsync(
             "Sterge reteta",
             $"Sigur vrei sa stergi reteta \"{Recipe.Title}\"?\nActiunea este ireversibila si va sterge si ingredientele asociate.");
 
@@ -148,7 +181,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            _dialog.ShowError(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -169,17 +208,24 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         IsBusy = true;
         try
         {
-            var imageData = await File.ReadAllBytesAsync(filePath);
-            await _recipes.SetRecipePhotoAsync(RecipeId, _session.CurrentUserId, imageData, "image/jpeg");
+            var image = await Task.Run(() => RecipeImageProcessor.LoadAsync(filePath));
+            var imageData = image.Image;
+            await _recipes.SetRecipePhotoAsync(RecipeId, _session.CurrentUserId, imageData, "image/jpeg", image.Thumbnail);
             PhotoBytes = imageData;
         }
         catch (AppDbException ex)
         {
-            _dialog.ShowError(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
         }
-        catch (Exception ex) when (ex is IOException or NotSupportedException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or NotSupportedException or InvalidOperationException or UnauthorizedAccessException)
         {
-            _dialog.ShowError($"Poza nu a putut fi citita. Alege o imagine valida. Detalii: {ex.Message}");
+            await _dialog.ShowErrorAsync($"Poza nu a putut fi citita. Alege o imagine valida. Detalii: {ex.Message}");
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -193,7 +239,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         if (!HasPhoto)
             return;
 
-        if (!_dialog.Confirm("Sterge poza", "Sterge poza acestei retete?"))
+        if (!await _dialog.ConfirmAsync("Sterge poza", "Sterge poza acestei retete?"))
             return;
 
         IsBusy = true;
@@ -204,7 +250,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            _dialog.ShowError(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -231,7 +283,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
         var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
         await vm.InitForAddAsync(DateTime.Today, Recipe.CategoryID ?? MealSlots.DefaultSlotId, recipe);
-        _dialog.ShowDialog(vm);
+        if(CanScale) vm.Servings=(int)SelectedServings;
+        await _dialog.ShowDialogAsync(vm);
     }
 
     [RelayCommand]

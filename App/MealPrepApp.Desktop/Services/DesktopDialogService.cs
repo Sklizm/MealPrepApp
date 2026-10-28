@@ -1,7 +1,8 @@
 using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
+
 using MealPrepApp.Desktop.Views.Auth;
 using MealPrepApp.Desktop.Views.Ingrediente;
 using MealPrepApp.Desktop.Views.Planificare;
@@ -15,16 +16,26 @@ namespace MealPrepApp.Desktop.Services;
 
 public sealed class DesktopDialogService : IDialogService
 {
-    public bool Confirm(string title, string message) =>
-        MessageDialog.ShowModal(MessageDialogKind.Confirm, title, message, okText: "Da", cancelText: "Nu");
+    public Task<bool> ConfirmAsync(string title, string message) =>
+        MessageDialog.ShowModalAsync(MessageDialogKind.Confirm, title, message, okText: "Da", cancelText: "Nu");
 
-    public void ShowError(string message) =>
-        MessageDialog.ShowModal(MessageDialogKind.Error, "Eroare", message);
+    public Task ShowErrorAsync(string message)
+    { App.Services.GetRequiredService<NotificationCenter>().Post(message,true);return Task.CompletedTask; }
+    public Task ShowInfoAsync(string title,string message)
+    { App.Services.GetRequiredService<NotificationCenter>().Post(title+" • "+message);return Task.CompletedTask; }
+    public async Task<LeaveDecision> ChooseLeaveAsync()
+    {
+        var owner=ActiveOwner();if(owner is null)return LeaveDecision.Stay;
+        var dialog=new Window {Title="Modificări nesalvate",Width=520,Height=240,CanResize=false,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        dialog.Bind(Window.BackgroundProperty,new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("AppBackground"));
+        var save=new Button {Content="Salvează ciorna"};save.Classes.Add("Primary");var discard=new Button {Content="Renunță la modificări"};discard.Classes.Add("Secondary");
+        var stay=new Button {Content="Rămâi aici"};stay.Classes.Add("Secondary");
+        save.Click+=(_,_)=>dialog.Close(LeaveDecision.SaveDraft);discard.Click+=(_,_)=>dialog.Close(LeaveDecision.Discard);stay.Click+=(_,_)=>dialog.Close(LeaveDecision.Stay);
+        dialog.Content=new StackPanel {Margin=new Thickness(24),Spacing=24,Children={new TextBlock {Text="Ai modificări nesalvate. Cum vrei să continui?",TextWrapping=Avalonia.Media.TextWrapping.Wrap},new WrapPanel {Children={save,discard,stay}}}};
+        return await dialog.ShowDialog<LeaveDecision>(owner);
+    }
 
-    public void ShowInfo(string title, string message) =>
-        MessageDialog.ShowModal(MessageDialogKind.Info, title, message);
-
-    public bool ShowDialog(object viewModel)
+    public async Task<bool> ShowDialogAsync(object viewModel)
     {
         Window? window = viewModel switch
         {
@@ -42,24 +53,8 @@ public sealed class DesktopDialogService : IDialogService
 
         window.DataContext = viewModel;
         var owner = ActiveOwner();
-        if (owner is not null)
-        {
-            var frame = new DispatcherFrame();
-            bool result = false;
-
-            // Wire result property if the window has one, or close
-            window.Closed += (_, _) => frame.Continue = false;
-            window.Show(owner);
-            Dispatcher.UIThread.PushFrame(frame);
-
-            // In our modal dialogs, tag or a property indicates confirmation
-            if (window.Tag is bool b) result = b;
-            else result = true;
-
-            return result;
-        }
-
-        return false;
+        try { return owner is not null && await window.ShowDialog<bool>(owner); }
+        finally { if (viewModel is IDisposable disposable) disposable.Dispose(); }
     }
 
     private static Window? ActiveOwner()

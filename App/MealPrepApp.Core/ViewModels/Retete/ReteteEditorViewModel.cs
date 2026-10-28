@@ -16,7 +16,7 @@ namespace MealPrepApp.ViewModels.Retete;
 /// Every field is a form input; ingredient lines are an editable table. On edit it carries the
 /// <c>RowVersion</c> from load: a stale token (error 50004) raises a reload-or-cancel conflict prompt.
 /// </summary>
-public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadable
+public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadable, ILeaveGuard
 {
     /// <summary>Char cap on an ingredient's note. Must match RecipeIngredients.Notes NVARCHAR(255)
     /// in the DB — a longer value would be truncated/rejected by SQL Server (error 8152).</summary>
@@ -33,6 +33,19 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
     private IReadOnlyList<Ingredient> _allIngredients = Array.Empty<Ingredient>();
     private IReadOnlyList<Unit> _allUnits = Array.Empty<Unit>();
+    private string _savedState = "";
+    private string Snapshot() => JsonSerializer.Serialize(new { Title, Description, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, Category=SelectedCategory?.CategoryID, Rows=IngredientRows.Select(r=> new { Ingredient=r.SelectedIngredient?.IngredientID, Unit=r.SelectedUnit?.UnitID, r.Quantity, r.Notes }) });
+    public bool IsDirty => Snapshot() != _savedState;
+    public async Task<bool> CanLeaveAsync()
+    {
+        if (IsBusy) return false;
+        if (!IsDirty) return true;
+        var decision=await _dialog.ChooseLeaveAsync();
+        if(decision==LeaveDecision.Discard) return true;
+        if(decision==LeaveDecision.Stay) return false;
+        await SaveDraft();
+        return !HasError && !IsDirty;
+    }
     private byte[] _rowVersion = Array.Empty<byte>();
 
     /// <summary>Recipe to edit, or null to create a new one. Set before <see cref="LoadAsync"/> runs.</summary>
@@ -87,6 +100,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         _navigation = navigation;
         _dialog = dialog;
         _services = services;
+        _savedState=Snapshot();
     }
 
     public async Task LoadAsync()
@@ -111,10 +125,17 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
             OnPropertyChanged(nameof(ScreenTitle));
             OnPropertyChanged(nameof(IsDraft));
+            _savedState=Snapshot();
         }
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -219,6 +240,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     [RelayCommand]
     private async Task SaveDraft()
     {
+        if(IsBusy)return;
         ClearError();
         IsBusy = true;
         try
@@ -245,11 +267,18 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
             OnPropertyChanged(nameof(IsDraft));
             OnPropertyChanged(nameof(ScreenTitle));
-            _dialog.ShowInfo("Draft salvat", "Draftul a fost salvat. Il gasesti in Retete > Drafts.");
+            _savedState=Snapshot();
+            Notification="Ciorna a fost salvată.";
         }
         catch (AppDbException ex)
         {
             ErrorMessage = ex.FriendlyMessage;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
         }
         finally
         {
@@ -260,6 +289,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     [RelayCommand]
     private async Task Save()
     {
+        if(IsBusy)return;
         ClearError();
 
         if (string.IsNullOrWhiteSpace(Title))
@@ -274,6 +304,8 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             return;
         }
 
+        if(PrepTimeMinutes is <0 || CookTimeMinutes is <0 || Servings is <=0)
+        {ErrorMessage="Timpii trebuie să fie pozitivi sau zero, iar numărul de porții pozitiv.";return;}
         if (IngredientRows.Any(r => !r.IsComplete))
         {
             ErrorMessage = "Completeaza fiecare rand de ingredient (ingredient, unitate, cantitate) sau elimina-l.";
@@ -318,11 +350,13 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             if (DraftId.HasValue)
                 await _drafts.DeleteDraftAsync(DraftId.Value, userId);
 
+            _savedState=Snapshot();
+            IsBusy=false;
             await NavigateToDetailAsync(recipeId);
         }
         catch (AppDbException ex) when (ex.ErrorNumber == 50004)
         {
-            if (_dialog.Confirm("Conflict de editare",
+            if (await _dialog.ConfirmAsync("Conflict de editare",
                     "Reteta a fost modificata in alta sesiune. Reincarca varianta curenta? " +
                     "(modificarile tale nesalvate se vor pierde)"))
             {
@@ -333,6 +367,12 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -342,9 +382,6 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     [RelayCommand]
     private async Task Cancel()
     {
-        if (!_dialog.Confirm("Renunta", "Renunti la modificari? Modificarile nesalvate se pierd."))
-            return;
-
         if (IsEdit)
             await NavigateToDetailAsync(RecipeId!.Value);
         else
@@ -364,6 +401,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             return;
 
         await PopulateFromExistingAsync(RecipeId!.Value);
+        _savedState=Snapshot();
     }
 
     private static string? Trimmed(string? value) =>

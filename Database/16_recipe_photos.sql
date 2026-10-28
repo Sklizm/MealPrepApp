@@ -19,3 +19,7 @@ BEGIN
     );
 END
 GO
+
+IF COL_LENGTH(N'dbo.RecipePhotos', N'ThumbnailData') IS NULL
+    ALTER TABLE dbo.RecipePhotos ADD ThumbnailData VARBINARY(MAX) NULL;
+GO

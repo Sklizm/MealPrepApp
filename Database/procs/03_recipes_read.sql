@@ -169,3 +169,37 @@ BEGIN
     ORDER BY MatchedIngredients DESC, TotalIngredients ASC, r.RecipeID;
 END
 GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_BrowseRecipes
+    @UserID INT,
+    @Mode NVARCHAR(20) = N'Toate',
+    @Term NVARCHAR(150) = N'',
+    @CategoryID INT = NULL,
+    @PageNumber INT = 1,
+    @PageSize INT = 40,
+    @Sort NVARCHAR(30) = N'Cele mai noi'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @PageNumber < 1 OR @PageSize < 1 OR @PageSize > 200
+        THROW 50000, N'Invalid page', 1;
+    SELECT r.RecipeID, r.Title, r.UserID, u.Username AS AuthorUsername,
+           r.CategoryID, c.Name AS CategoryName, r.PrepTimeMinutes,
+           r.CookTimeMinutes, r.Servings, r.CreatedAt,
+           COALESCE(p.ThumbnailData, p.ImageData) AS PhotoData, COUNT(*) OVER() AS TotalCount
+    FROM dbo.Recipes r
+    JOIN dbo.Users u ON u.UserID = r.UserID
+    LEFT JOIN dbo.Categories c ON c.CategoryID = r.CategoryID
+    LEFT JOIN dbo.RecipePhotos p ON p.RecipeID = r.RecipeID
+    WHERE (@CategoryID IS NULL OR r.CategoryID = @CategoryID)
+      AND (@Term = N'' OR CHARINDEX(@Term, r.Title) > 0)
+      AND (@Mode <> N'Favorite' OR EXISTS (
+          SELECT 1 FROM dbo.RecipeFavorites f WHERE f.UserID = @UserID AND f.RecipeID = r.RecipeID))
+      AND (@Mode <> N'Recente' OR r.UserID = @UserID)
+    ORDER BY CASE WHEN @Sort=N'Titlu' THEN r.Title END ASC,
+             CASE WHEN @Sort=N'Timp de preparare' THEN COALESCE(r.PrepTimeMinutes,0)+COALESCE(r.CookTimeMinutes,0) END ASC,
+             CASE WHEN @Mode = N'Recente' THEN COALESCE(r.UpdatedAt, r.CreatedAt) ELSE r.CreatedAt END DESC,
+             r.RecipeID DESC
+    OFFSET (@PageNumber - 1) * @PageSize ROWS FETCH NEXT @PageSize ROWS ONLY;
+END
+GO

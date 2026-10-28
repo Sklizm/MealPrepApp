@@ -11,7 +11,7 @@ namespace MealPrepApp.ViewModels.Ingrediente;
 /// ingredient list VM serves both Toate (flat) and Categorii (grouped) via its
 /// <c>UseGrouping</c> flag.
 /// </summary>
-public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoadable
+public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
     private readonly IServiceProvider _services;
 
@@ -30,7 +30,9 @@ public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoad
         _services = services;
     }
 
-    public Task LoadAsync() => ShowToateCommand.ExecuteAsync(null);
+    public void Dispose() => _list?.Dispose();
+
+    public Task LoadAsync() => CurrentSubView is null ? ShowToateCommand.ExecuteAsync(null) : Task.CompletedTask;
 
     private IngredienteListViewModel ListVm
     {
@@ -65,6 +67,7 @@ public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoad
     [RelayCommand]
     private async Task ShowFrigider()
     {
+        _list?.CancelPending();
         ActiveSection = "Frigider";
         _frigider ??= _services.GetRequiredService<FrigiderViewModel>();
         CurrentSubView = _frigider;
@@ -74,6 +77,7 @@ public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoad
     [RelayCommand]
     private async Task ShowCumparaturi()
     {
+        _list?.CancelPending();
         ActiveSection = "Cumparaturi";
         _shopping ??= _services.GetRequiredService<ShoppingListViewModel>();
         CurrentSubView = _shopping;

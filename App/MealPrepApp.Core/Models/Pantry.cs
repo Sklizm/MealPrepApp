@@ -3,6 +3,7 @@ namespace MealPrepApp.Models;
 /// <summary>A pantry ("Frigider") stock row from <c>sp_GetPantry</c>.</summary>
 public sealed class PantryItem
 {
+    public string CategoryName {get;set;}="Fără categorie";
     public int UserPantryID { get; set; }
     public int IngredientID { get; set; }
     public string IngredientName { get; set; } = "";

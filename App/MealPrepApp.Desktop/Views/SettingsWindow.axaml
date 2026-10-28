@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.SettingsWindow" Title="Setări" Width="520" Height="640" MinWidth="440" MinHeight="540" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
+    <ScrollViewer>
+        <StackPanel Margin="32" Spacing="16">
+            <TextBlock Text="Setări" Classes="Title"/>
+            <TextBlock Text="Aspect" Classes="Header"/>
+            <ComboBox Name="ThemePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="Temă"/>
+            <CheckBox Name="ListViewCheck" Content="Afișează rețetele ca listă"/>
+            <CheckBox Name="MotionCheck" Content="Mișcare redusă"/>
+            <TextBlock Text="Conexiune la baza de date" Classes="Header"/>
+            <TextBlock Text="Schimbările conexiunii se aplică la repornire." Classes="Muted"/>
+            <TextBlock Text="Server (adresă,port)"/>
+            <TextBox Name="ServerBox" AutomationProperties.Name="Server"/>
+            <TextBlock Text="Bază de date"/>
+            <TextBox Name="DatabaseBox" AutomationProperties.Name="Bază de date"/>
+            <TextBlock Text="Utilizator SQL"/>
+            <TextBox Name="UserBox" AutomationProperties.Name="Utilizator SQL"/>
+            <TextBlock Text="Parolă SQL nouă (gol = păstrează)"/>
+            <TextBox Name="PasswordBox" PasswordChar="●" AutomationProperties.Name="Parolă SQL"/>
+            <WrapPanel>
+                <Button Classes="Primary" Content="Testează conexiunea" Click="TestConnection" Margin="0,0,8,8"/>
+                <Button Content="Salvează conexiunea" Classes="Secondary" Click="SaveConnection" Margin="0,0,8,8"/>
+            </WrapPanel>
+            <TextBlock Name="Status" TextWrapping="Wrap"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

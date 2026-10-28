@@ -1,39 +1,11 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="MealPrepApp.Desktop.Views.Auth.LoginWindow"
-        Title="MealPrepApp - Conectare"
-        Width="440" Height="580"
-        WindowStartupLocation="CenterScreen"
-        CanResize="False"
-        Background="{StaticResource CreamBrush}"
-        FontFamily="{StaticResource AppFontFamily}"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="44">
-
-    <Grid RowDefinitions="44,Auto,*">
-        <!-- Top chrome strip -->
-        <Border Grid.Row="0" Background="{StaticResource DarkBrush}">
-            <TextBlock Text="MealPrepApp"
-                       Foreground="{StaticResource CreamBrush}"
-                       FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                       VerticalAlignment="Center" Margin="80,0,0,0" />
-        </Border>
-
-        <!-- Banner -->
-        <Border Grid.Row="1" Background="{StaticResource DarkBrush}" Height="110">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
-                <TextBlock Text="Planificator de Retete si Mese"
-                           Foreground="{StaticResource CreamBrush}"
-                           FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
-                           HorizontalAlignment="Center" />
-                <TextBlock Text="Organizeaza-ti retetele si mesele"
-                           Foreground="{StaticResource MossLightBrush}"
-                           FontSize="{StaticResource FontSizeSmall}"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
-        </Border>
-
-        <!-- Active View Host (LoginView / RegisterView) -->
-        <ContentControl Grid.Row="2" x:Name="Host" Margin="32,24" />
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.Auth.LoginWindow" Title="MealPrep • Conectare" Width="480" Height="720" MinWidth="440" MinHeight="580" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Margin="32,32,32,0" Spacing="8">
+            <TextBlock Text="MealPrep" Classes="Title"/>
+            <TextBlock Text="Rețete bune. Mese planificate. Mai mult timp pentru tine." Classes="Muted" TextWrapping="Wrap"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ContentControl Name="Host" Margin="32,24"/>
+        </ScrollViewer>
     </Grid>
 </Window>

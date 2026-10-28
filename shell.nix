@@ -2,8 +2,7 @@
 
 let
   dotnet-sdk = with pkgs.dotnetCorePackages; combinePackages [
-    sdk_9_0
-    (sdk_10_0 or sdk_9_0)
+    sdk_10_0
   ];
 
   runtimeLibs = with pkgs; [

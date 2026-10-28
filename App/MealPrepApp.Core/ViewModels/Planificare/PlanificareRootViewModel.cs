@@ -21,14 +21,14 @@ public sealed partial class PlanificareRootViewModel : ViewModelBase, IAsyncLoad
     private object? _currentSubView;
 
     [ObservableProperty]
-    private string _activeView = "Lunar";
+    private string _activeView = "Saptamanal";
 
     public PlanificareRootViewModel(IServiceProvider services)
     {
         _services = services;
     }
 
-    public Task LoadAsync() => ShowLunarCommand.ExecuteAsync(null);
+    public Task LoadAsync() => CurrentSubView is null ? ShowSaptamanalCommand.ExecuteAsync(null) : Task.CompletedTask;
 
     [RelayCommand]
     private async Task ShowLunar()

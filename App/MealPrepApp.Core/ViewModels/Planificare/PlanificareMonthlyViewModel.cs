@@ -81,6 +81,12 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
         {
             ErrorMessage = ex.FriendlyMessage;
         }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            AppDiagnostics.Record(ex);
+            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+        }
         finally
         {
             IsBusy = false;
@@ -115,7 +121,7 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
         if (cell is null) return;
         var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
         await vm.InitForAddAsync(cell.Date, MealSlots.DefaultSlotId);
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 
@@ -125,7 +131,7 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
         if (entry is null) return;
         var vm = _services.GetRequiredService<PlanMealDialogViewModel>();
         await vm.InitForEditAsync(entry);
-        if (_dialog.ShowDialog(vm))
+        if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
 }
