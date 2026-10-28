@@ -93,6 +93,11 @@ both themes, at 860×600, 1280×800 and 1440×900, with 100/150/200% render DPI.
 headless render checks, not native OS display-scaling smoke tests. Initial page-only design
 samples are also retained with filenames lacking the DPI suffix.
 
+## Release candidate
+
+See the [draft release procedure](../releases/README.md) for versioned archives, checksums,
+CI evidence and remaining native acceptance checks.
+
 ## Database rollout
 
 The new client needs both the compatibility procedures and the cooking redesign migration.
@@ -115,7 +120,8 @@ bash scripts/update-database.sh mealprep-db 20261028_cooking_redesign.sql
 Each invocation makes a COPY_ONLY CHECKSUM backup, verifies it, and securely copies it to
 `backups/` before applying its migration. A failed backup/copy stops the update. The
 redesign migration is additive, runs transactionally, and does not rerun seeds or change
-login credentials. The migration has not been executed on the live database by this agent.
+login credentials. Codrin reports both migrations and the isolated SQL suite passed from normal SSH;
+the agent has not independently inspected the deployed schema.
 
 ## Native acceptance flow
 

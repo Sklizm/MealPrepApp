@@ -3,8 +3,12 @@
 The source changes are implemented. Full release acceptance remains pending: isolated SQL execution, standard xUnit/VSTest, WPF compilation and native
 macOS/Hyprland smoke tests remain outstanding for the environmental reasons below.
 
+Codrin reports that the SQL suite and both live migrations passed from normal SSH. The
+agent cannot independently inspect the deployment because Docker access remains blocked.
+The earlier SQL limitations below describe agent execution, not a rejection of that report.
+
 Codrin reports that the rebuilt interface looks good. This is user feedback; the full
-native acceptance checklist and expanded SQL suite remain unverified.
+native acceptance checklist remains unverified; SQL success is user-reported.
 
 ## Passed on ideapad-server
 
@@ -82,3 +86,11 @@ exclude `appsettings.Local.json`. The database has **not** been migrated by the 
 Use the [backup-first rollout commands](README.md#database-rollout) only after the
 isolated SQL suite passes. Native smoke testing is required before declaring the complete
 find → scale → cook/plan → checklist → explicit pantry import flow accepted.
+
+
+## Release candidate preparation
+
+See the [release procedure and current evidence](../releases/README.md). New automation retains
+test logs and packages, gates draft creation on the complete reusable CI suite, and binds
+checksummed assets to the selected commit. GitHub DNS, Docker access and native desktop
+sessions remain unavailable here; no draft release or tag has been created by the agent.

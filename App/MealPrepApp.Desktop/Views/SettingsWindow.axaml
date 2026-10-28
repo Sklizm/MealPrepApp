@@ -2,6 +2,7 @@
     <ScrollViewer>
         <StackPanel Margin="32" Spacing="16">
             <TextBlock Text="Setări" Classes="Title"/>
+            <TextBlock Name="AppVersion" Classes="Muted"/>
             <TextBlock Text="Aspect" Classes="Header"/>
             <ComboBox Name="ThemePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="Temă"/>
             <CheckBox Name="ListViewCheck" Content="Afișează rețetele ca listă"/>

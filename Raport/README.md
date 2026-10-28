@@ -58,3 +58,7 @@ Capturile din `docs/redesign/screenshots/` provin din randări headless cu date 
 Etichetați-le ca atare dacă le folosiți în raport. Pentru demonstrarea clientului WPF,
 folosiți capturi native din Windows; pentru macOS/Linux, completați verificările native.
 Nu prezentați migrarea bazei de date sau testele SQL noi ca executate fără dovezile respective.
+
+Pentru versiunea candidat, consultați [procedura de release](../docs/releases/README.md).
+Rezultatele CI și testele native trebuie documentate separat; existența arhivei nu confirmă
+acceptarea completă a aplicației.

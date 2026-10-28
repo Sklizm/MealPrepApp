@@ -10,8 +10,11 @@ echo "=== Building MealPrepApp for Linux (x64) ==="
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
+APP_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$REPO_ROOT/release.json")"
+
 dotnet publish "$REPO_ROOT/App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj" \
     -c Release \
+    -p:Version="$APP_VERSION" \
     -r linux-x64 \
     --self-contained true \
     -p:PublishSingleFile=false \

@@ -37,9 +37,13 @@ Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Se
 | `Raport/` | [Romanian academic report generator](Raport/README.md) |
 | `Vault/` | Historical project notes and decisions |
 
+## Downloads and release candidates
+
+CI retains Mac/Linux archives and test results as Actions artifacts. The manually triggered **Draft release candidate** workflow verifies the selected commit before preparing a draft prerelease with checksums. A public release has not been created by this agent. See the [release procedure and acceptance evidence](docs/releases/README.md) and [candidate notes](docs/releases/v1.0.0-rc.1.md).
+
 ## Build and run
 
-Install the .NET 10 SDK; `global.json` selects the 10.0 SDK family. Run these commands from the repository root. Self-contained packages include the runtime, but building requires the SDK and a successful NuGet restore.
+Install the .NET 10 SDK and Python 3.11+ for packaging; `global.json` selects the 10.0 SDK family. Run these commands from the repository root. Self-contained packages include the runtime, but building requires the SDK and a successful NuGet restore.
 
 ### macOS Apple Silicon
 
@@ -172,7 +176,7 @@ dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --screensh
 
 The redesign has a successful Release build, **21 direct regression checks**, **28 contrast checks**, **72 shell renders** across two themes, three sizes and three render DPIs, and successful macOS/Linux packaging. GitHub Actions is configured for cross-platform tests, Windows WPF compilation, packaging and disposable SQL checks.
 
-The complete expanded SQL suite, WPF compilation and full native macOS/Hyprland acceptance flow still require verification outside the restricted build environment. Codrin reports the rebuilt app looks good; this does not establish every acceptance check. The agent has not applied the database migrations. See [current evidence and limitations](docs/redesign/validation.md) and the [earlier compatibility repair history](docs/compatibility-repair.md).
+Codrin reports the expanded SQL suite and both live migrations passed from normal SSH. Independent deployed inspection, WPF compilation and the full native macOS/Hyprland acceptance flow still require verification outside the restricted build environment. Codrin reports the rebuilt app looks good; this does not establish every acceptance check. The agent has not applied the database migrations. See [current evidence and limitations](docs/redesign/validation.md) and the [earlier compatibility repair history](docs/compatibility-repair.md).
 
 ## Architecture and scope
 

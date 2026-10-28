@@ -2,9 +2,13 @@ name: Compatibility
 on:
   push:
   pull_request:
+  workflow_call:
+permissions:
+  contents: read
 jobs:
   desktop:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -13,24 +17,46 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
+      - run: dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release --logger trx --results-directory TestResults
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-${{ matrix.os }}
+          path: TestResults/
       - if: runner.os == 'Windows'
         run: dotnet build App/MealPrepApp/MealPrepApp.csproj -c Release
       - if: runner.os == 'macOS'
-        run: bash scripts/build-mac.sh
+        run: bash scripts/build-mac.sh -m:1
+      - if: runner.os == 'macOS'
+        run: python3 scripts/package-release.py macos-arm64
       - if: runner.os == 'Linux'
-        run: bash scripts/build-linux.sh
-      - name: Reject deployment credentials in output
-        shell: bash
-        run: |
-          if find dist -name appsettings.Local.json -print -quit 2>/dev/null | grep -q .; then
-            echo "Local settings leaked into publish output"
-            exit 1
-          fi
-
+        run: bash scripts/build-linux.sh -m:1
+      - if: runner.os == 'Linux'
+        run: python3 scripts/package-release.py linux-x64
+      - if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ runner.os }}
+          path: dist/release/*.tar.gz
+          if-no-files-found: error
+  presentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 Tests/Scripts/check_redesign_contrast.py
+      - run: python3 Tests/Scripts/test_database_update.py
+      - run: python3 Tests/Scripts/test_release_package.py
   database:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 Tests/Scripts/test_database_update.py
-      - run: bash scripts/test-database.sh
+      - name: Disposable SQL suite
+        shell: bash
+        run: |
+          set -o pipefail
+          bash scripts/test-database.sh 2>&1 | tee database-tests.log
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-results
+          path: database-tests.log

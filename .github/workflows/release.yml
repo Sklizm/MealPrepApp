@@ -1,0 +1,47 @@
+name: Draft release candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: draft-release-candidate
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/compatibility.yml
+  draft:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist/release
+          merge-multiple: true
+      - run: python3 scripts/package-release.py finalize
+      - name: Create draft and tag for this verified commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python3 -c 'import json; print(json.load(open("release.json"))["version"])')"
+          tag="v$version"
+          git check-ref-format "refs/tags/$tag"
+          if gh api "repos/$GH_REPO/git/ref/tags/$tag" > /tmp/existing-tag.json 2>/tmp/tag-error; then
+            echo "Tag already exists; leave the existing candidate untouched."
+            exit 1
+          else
+            grep -q 'HTTP 404' /tmp/tag-error || { cat /tmp/tag-error; exit 1; }
+          fi
+          cp docs/releases/v1.0.0-rc.1.md /tmp/release-notes.md
+          printf '\nSource: `%s`\n\nAutomated evidence: %s\n' "$SOURCE_SHA" "$RUN_URL" >> /tmp/release-notes.md
+          gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$SOURCE_SHA"
+          gh release create "$tag" --verify-tag --draft --prerelease --title "MealPrepApp $version" --notes-file /tmp/release-notes.md dist/release/*

@@ -50,3 +50,9 @@ The installer creates a per-user launcher pointing to that folder. NixOS still n
 ## Verification
 
 Run the [shared regression commands](../README.md#verification). Native NixOS/Hyprland checks remain required for focus, keyboard shortcuts, file pickers, menus, drag-to-move, theme changes, resizing and actual 100/150/200% display scaling. The [headless screenshot matrix](../docs/redesign/README.md#screenshots-and-validation) is rendering evidence, not a native smoke test.
+
+## Release downloads
+
+The [release candidate workflow](../docs/releases/README.md) creates a generic Linux x64
+archive. It does not complete the Nix dependency bootstrap or replace the required native
+library environment described above.
