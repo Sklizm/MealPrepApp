@@ -12,7 +12,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Ingrediente;
 
 /// <summary>Saved shopping snapshots with category/checklist views, explicit pantry import and exports.</summary>
-public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadable
+public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
     private readonly ShoppingListRepository _shopping;
     private readonly ISessionService _session;
@@ -27,33 +27,102 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     public string ProgressText => $"{Rows.Count(r=>r.IsPurchased)} din {Rows.Count} cumpărate";
     public string PlainText => string.Join(Environment.NewLine,Rows.Select(r=>$"[{(r.IsPurchased ? "x" : " ")}] {r.IngredientName}: {r.ToBuyQty:0.##} {r.UnitAbbreviation}"));
     partial void OnPurchaseFilterChanged(string value)=>Regroup();
-    partial void OnSelectedSnapshotChanged(ShoppingSnapshot? value) { if(!_selecting) _ = RunAsync(LoadSelectedAsync); }
+    partial void OnSelectedSnapshotChanged(ShoppingSnapshot? value)
+    {
+        if (!_selecting) _ = ReadAsync(false);
+    }
     private bool _selecting;
+    private bool _disposed;
+    private int _readVersion;
+    private CancellationTokenSource? _readCts;
+    [ObservableProperty] private bool _isMutating;
+    private bool _isLoading;
+    private bool CanMutate() => !IsBusy && !_disposed;
+    private void UpdateBusy()
+    {
+        IsBusy = _isLoading || IsMutating;
+        GenerateCommand.NotifyCanExecuteChanged(); TogglePurchasedCommand.NotifyCanExecuteChanged();
+        ImportItemCommand.NotifyCanExecuteChanged(); ExportExcelCommand.NotifyCanExecuteChanged();
+    }
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true; ++_readVersion; _readCts?.Cancel(); _readCts?.Dispose();
+    }
     private void Regroup()
     {
         Groups.Clear();
         foreach(var group in Rows.Where(r=>PurchaseFilter=="Toate" || (PurchaseFilter=="Cumpărate" ? r.IsPurchased : !r.IsPurchased)).GroupBy(r=>r.CategoryName)) Groups.Add(new ShoppingGroup(group.Key,group));
         OnPropertyChanged(nameof(ProgressText)); OnPropertyChanged(nameof(PlainText));
     }
-    private async Task LoadSelectedAsync()
+    private async Task ReadAsync(bool refreshSnapshots, int? selectId = null)
     {
-        if(SelectedSnapshot is null) {Rows.Clear();Regroup();return;}
-        StartDate=SelectedSnapshot.StartDate;EndDate=SelectedSnapshot.EndDate;
-        var rows=await _shopping.GetSnapshotItemsAsync(_session.CurrentUserId,SelectedSnapshot.SnapshotID);
-        Rows.Clear();foreach(var row in rows) Rows.Add(row);
-        HasGenerated=true;Regroup();
+        if (_disposed) return;
+        var version = ++_readVersion;
+        _readCts?.Cancel(); _readCts?.Dispose();
+        _readCts = new CancellationTokenSource(); var token = _readCts.Token;
+        var userId = _session.CurrentUserId;
+        var snapshot = SelectedSnapshot;
+        _isLoading = true; UpdateBusy(); ClearError();
+        try
+        {
+            if (refreshSnapshots)
+            {
+                var snapshots = await _shopping.GetSnapshotsAsync(userId, token);
+                if (version != _readVersion || _disposed) return;
+                snapshot = snapshots.FirstOrDefault(s => s.SnapshotID == (selectId ?? snapshot?.SnapshotID)) ?? snapshots.FirstOrDefault();
+                _selecting = true;
+                try { Snapshots.Clear(); foreach (var item in snapshots) Snapshots.Add(item); SelectedSnapshot = snapshot; }
+                finally { _selecting = false; }
+            }
+            // Capture the ID before the await; even a repository that ignores cancellation cannot replace a newer selection.
+            var id = snapshot?.SnapshotID;
+            Rows.Clear(); HasGenerated = false; Regroup();
+            if (snapshot is null) return;
+            StartDate = snapshot.StartDate; EndDate = snapshot.EndDate;
+            var rows = await _shopping.GetSnapshotItemsAsync(userId, snapshot.SnapshotID, token);
+            if (version != _readVersion || _disposed || SelectedSnapshot?.SnapshotID != id) return;
+            foreach (var row in rows) Rows.Add(row);
+            HasGenerated = true; Regroup();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            if (version == _readVersion && !_disposed)
+            {
+                AppDiagnostics.Record(ex);
+                ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Lista nu a putut fi încărcată. Încearcă din nou.";
+            }
+        }
+        finally { if (version == _readVersion && !_disposed) { _isLoading = false; UpdateBusy(); } }
     }
-    private async Task RunAsync(Func<Task> operation)
+    private async Task MutateAsync(Func<Task> operation)
     {
-        if(IsBusy) return;
-        ClearError(); IsBusy=true;
-        try {await operation();} catch(AppDbException ex) {ErrorMessage=ex.FriendlyMessage;} catch(Exception ex) {AppDiagnostics.Record(ex); ErrorMessage="Lista nu a putut fi actualizată. Încearcă din nou.";} finally {IsBusy=false;Regroup();}
+        if (!CanMutate()) return;
+        IsMutating = true; UpdateBusy(); ClearError();
+        try { await operation(); }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            if (!_disposed) { AppDiagnostics.Record(ex); ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Lista nu a putut fi actualizată. Încearcă din nou."; }
+        }
+        finally { if (!_disposed) { IsMutating = false; UpdateBusy(); } }
     }
-    [RelayCommand] private Task TogglePurchased(ShoppingListRow? row)=>row is null ? Task.CompletedTask : RunAsync(async()=>{await _shopping.SetPurchasedAsync(_session.CurrentUserId,row.ItemID,!row.IsPurchased);await LoadSelectedAsync();});
-    [RelayCommand] private Task ImportItem(ShoppingListRow? row)=>row is null || !row.CanImport ? Task.CompletedTask : RunAsync(async()=>
+    [RelayCommand(CanExecute = nameof(CanMutate))]
+    private Task TogglePurchased(ShoppingListRow? row) => row is null || !Rows.Contains(row) ? Task.CompletedTask : MutateAsync(async () =>
     {
-        if(!await _dialog.ConfirmAsync("Adaugă în frigider",$"Adaugi {row.ToBuyQty:0.##} {row.UnitAbbreviation} {row.IngredientName} în frigider? Acest articol poate fi importat o singură dată.")) return;
-        await _shopping.ImportItemAsync(_session.CurrentUserId,row.ItemID);await LoadSelectedAsync();Notification="Cantitatea a fost adăugată în frigider.";
+        var userId = _session.CurrentUserId;
+        await _shopping.SetPurchasedAsync(userId, row.ItemID, !row.IsPurchased);
+        await ReadAsync(false);
+    });
+    [RelayCommand(CanExecute = nameof(CanMutate))]
+    private Task ImportItem(ShoppingListRow? row) => row is null || !row.CanImport || !Rows.Contains(row) ? Task.CompletedTask : MutateAsync(async () =>
+    {
+        var userId = _session.CurrentUserId;
+        if (!await _dialog.ConfirmAsync("Adaugă în frigider", $"Adaugi {row.ToBuyQty:0.##} {row.UnitAbbreviation} {row.IngredientName} în frigider? Acest articol poate fi importat o singură dată.")) return;
+        await _shopping.ImportItemAsync(userId, row.ItemID);
+        await ReadAsync(false);
+        if (!_disposed) Notification = "Cantitatea a fost adăugată în frigider.";
     });
     [RelayCommand] private Task Retry()=>LoadAsync();
     public ObservableCollection<ShoppingListRow> Rows { get; } = new();
@@ -79,50 +148,26 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
         _filePicker = filePicker;
     }
 
-    public Task LoadAsync() => RunAsync(async()=>
-    {
-        var selected=SelectedSnapshot?.SnapshotID;
-        var snapshots=await _shopping.GetSnapshotsAsync(_session.CurrentUserId);
-        _selecting=true;try {Snapshots.Clear();foreach(var snapshot in snapshots) Snapshots.Add(snapshot);SelectedSnapshot=Snapshots.FirstOrDefault(s=>s.SnapshotID==selected) ?? Snapshots.FirstOrDefault();}finally{_selecting=false;}
-        await LoadSelectedAsync();
-    });
+    public Task LoadAsync() => ReadAsync(true);
 
-    [RelayCommand]
-    private async Task Generate()
+    [RelayCommand(CanExecute = nameof(CanMutate))]
+    private Task Generate()
     {
         ClearError();
-
         if (EndDate < StartDate)
         {
-            ErrorMessage = "Data de sfarsit trebuie sa fie dupa data de inceput.";
-            return;
+            ErrorMessage = "Data de sfârșit trebuie să fie după data de început.";
+            return Task.CompletedTask;
         }
-
-        IsBusy = true;
-        try
+        var userId = _session.CurrentUserId; var start = StartDate; var end = EndDate;
+        return MutateAsync(async () =>
         {
-            var id=await _shopping.CreateSnapshotAsync(_session.CurrentUserId,StartDate,EndDate);
-            var snapshots=await _shopping.GetSnapshotsAsync(_session.CurrentUserId);
-            _selecting=true;try {Snapshots.Clear();foreach(var snapshot in snapshots) Snapshots.Add(snapshot);SelectedSnapshot=Snapshots.FirstOrDefault(s=>s.SnapshotID==id);}finally{_selecting=false;}
-            await LoadSelectedAsync();
-        }
-        catch (AppDbException ex)
-        {
-            ErrorMessage = ex.FriendlyMessage;
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+            var id = await _shopping.CreateSnapshotAsync(userId, start, end);
+            await ReadAsync(true, id);
+        });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanMutate))]
     private async Task ExportExcel()
     {
         if (Rows.Count == 0)

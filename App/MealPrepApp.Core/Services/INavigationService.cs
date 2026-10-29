@@ -10,7 +10,7 @@ public interface INavigationService
 
     /// <summary>Resolves <typeparamref name="TViewModel"/> from DI, shows it, and awaits its
     /// <see cref="IAsyncLoadable.LoadAsync"/> if it implements it.</summary>
-    Task NavigateToAsync<TViewModel>() where TViewModel : class;
+    Task NavigateToAsync<TViewModel>(Action<TViewModel>? prepare = null) where TViewModel : class;
 
     /// <summary>Shows an already-constructed ViewModel (used when it needs parameters).</summary>
     Task NavigateToAsync(object viewModel);

@@ -1,9 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Shell" x:Class="MealPrepApp.Desktop.Views.ShellWindow" x:DataType="vm:ShellViewModel" Title="MealPrep • Gătește cu plăcere" Width="1240" Height="820" MinWidth="860" MinHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
-    <Window.Styles>
-        <Style Selector="Window.Compact TextBlock.NavLabel">
-            <Setter Property="IsVisible" Value="False"/>
-        </Style>
-    </Window.Styles>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:vm="using:MealPrepApp.ViewModels.Shell" x:Class="MealPrepApp.Desktop.Views.ShellWindow" x:DataType="vm:ShellViewModel" Title="MealPrep • Gătește cu plăcere" Width="1240" Height="820" MinWidth="860" MinHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
     <NativeMenu.Menu>
         <NativeMenu>
             <NativeMenuItem Header="MealPrep">
@@ -28,64 +23,38 @@
     </NativeMenu.Menu>
     <Grid ColumnDefinitions="Auto,*">
         <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,1,0">
-            <Grid Margin="12,24" RowDefinitions="Auto,*,Auto" Width="196" Name="NavigationPanel">
-                <TextBlock Text="MealPrep" FontSize="24" FontWeight="Bold" Margin="12,0,0,32" Classes="NavLabel"/>
-                <StackPanel Grid.Row="1" Spacing="4">
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowAcasaCommand}" ToolTip.Tip="Acasă" AutomationProperties.Name="Acasă" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Acasa, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconHome}" Width="20" Height="20"/>
-                            <TextBlock Text="Acasă" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowReteteCommand}" ToolTip.Tip="Rețete" AutomationProperties.Name="Rețete" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Retete, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconRecipe}" Width="20" Height="20"/>
-                            <TextBlock Text="Rețete" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowPlanificareCommand}" ToolTip.Tip="Planificare" AutomationProperties.Name="Planificare" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Planificare, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconPlan}" Width="20" Height="20"/>
-                            <TextBlock Text="Planificare" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowFrigiderCommand}" ToolTip.Tip="Frigider" AutomationProperties.Name="Frigider" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Frigider, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconFridge}" Width="20" Height="20"/>
-                            <TextBlock Text="Frigider" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowCumparaturiCommand}" ToolTip.Tip="Cumpărături" AutomationProperties.Name="Cumpărături" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconShopping}" Width="20" Height="20"/>
-                            <TextBlock Text="Cumpărături" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowIngredienteCommand}" ToolTip.Tip="Ingrediente" AutomationProperties.Name="Ingrediente" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Ingrediente, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconIngredient}" Width="20" Height="20"/>
-                            <TextBlock Text="Ingrediente" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton Classes="Tab" GroupName="Navigation" Command="{Binding ShowRapoarteCommand}" ToolTip.Tip="Rapoarte" AutomationProperties.Name="Rapoarte" IsChecked="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Rapoarte, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconReport}" Width="20" Height="20"/>
-                            <TextBlock Text="Rapoarte" Classes="NavLabel"/>
-                        </StackPanel>
-                    </RadioButton>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Spacing="4">
-                    <Button Classes="Link" Command="{Binding ShowProfileCommand}" AutomationProperties.Name="Profil" ToolTip.Tip="Profil">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconProfile}" Width="20" Height="20"/>
-                            <TextBlock Text="{Binding CurrentUsername}" Classes="NavLabel"/>
-                        </StackPanel>
+            <Grid Width="84" Margin="0,12" RowDefinitions="*,Auto" Name="NavigationPanel">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="6" HorizontalAlignment="Center" KeyboardNavigation.TabNavigation="Continue">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Acasa}" Command="{Binding ShowAcasaCommand}" ToolTip.Tip="Acasă" AutomationProperties.Name="Acasă">
+                            <controls:AnimatedNavigationIcon Kind="Home" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Retete}" Command="{Binding ShowReteteCommand}" ToolTip.Tip="Rețete" AutomationProperties.Name="Rețete">
+                            <controls:AnimatedNavigationIcon Kind="Recipes" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Planificare}" Command="{Binding ShowPlanificareCommand}" ToolTip.Tip="Planificare" AutomationProperties.Name="Planificare">
+                            <controls:AnimatedNavigationIcon Kind="Calendar" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Frigider}" Command="{Binding ShowFrigiderCommand}" ToolTip.Tip="Frigider" AutomationProperties.Name="Frigider">
+                            <controls:AnimatedNavigationIcon Kind="Fridge" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi}" Command="{Binding ShowCumparaturiCommand}" ToolTip.Tip="Cumpărături" AutomationProperties.Name="Cumpărături">
+                            <controls:AnimatedNavigationIcon Kind="Shopping" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Ingrediente}" Command="{Binding ShowIngredienteCommand}" ToolTip.Tip="Ingrediente" AutomationProperties.Name="Ingrediente">
+                            <controls:AnimatedNavigationIcon Kind="Ingredients" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Rapoarte}" Command="{Binding ShowRapoarteCommand}" ToolTip.Tip="Rapoarte" AutomationProperties.Name="Rapoarte">
+                            <controls:AnimatedNavigationIcon Kind="Reports" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+                <StackPanel Grid.Row="1" Spacing="6" HorizontalAlignment="Center" Margin="0,12,0,0">
+                    <Button Classes="Rail" Command="{Binding ShowProfileCommand}" AutomationProperties.Name="Profil" ToolTip.Tip="Profil">
+                        <Path Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconProfile}" Width="26" Height="26"/>
                     </Button>
-                    <Button Classes="Link" Command="{Binding ShowSettingsCommand}" AutomationProperties.Name="Setări" ToolTip.Tip="Setări">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconSettings}" Width="20" Height="20"/>
-                            <TextBlock Text="Setări" Classes="NavLabel"/>
-                        </StackPanel>
+                    <Button Classes="Rail" Command="{Binding ShowSettingsCommand}" AutomationProperties.Name="Setări" ToolTip.Tip="Setări">
+                        <Path Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" Stretch="Uniform" Data="{StaticResource IconSettings}" Width="26" Height="26"/>
                     </Button>
                 </StackPanel>
             </Grid>

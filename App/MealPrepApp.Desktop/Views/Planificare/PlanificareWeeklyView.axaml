@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareWeeklyView" x:DataType="vm:PlanificareWeeklyViewModel" Background="{DynamicResource AppBackground}">
-    <Grid Margin="24" RowDefinitions="Auto,Auto,*">
+    <Grid Margin="32" RowDefinitions="Auto,Auto,*">
         <StackPanel Spacing="12"><TextBlock Text="Planificare" Classes="Title"/>
             <WrapPanel>
                 <Button Content="Precedentă" Classes="Secondary" Command="{Binding PrevWeekCommand}" Margin="0,0,8,8"/>

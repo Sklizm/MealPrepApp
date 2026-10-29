@@ -11,14 +11,14 @@
                         <TextBlock Text="{Binding DefaultUnitAbbreviation}" Foreground="{DynamicResource TextPrimary}" FontSize="11"/>
                     </Border>
                     <Button Grid.Column="2" Content="Nutriție" Classes="Secondary" Margin="0,0,8,0" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
-                    <Button Grid.Column="3" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link" Foreground="{DynamicResource Danger}" Command="{Binding DataContext.DeleteIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                    <Button Grid.Column="3" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" Command="{Binding DataContext.DeleteIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
                         <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
                     </Button>
                 </Grid>
             </Border>
         </DataTemplate>
     </UserControl.Resources>
-    <Grid Margin="24" RowDefinitions="Auto,Auto,*">
+    <Grid Margin="32" RowDefinitions="Auto,Auto,*">
         <!-- Toolbar -->
         <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
             <TextBlock Text="Catalog de ingrediente" Classes="Title"/>
@@ -37,7 +37,11 @@
             </WrapPanel>
         </StackPanel>
         <!-- Error slot -->
-        <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <!-- List / empty -->
         <Grid Grid.Row="2">
             <ScrollViewer>

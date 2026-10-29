@@ -6,9 +6,9 @@ Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Se
 - **Grading:** the original Windows WPF client is retained alongside Avalonia and shares Core logic. See the [Windows guide](docs/platforms/windows.md#wpf-grading-client).
 - **Database:** SQL Server 2022, accessed through stored procedures with UTC timestamps, mutation auditing and recipe concurrency checks.
 
-![Home in the light theme](docs/redesign/screenshots/home-Light-1280-100.png)
+![Home in the light theme](docs/refinement/screenshots/home-Light-1280-100.png)
 
-[Recipe detail](docs/redesign/screenshots/recipe-Dark-1280-100.png) · [Weekly planner](docs/redesign/screenshots/planner-Light-1280-100.png) · [Design and rollout](docs/redesign/README.md) · [Validation evidence](docs/redesign/validation.md)
+[Recipe detail](docs/refinement/screenshots/recipe-Dark-1280-100.png) · [Weekly planner](docs/refinement/screenshots/planner-Light-1280-100.png) · [Design and rollout](docs/redesign/README.md) · [Current visual refinement and validation](docs/refinement/README.md) · [Earlier validation evidence](docs/redesign/validation.md)
 
 ## Features
 
@@ -167,6 +167,8 @@ The direct runner works in environments where VSTest cannot create its local TCP
 ```bash
 dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --screenshots
 ```
+
+The current [visual refinement](docs/refinement/README.md) adds the illustrated rail, beige/sage palettes, request recovery and cancellation fixes. Its local evidence includes 44 direct regressions, 70 text and 16 indicator contrast checks, and 232 headless renders. Native DPI/hover acceptance and green Compatibility CI remain separate requirements. Regenerate this matrix with `--refinement-screenshots`; it writes to gitignored `dist/refinement/screenshots/`.
 
 The earlier redesign evidence includes 21 direct regression checks, 28 contrast checks, 72 shell renders and macOS/Linux builds. New connection and installer checks are tracked in [release validation](docs/releases/README.md). GitHub Actions verifies cross-platform tests, Windows installation, WPF compilation, packaging, and disposable SQL checks. Native acceptance is recorded separately from successful builds.
 

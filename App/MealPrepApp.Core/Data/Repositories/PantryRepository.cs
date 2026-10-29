@@ -4,7 +4,7 @@ namespace MealPrepApp.Data.Repositories;
 
 /// <summary>Pantry ("Frigider"): wraps sp_AddPantryItem, sp_UpdatePantryQuantity,
 /// sp_RemovePantryItem, sp_GetPantry.</summary>
-public sealed class PantryRepository : RepositoryBase
+public class PantryRepository : RepositoryBase
 {
     public PantryRepository(IDbConnectionFactory factory) : base(factory) { }
 
@@ -22,6 +22,6 @@ public sealed class PantryRepository : RepositoryBase
     public Task RemovePantryItemAsync(int userPantryId, int userId) =>
         ExecuteProcAsync("sp_RemovePantryItem", new { UserPantryID = userPantryId, UserID = userId });
 
-    public Task<IReadOnlyList<PantryItem>> GetPantryAsync(int userId) =>
-        QueryProcAsync<PantryItem>("sp_GetPantry", new { UserID = userId });
+    public virtual Task<IReadOnlyList<PantryItem>> GetPantryAsync(int userId, CancellationToken cancellationToken = default) =>
+        QueryProcAsync<PantryItem>("sp_GetPantry", new { UserID = userId }, cancellationToken);
 }

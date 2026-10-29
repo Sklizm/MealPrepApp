@@ -33,16 +33,10 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
+    <Style Selector="Button.Primary TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/></Style>
+    <Style Selector="Button.Danger TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnDanger}"/></Style>
     <Style Selector="Button.Primary"><Setter Property="Background" Value="{DynamicResource ActionPrimary}"/><Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/></Style>
     <Style Selector="CalendarDatePicker"><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/><Setter Property="Background" Value="{DynamicResource Surface}"/></Style>
-    <Style Selector="Button:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ActionHover}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
-    </Style>
-    <Style Selector="Button:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ActionPressed}"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
-    </Style>
     <Style Selector="Button.Secondary, Button.Link">
         <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -55,9 +49,40 @@
         <Setter Property="Background" Value="{DynamicResource Danger}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnDanger}"/>
     </Style>
-    <Style Selector="Button.Danger:pointerover /template/ ContentPresenter">
+    <Style Selector="Button:pointerover /template/ ContentPresenter, Button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Selection}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="Button.Primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ActionHover}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    <Style Selector="Button.Primary:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ActionPressed}"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/>
+    </Style>
+    <Style Selector="Button.Danger:pointerover /template/ ContentPresenter, Button.Danger:pressed /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Danger}"/>
         <Setter Property="Foreground" Value="{DynamicResource OnDanger}"/>
+    </Style>
+    <Style Selector="Button.DestructiveLink TextBlock, MenuItem.Destructive TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="MenuItem.Destructive">
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="MenuItem.Destructive /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="Button.DestructiveLink">
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="Button.DestructiveLink /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="Button.DestructiveLink:pointerover /template/ ContentPresenter, Button.DestructiveLink:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
     </Style>
     <Style Selector="Button:disabled">
         <Setter Property="Opacity" Value="0.5"/>
@@ -77,11 +102,20 @@
         <Setter Property="SelectionBrush" Value="{DynamicResource Selection}"/>
         <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
     </Style>
+    <Style Selector="TextBox /template/ TextBlock#PART_Watermark, TextBox /template/ TextBlock#PART_FloatingWatermark">
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+    </Style>
     <Style Selector="TextBox:focus, TextBox:focus-within">
         <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
     </Style>
-    <Style Selector="TextBox:error, NumericUpDown:error">
+    <Style Selector="TextBox:error, NumericUpDown:error, TextBox:invalid, NumericUpDown:invalid">
         <Setter Property="BorderBrush" Value="{DynamicResource Danger}"/>
+    </Style>
+    <Style Selector="CheckBox, RadioButton">
+        <Setter Property="MinHeight" Value="36"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="ComboBox:focus, ComboBox:focus-within, NumericUpDown:focus-within">
+        <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
     </Style>
     <Style Selector="Border.Card">
         <Setter Property="Background" Value="{DynamicResource Surface}"/>
@@ -121,5 +155,27 @@
         <Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="{DynamicResource MotionDuration}"/></Transitions></Setter>
     </Style>
     <Style Selector="RadioButton.Tab /template/ Border"><Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="{DynamicResource MotionDuration}"/></Transitions></Setter></Style>
+    <Style Selector="Button.Rail">
+        <Setter Property="Width" Value="52"/><Setter Property="Height" Value="52"/>
+        <Setter Property="Padding" Value="6"/><Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="2"/><Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.Rail.selected">
+        <Setter Property="Background" Value="{DynamicResource Selection}"/><Setter Property="BorderBrush" Value="{DynamicResource ActionPrimary}"/>
+    </Style>
+    <Style Selector="Button.Rail:focus-visible">
+        <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
+    </Style>
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
+    </Style>
+    <Style Selector="DataGridRow:selected, ComboBoxItem:selected, ListBoxItem:selected">
+        <Setter Property="Background" Value="{DynamicResource Selection}"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
     <Style Selector="ProgressBar"><Setter Property="Value" Value="50"/></Style>
 </Styles>

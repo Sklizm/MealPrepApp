@@ -19,7 +19,7 @@ public partial class ShellWindow : Window
     public ShellWindow()
     {
         InitializeComponent();
-        SizeChanged += (_,_) => { var compact=Bounds.Width<1050; Classes.Set("Compact",compact); NavigationPanel.Width=compact ? 44 : 196; };
+
         _timer.Tick += (_,_) => { if(DataContext is ShellViewModel vm) vm.Cooking.Tick(); };
         Closing += async (_,e) =>
         {
@@ -54,6 +54,17 @@ public partial class ShellWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Up or Key.Down or Key.Left or Key.Right &&
+            e.Source is Avalonia.Visual source && (ReferenceEquals(source, NavigationPanel) || source.GetVisualAncestors().Contains(NavigationPanel)))
+        {
+            var targets = NavigationPanel.GetVisualDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible && b.IsEffectivelyEnabled).ToArray();
+            var index = Array.FindIndex(targets, b => b.IsKeyboardFocusWithin);
+            if (index >= 0)
+            {
+                var next = targets[(index + (e.Key is Key.Up or Key.Left ? -1 : 1) + targets.Length) % targets.Length];
+                next.Focus(Avalonia.Input.NavigationMethod.Directional); next.BringIntoView(); e.Handled = true; return;
+            }
+        }
         if(DataContext is not ShellViewModel vm)return;
         var primary=e.KeyModifiers.HasFlag(KeyModifiers.Control)||e.KeyModifiers.HasFlag(KeyModifiers.Meta);
         if(primary && e.Key==Key.F)

@@ -75,7 +75,7 @@
                                 </ComboBox>
                                 <NumericUpDown Grid.Column="2" Margin="6,0,0,0" Value="{Binding Quantity}" Minimum="0.01" Maximum="99999999" Increment="1" FormatString="0.##" AutomationProperties.Name="Cantitate"/>
                                 <TextBox Grid.Column="3" Margin="6,0,0,0" Text="{Binding Notes}"/>
-                                <Button Grid.Column="4" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link" Foreground="{DynamicResource Danger}" HorizontalAlignment="Center" Command="{Binding RemoveCommand}">
+                                <Button Grid.Column="4" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" HorizontalAlignment="Center" Command="{Binding RemoveCommand}">
                                     <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
                                 </Button>
                             </Grid>

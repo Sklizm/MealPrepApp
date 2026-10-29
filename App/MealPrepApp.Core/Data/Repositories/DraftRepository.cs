@@ -6,7 +6,7 @@ namespace MealPrepApp.Data.Repositories;
 /// <summary>Recipe drafts (partially-complete recipes): wraps sp_SaveDraft, sp_GetDrafts,
 /// sp_GetDraft, sp_DeleteDraft. Ingredient lines are serialized to JSON; the DB stores the
 /// blob opaquely.</summary>
-public sealed class DraftRepository : RepositoryBase
+public class DraftRepository : RepositoryBase
 {
     public DraftRepository(IDbConnectionFactory factory) : base(factory) { }
 
@@ -30,8 +30,8 @@ public sealed class DraftRepository : RepositoryBase
             IngredientsJson = JsonSerializer.Serialize(ingredients)
         });
 
-    public Task<IReadOnlyList<RecipeDraftListItem>> GetDraftsAsync(int userId) =>
-        QueryProcAsync<RecipeDraftListItem>("sp_GetDrafts", new { UserID = userId });
+    public virtual Task<IReadOnlyList<RecipeDraftListItem>> GetDraftsAsync(int userId, CancellationToken cancellationToken = default) =>
+        QueryProcAsync<RecipeDraftListItem>("sp_GetDrafts", new { UserID = userId }, cancellationToken);
 
     public Task<RecipeDraftFull?> GetDraftAsync(int draftId, int userId) =>
         QuerySingleOrDefaultProcAsync<RecipeDraftFull>("sp_GetDraft",

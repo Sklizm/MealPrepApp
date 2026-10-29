@@ -7,7 +7,7 @@ namespace MealPrepApp.Data.Repositories;
 
 /// <summary>Recipes (read + write): wraps sp_CreateRecipe, sp_UpdateRecipe, sp_DeleteRecipe,
 /// sp_GetRecipeFull, sp_GetRecipes, sp_SearchRecipesByTitle, sp_FindRecipesByIngredients.</summary>
-public sealed class RecipeRepository : RepositoryBase
+public class RecipeRepository : RepositoryBase
 {
     public RecipeRepository(IDbConnectionFactory factory) : base(factory) { }
 
@@ -89,7 +89,7 @@ public sealed class RecipeRepository : RepositoryBase
             return recipe;
         });
 
-    public Task<IReadOnlyList<RecipeListItem>> BrowseAsync(
+    public virtual Task<IReadOnlyList<RecipeListItem>> BrowseAsync(
         int userId, string mode, string term, int? categoryId, int pageNumber, int pageSize,
         CancellationToken cancellationToken = default, string sort="Cele mai noi") =>
         QueryProcAsync<RecipeListItem>("sp_BrowseRecipes",
@@ -107,8 +107,8 @@ public sealed class RecipeRepository : RepositoryBase
             new { Term = term, PageNumber = pageNumber, PageSize = pageSize }, cancellationToken);
 
     /// <summary>"What can I make with…?" — passes the ids as the <c>dbo.IntList</c> table-valued parameter.</summary>
-    public Task<IReadOnlyList<RecipeFindResult>> FindRecipesByIngredientsAsync(
-        IReadOnlyCollection<int> ingredientIds, int? minMatchCount = null)
+    public virtual Task<IReadOnlyList<RecipeFindResult>> FindRecipesByIngredientsAsync(
+        IReadOnlyCollection<int> ingredientIds, int? minMatchCount = null, CancellationToken cancellationToken = default)
     {
         var tvp = new DataTable();
         tvp.Columns.Add("ID", typeof(int));
@@ -119,6 +119,6 @@ public sealed class RecipeRepository : RepositoryBase
         parameters.Add("@IngredientIDs", tvp.AsTableValuedParameter("dbo.IntList"));
         parameters.Add("@MinMatchCount", minMatchCount);
 
-        return QueryProcAsync<RecipeFindResult>("sp_FindRecipesByIngredients", parameters);
+        return QueryProcAsync<RecipeFindResult>("sp_FindRecipesByIngredients", parameters, cancellationToken);
     }
 }

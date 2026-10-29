@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.FrigiderView" x:DataType="vm:FrigiderViewModel" Background="{DynamicResource AppBackground}">
-    <Grid Margin="24" RowDefinitions="Auto,Auto,Auto,*">
+    <Grid Margin="32" RowDefinitions="Auto,Auto,Auto,*">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
             <TextBlock Grid.Column="0" Text="Frigider" Classes="Title" VerticalAlignment="Center"/>
             <Button Grid.Column="2" Content="+ Adaugă in frigider" Classes="Primary" Command="{Binding AddItemCommand}"/>
@@ -10,7 +10,11 @@
             <CheckBox Content="Pe categorii" IsChecked="{Binding UseGrouping}" Margin="0,0,8,8"/>
             <Button Content="Reîncarcă" Classes="Secondary" Command="{Binding RetryCommand}" Margin="0,0,8,8"/>
         </WrapPanel>
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <Grid Grid.Row="3">
             <DataGrid ItemsSource="{Binding VisibleItems}" IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True" IsVisible="{Binding !UseGrouping}">
                 <DataGrid.Columns>
@@ -60,7 +64,7 @@
                                                         </StackPanel>
                                                     </StackPanel>
                                                     <Button Grid.Column="1" Content="Editează" Classes="Secondary" Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="8,0"/>
-                                                    <Button Grid.Column="2" Content="Șterge" Classes="Link" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    <Button Grid.Column="2" Content="Șterge" Classes="Link DestructiveLink" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

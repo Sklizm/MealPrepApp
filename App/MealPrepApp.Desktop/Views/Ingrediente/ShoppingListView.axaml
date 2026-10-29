@@ -5,14 +5,14 @@
             <TextBlock Text="O listă salvată pentru fiecare plan. Bifează, apoi adaugă explicit cumpărăturile în frigider." Classes="Muted" TextWrapping="Wrap"/>
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0,16">
-            <CalendarDatePicker SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="De la"/>
-            <CalendarDatePicker SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="Până la"/>
+            <CalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="De la"/>
+            <CalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="Până la"/>
             <Button Classes="Primary" Content="Generează o listă nouă" Command="{Binding GenerateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
             <Button Content="Export Excel" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
-            <Button Content="Copiază textul" Classes="Secondary" Click="CopyText" Margin="0,0,8,8"/>
+            <Button Content="Copiază textul" Classes="Secondary" Click="CopyText" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
         </WrapPanel>
         <StackPanel Grid.Row="2" Spacing="8">
-            <ComboBox IsEnabled="{Binding !IsBusy}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="Liste salvate">
+            <ComboBox IsEnabled="{Binding !IsMutating}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="Liste salvate">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="models:ShoppingSnapshot">
                         <TextBlock Text="{Binding Label}"/>
@@ -24,16 +24,16 @@
                 <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="16,0"/>
             </WrapPanel>
             <TextBlock Text="Se normalizează doar unitățile de masă și volum compatibile. Celelalte unități rămân separate; cantitățile de cumpărat se rotunjesc în sus la 0,01." Classes="Muted" TextWrapping="Wrap"/>
-            <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}"/>
+            <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}" IsVisible="{Binding Notification, Converter={StaticResource NotNullToBool}}" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
-            <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <ScrollViewer Grid.Row="4" Margin="0,16,0,0">
             <StackPanel>
-                <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl IsEnabled="{Binding !IsBusy}" ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShoppingGroup">
                             <StackPanel Margin="0,0,0,24" Spacing="8">
@@ -62,7 +62,13 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="Niciun articol în această vizualizare. Generează o listă sau schimbă filtrul." Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding Groups.Count, Converter={StaticResource EmptyToBool}}"/>
+                <TextBlock Text="Niciun articol în această vizualizare. Generează o listă sau schimbă filtrul." Classes="Muted" TextWrapping="Wrap">
+                    <TextBlock.IsVisible>
+                        <MultiBinding Converter="{StaticResource ShowEmpty}">
+                            <Binding Path="Groups.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/>
+                        </MultiBinding>
+                    </TextBlock.IsVisible>
+                </TextBlock>
             </StackPanel>
         </ScrollViewer>
     </Grid>

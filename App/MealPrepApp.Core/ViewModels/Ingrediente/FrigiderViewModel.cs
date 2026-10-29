@@ -24,6 +24,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
     private readonly IDialogService _dialog;
     private readonly IServiceProvider _services;
 
+    private bool _populating;
     [ObservableProperty] private bool _useGrouping;
     public IEnumerable<PantryGroup> Groups=>VisibleItems.GroupBy(i=>i.CategoryName).Select(g=>new PantryGroup(g.Key,g));
     [ObservableProperty] private string _searchTerm="";
@@ -59,7 +60,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         _session = session;
         _dialog = dialog;
         _services = services;
-        Items.CollectionChanged+=(_,_)=>{OnPropertyChanged(nameof(VisibleItems));OnPropertyChanged(nameof(Groups));};
+        Items.CollectionChanged+=(_,_)=>{if (!_populating) {OnPropertyChanged(nameof(VisibleItems));OnPropertyChanged(nameof(Groups));}};
     }
 
     public Task LoadAsync() => RefreshAsync();
@@ -71,9 +72,10 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable
         try
         {
             var rows = await _pantry.GetPantryAsync(_session.CurrentUserId);
-            Items.Clear();
-            foreach (var row in rows.OrderBy(r => r.IngredientName))
-                Items.Add(row);
+            _populating = true;
+            try { Items.Clear(); foreach (var row in rows.OrderBy(r => r.IngredientName)) Items.Add(row); }
+            finally { _populating = false; }
+            OnPropertyChanged(nameof(VisibleItems)); OnPropertyChanged(nameof(Groups));
         }
         catch (AppDbException ex)
         {

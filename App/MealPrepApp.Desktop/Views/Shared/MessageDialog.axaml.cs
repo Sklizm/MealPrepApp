@@ -30,13 +30,14 @@ public partial class MessageDialog : Window
         return owner is not null && await dlg.ShowDialog<bool>(owner);
     }
 
-    private void Configure(MessageDialogKind kind, string? okText, string? cancelText)
+    internal void Configure(MessageDialogKind kind, string? okText, string? cancelText)
     {
         switch (kind)
         {
             case MessageDialogKind.Error:
-                if (Application.Current?.TryFindResource("Danger", out var danger) == true && danger is IBrush db)
-                    HeaderBorder.Background = db;
+                HeaderBorder.Bind(Border.BackgroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("Danger"));
+                HeaderText.Bind(TextBlock.ForegroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("OnDanger"));
+                HeaderGlyph.Bind(TextBlock.ForegroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("OnDanger"));
                 HeaderGlyph.IsVisible = true;
                 OkButton.Content = okText ?? "OK";
                 CancelButton.IsVisible = false;

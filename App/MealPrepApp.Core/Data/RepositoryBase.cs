@@ -24,6 +24,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             var rows = await conn.QueryAsync<T>(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
             return rows.AsList();
@@ -39,6 +40,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             return await conn.QuerySingleOrDefaultAsync<T>(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
         }
@@ -53,6 +55,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             return await conn.QuerySingleAsync<T>(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
         }
@@ -67,6 +70,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             return (await conn.ExecuteScalarAsync<T>(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken)))!;
         }
@@ -81,6 +85,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             await conn.ExecuteAsync(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
         }
@@ -99,6 +104,7 @@ public abstract class RepositoryBase
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await using var conn = _factory.Create();
             using var grid = await conn.QueryMultipleAsync(new CommandDefinition(proc, param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
             return await readResults(grid);

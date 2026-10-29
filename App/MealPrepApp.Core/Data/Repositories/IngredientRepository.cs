@@ -4,7 +4,7 @@ namespace MealPrepApp.Data.Repositories;
 
 /// <summary>Ingredients: wraps sp_AddIngredient, sp_GetIngredients, sp_SearchIngredients,
 /// sp_GetIngredientUsage. Ingredients are global (not user-scoped) in v1.</summary>
-public sealed class IngredientRepository : RepositoryBase
+public class IngredientRepository : RepositoryBase
 {
     public IngredientRepository(IDbConnectionFactory factory) : base(factory) { }
 
@@ -19,7 +19,7 @@ public sealed class IngredientRepository : RepositoryBase
         });
 
     /// <summary><paramref name="ingredientCategoryId"/> null returns every ingredient.</summary>
-    public Task<IReadOnlyList<Ingredient>> GetIngredientsAsync(int? ingredientCategoryId = null, CancellationToken cancellationToken = default) =>
+    public virtual Task<IReadOnlyList<Ingredient>> GetIngredientsAsync(int? ingredientCategoryId = null, CancellationToken cancellationToken = default) =>
         QueryProcAsync<Ingredient>("sp_GetIngredients", new { IngredientCategoryID = ingredientCategoryId }, cancellationToken);
 
     public Task<IReadOnlyList<IngredientSearchResult>> SearchIngredientsAsync(string term) =>

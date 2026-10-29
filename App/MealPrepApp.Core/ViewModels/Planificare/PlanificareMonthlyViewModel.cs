@@ -49,6 +49,7 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
     }
 
     public Task LoadAsync() => RefreshAsync();
+    [RelayCommand] private Task Retry() => RefreshAsync();
 
     private async Task RefreshAsync()
     {

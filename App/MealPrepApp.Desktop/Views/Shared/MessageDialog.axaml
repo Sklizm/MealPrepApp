@@ -3,7 +3,7 @@
         <!-- Header -->
         <Border x:Name="HeaderBorder" Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="14,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="HeaderGlyph" Text="!" Foreground="{DynamicResource TextPrimary}" IsVisible="False" FontWeight="Bold" FontSize="15"/>
+                <TextBlock x:Name="HeaderGlyph" Text="!" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}" IsVisible="False" FontWeight="Bold" FontSize="15"/>
                 <TextBlock x:Name="HeaderText" Text="Titlu" Foreground="{DynamicResource TextPrimary}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>

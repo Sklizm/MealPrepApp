@@ -40,6 +40,7 @@ public partial class App : Application
         {
             Resources["MotionDuration"]=preferences.ReducedMotion ? TimeSpan.Zero : TimeSpan.FromMilliseconds(100);
             Resources["MotionEnabled"]=!preferences.ReducedMotion;
+            Resources["ReducedMotion"]=preferences.ReducedMotion;
         }
         ApplyTheme(); ApplyMotion();
         preferences.PropertyChanged += (_,e) => { if(e.PropertyName==nameof(preferences.Theme)) ApplyTheme(); if(e.PropertyName==nameof(preferences.ReducedMotion))ApplyMotion(); };

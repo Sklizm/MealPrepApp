@@ -7,7 +7,7 @@
         <TextBox x:Name="PasswordBox" PasswordChar="*" RevealPassword="{Binding #PasswordBoxVisible.IsChecked}"/>
         <CheckBox Name="PasswordBoxVisible" Content="Arată parola"/>
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-        <Button Content="Conectare" Classes="Primary" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnLoginClick" IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0"/>
+        <Button Content="Conectare" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnLoginClick" IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0"/>
         <Button Content="Ai uitat parola?" Classes="Link" HorizontalAlignment="Center" Command="{Binding ForgotPasswordCommand}" IsEnabled="False" ToolTip.Tip="Contacteaza administratorul pentru recuperarea contului."/>
         <Button Content="Cont nou? Înregistrează-te" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToRegisterCommand}"/>
     </StackPanel>

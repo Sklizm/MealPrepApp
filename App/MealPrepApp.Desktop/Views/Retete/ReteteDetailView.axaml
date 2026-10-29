@@ -4,7 +4,7 @@
             <Button Content="Înapoi la rețete" Classes="Link" Command="{Binding BackCommand}"/>
             <Button Content="{Binding FavoriteLabel}" Classes="Secondary" Command="{Binding ToggleFavoriteCommand}" Margin="8,0,0,8"/>
             <Button Content="Editează" Classes="Secondary" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
-            <Button Content="Șterge rețeta" Classes="Link" Command="{Binding DeleteCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
+            <Button Content="Șterge rețeta" Classes="Link DestructiveLink" Command="{Binding DeleteCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
         </WrapPanel>
         <StackPanel Grid.Row="1">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
@@ -27,7 +27,7 @@
                     <Button Classes="Primary" Content="Gătește" Command="{Binding CookCommand}" Margin="0,0,8,8"/>
                     <Button Content="Adaugă în plan" Classes="Secondary" Command="{Binding AddToPlanCommand}" Margin="0,0,8,8"/>
                     <Button Content="{Binding PhotoLabel}" Classes="Link" Command="{Binding ChoosePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
-                    <Button Content="Șterge fotografia" Classes="Link" Command="{Binding DeletePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
+                    <Button Content="Șterge fotografia" Classes="Link DestructiveLink" Command="{Binding DeletePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
                 </WrapPanel>
                 <Border Classes="Card" Padding="0" Height="240" ClipToBounds="True" IsVisible="{Binding HasPhoto}">
                     <images:RecipeImage Bytes="{Binding PhotoBytes}" Stretch="UniformToFill"/>

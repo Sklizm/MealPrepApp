@@ -28,7 +28,7 @@
             <Setter Property="Opacity" Value="0.85"/>
         </Style>
     </UserControl.Styles>
-    <Grid RowDefinitions="Auto,Auto,*" Margin="24,8,24,16">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32,8,32,24">
         <!-- Month navigation -->
         <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
             <Button DockPanel.Dock="Left" AutomationProperties.Name="Precedent" ToolTip.Tip="Precedent" Classes="Secondary" Command="{Binding PrevMonthCommand}">
@@ -40,8 +40,13 @@
             </Button>
             <TextBlock Text="{Binding MonthLabel}" FontWeight="Bold" FontSize="{StaticResource FontSizeHeader}" VerticalAlignment="Center" Margin="20,0,0,0"/>
         </DockPanel>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <!-- Weekday headers -->
-        <ItemsControl Grid.Row="1" ItemsSource="{Binding WeekdayHeaders}" Margin="0,0,0,6">
+        <ItemsControl Grid.Row="2" ItemsSource="{Binding WeekdayHeaders}" Margin="0,0,0,6">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <UniformGrid Columns="7"/>
@@ -54,7 +59,7 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <!-- 6x7 day grid -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Days}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

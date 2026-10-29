@@ -1,27 +1,85 @@
 Light
-  TextPrimary / AppBackground: 13.97:1
-  TextPrimary / Surface: 14.97:1
-  TextSecondary / SurfaceSecondary: 4.92:1
-  TextSecondary / Surface: 5.57:1
-  OnPrimary / ActionPrimary: 6.88:1
-  OnPrimary / ActionHover: 9.02:1
-  OnPrimary / ActionPressed: 11.90:1
-  OnDanger / Danger: 6.93:1
-  Danger / Surface: 6.93:1
-  Accent / Surface: 5.54:1
-  TextPrimary / Selection: 12.19:1
+  TextPrimary / AppBackground: 9.02:1
+  TextPrimary / Surface: 10.15:1
+  TextPrimary / SurfaceSecondary: 8.12:1
+  TextSecondary / AppBackground: 5.39:1
+  TextSecondary / SurfaceSecondary: 4.85:1
+  TextSecondary / Surface: 6.06:1
+  OnPrimary / ActionPrimary: 6.91:1
+  OnPrimary / ActionHover: 8.93:1
+  OnPrimary / ActionPressed: 11.34:1
+  OnDanger / Danger: 8.68:1
+  Danger / Surface: 6.98:1
+  Danger / Selection: 4.87:1
+  Danger / AppBackground: 6.20:1
+  Danger / SurfaceSecondary: 5.58:1
+  Accent / Surface: 5.88:1
+  TextPrimary / Selection: 7.08:1
+  ActionPrimary / Surface: 5.55:1
+  TextControlForeground / TextControlBackground: 10.15:1
+  TextControlForegroundFocused / TextControlBackgroundFocused: 10.15:1
+  TextControlPlaceholderForeground / TextControlBackground: 6.06:1
+  TextControlPlaceholderForegroundPointerOver / TextControlBackgroundPointerOver: 6.06:1
+  TextControlPlaceholderForegroundFocused / TextControlBackgroundFocused: 6.06:1
+  ComboBoxForeground / ComboBoxBackground: 10.15:1
+  ComboBoxForegroundFocusedPressed / ComboBoxBackgroundPressed: 10.15:1
+  ComboBoxPlaceHolderForeground / ComboBoxBackground: 6.06:1
+  ComboBoxItemForegroundSelected / ComboBoxItemBackgroundSelected: 7.08:1
+  ComboBoxItemForegroundSelectedPointerOver / ComboBoxItemBackgroundSelectedPointerOver: 7.08:1
+  CalendarDatePickerTextForeground / CalendarDatePickerBackground: 10.15:1
+  CalendarViewForeground / CalendarViewBackground: 10.15:1
+  CalendarViewOutOfScopeForeground / CalendarViewBackground: 6.06:1
+  MenuFlyoutItemForegroundPointerOver / MenuFlyoutItemBackgroundPointerOver: 7.08:1
+  ToolTipForeground / ToolTipBackground: 10.15:1
+  Focus / AppBackground: 4.93:1 (control)
+  Focus / Surface: 5.55:1 (control)
+  Focus / SurfaceSecondary: 4.44:1 (control)
+  Focus / Selection: 3.87:1 (control)
+  Divider / AppBackground: 3.89:1 (control)
+  Divider / Surface: 4.38:1 (control)
+  Divider / SurfaceSecondary: 3.51:1 (control)
+  Divider / Selection: 3.06:1 (control)
 Dark
-  TextPrimary / AppBackground: 15.29:1
-  TextPrimary / Surface: 13.57:1
-  TextSecondary / SurfaceSecondary: 6.11:1
-  TextSecondary / Surface: 7.13:1
-  OnPrimary / ActionPrimary: 8.14:1
-  OnPrimary / ActionHover: 9.67:1
-  OnPrimary / ActionPressed: 6.48:1
-  OnDanger / Danger: 8.28:1
-  Danger / Surface: 7.73:1
-  Accent / Surface: 6.41:1
-  TextPrimary / Selection: 7.94:1
+  TextPrimary / AppBackground: 8.23:1
+  TextPrimary / Surface: 6.57:1
+  TextPrimary / SurfaceSecondary: 5.57:1
+  TextSecondary / AppBackground: 6.95:1
+  TextSecondary / SurfaceSecondary: 4.71:1
+  TextSecondary / Surface: 5.55:1
+  OnPrimary / ActionPrimary: 8.05:1
+  OnPrimary / ActionHover: 9.26:1
+  OnPrimary / ActionPressed: 6.83:1
+  OnDanger / Danger: 13.36:1
+  Danger / Surface: 6.34:1
+  Danger / Selection: 4.54:1
+  Danger / AppBackground: 7.94:1
+  Danger / SurfaceSecondary: 5.37:1
+  Accent / Surface: 5.58:1
+  TextPrimary / Selection: 4.71:1
+  ActionPrimary / Surface: 4.70:1
+  TextControlForeground / TextControlBackground: 6.57:1
+  TextControlForegroundFocused / TextControlBackgroundFocused: 6.57:1
+  TextControlPlaceholderForeground / TextControlBackground: 5.55:1
+  TextControlPlaceholderForegroundPointerOver / TextControlBackgroundPointerOver: 5.55:1
+  TextControlPlaceholderForegroundFocused / TextControlBackgroundFocused: 5.55:1
+  ComboBoxForeground / ComboBoxBackground: 6.57:1
+  ComboBoxForegroundFocusedPressed / ComboBoxBackgroundPressed: 6.57:1
+  ComboBoxPlaceHolderForeground / ComboBoxBackground: 5.55:1
+  ComboBoxItemForegroundSelected / ComboBoxItemBackgroundSelected: 4.71:1
+  ComboBoxItemForegroundSelectedPointerOver / ComboBoxItemBackgroundSelectedPointerOver: 4.71:1
+  CalendarDatePickerTextForeground / CalendarDatePickerBackground: 6.57:1
+  CalendarViewForeground / CalendarViewBackground: 6.57:1
+  CalendarViewOutOfScopeForeground / CalendarViewBackground: 5.55:1
+  MenuFlyoutItemForegroundPointerOver / MenuFlyoutItemBackgroundPointerOver: 4.71:1
+  ToolTipForeground / ToolTipBackground: 6.57:1
+  Focus / AppBackground: 7.79:1 (control)
+  Focus / Surface: 6.22:1 (control)
+  Focus / SurfaceSecondary: 5.27:1 (control)
+  Focus / Selection: 4.46:1 (control)
+  Divider / AppBackground: 5.72:1 (control)
+  Divider / Surface: 4.57:1 (control)
+  Divider / SurfaceSecondary: 3.87:1 (control)
+  Divider / Selection: 3.28:1 (control)
 OnMeal / MealBreakfast: 7.13:1
 OnMeal / MealLunch: 6.88:1
 OnMeal / MealDinner: 7.55:1

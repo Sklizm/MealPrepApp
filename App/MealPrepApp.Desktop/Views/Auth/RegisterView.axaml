@@ -12,7 +12,7 @@
         <TextBox x:Name="ConfirmPasswordBox" PasswordChar="*" RevealPassword="{Binding #ConfirmPasswordBoxVisible.IsChecked}"/>
         <CheckBox Name="ConfirmPasswordBoxVisible" Content="Arată parola"/>
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-        <Button Content="Înregistrează-te" Classes="Primary" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnRegisterClick" IsEnabled="{Binding !IsBusy}" Margin="0,6,0,0"/>
+        <Button Content="Înregistrează-te" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnRegisterClick" IsEnabled="{Binding !IsBusy}" Margin="0,6,0,0"/>
         <Button Content="Ai cont? Conecteaza-te" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToLoginCommand}"/>
     </StackPanel>
 </UserControl>

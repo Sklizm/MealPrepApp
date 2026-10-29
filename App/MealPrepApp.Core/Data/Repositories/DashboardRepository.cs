@@ -3,13 +3,13 @@ using MealPrepApp.Models;
 namespace MealPrepApp.Data.Repositories;
 
 /// <summary>Acasa dashboard: wraps sp_GetDashboardCounts, sp_GetRecentRecipes.</summary>
-public sealed class DashboardRepository : RepositoryBase
+public class DashboardRepository : RepositoryBase
 {
     public DashboardRepository(IDbConnectionFactory factory) : base(factory) { }
 
-    public Task<DashboardCounts> GetDashboardCountsAsync(int userId) =>
-        QuerySingleProcAsync<DashboardCounts>("sp_GetDashboardCounts", new { UserID = userId });
+    public virtual Task<DashboardCounts> GetDashboardCountsAsync(int userId, CancellationToken cancellationToken = default) =>
+        QuerySingleProcAsync<DashboardCounts>("sp_GetDashboardCounts", new { UserID = userId }, cancellationToken);
 
-    public Task<IReadOnlyList<RecentRecipe>> GetRecentRecipesAsync(int userId, int topN = 12) =>
-        QueryProcAsync<RecentRecipe>("sp_GetRecentRecipes", new { UserID = userId, TopN = topN });
+    public virtual Task<IReadOnlyList<RecentRecipe>> GetRecentRecipesAsync(int userId, int topN = 12, CancellationToken cancellationToken = default) =>
+        QueryProcAsync<RecentRecipe>("sp_GetRecentRecipes", new { UserID = userId, TopN = topN }, cancellationToken);
 }

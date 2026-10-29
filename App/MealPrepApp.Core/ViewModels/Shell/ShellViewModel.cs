@@ -122,14 +122,10 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
         var parts=section.Split(':',3);
         if(parts[0]=="Retete")
         {
-            await ShowReteteCommand.ExecuteAsync(null);
-            if(CurrentView is ReteteListViewModel recipes && parts.Length>1)
-            {
-                recipes.ActiveFilter=parts[1]=="Cauta" ? "Toate" : parts[1];
-                recipes.SearchTerm=parts.Length>2 ? parts[2] : "";
-                recipes.SelectedCategory=recipes.Categories.FirstOrDefault(c=>c.CategoryID==0);
-                await recipes.ApplyDestinationAsync();
-            }
+            if (parts.Length > 1)
+                await _navigation.NavigateToAsync<ReteteListViewModel>(recipes => recipes.PrepareDestination(
+                    parts[1] == "Cauta" ? "Toate" : parts[1], parts.Length > 2 ? parts[2] : ""));
+            else await ShowReteteCommand.ExecuteAsync(null);
             return;
         }
         await (parts[0] switch

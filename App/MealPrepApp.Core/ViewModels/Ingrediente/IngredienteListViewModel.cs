@@ -43,6 +43,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
 
     [RelayCommand] private Task Retry()=>RefreshAsync();
     private bool _loaded;
+    private bool _populating;
     private int _requestVersion;
     private CancellationTokenSource? _loadCts;
     public void CancelPending()
@@ -104,6 +105,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
 
     private void UpdateGrouping()
     {
+        if (_populating) return;
         GroupedIngredients.Clear();
         if (!UseGrouping) return;
 
@@ -117,41 +119,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         }
     }
 
-    public async Task LoadAsync()
-    {
-        if (_disposed) return;
-        if (_loaded && !_disposed)
-            return;
-        ClearError();
-        IsBusy = true;
-        try
-        {
-            var categories = await _lookups.GetIngredientCategoriesAsync();
-            if (_disposed) return;
-            Categories.Clear();
-            Categories.Add(AllCategories);
-            foreach (var category in categories)
-                Categories.Add(category);
-            SelectedCategory = AllCategories;
-
-            await RefreshAsync();
-        }
-        catch (AppDbException ex)
-        {
-            ErrorMessage = ex.FriendlyMessage;
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
-        }
-        finally
-        {
-            IsBusy = false;
-            _loaded = true;
-        }
-    }
+    public Task LoadAsync() => RefreshAsync();
 
     private async Task RefreshAsync()
     {
@@ -160,26 +128,41 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
         ClearError();
         IsBusy = true;
         try
         {
+            if (!_loaded)
+            {
+                var categories = await _lookups.GetIngredientCategoriesAsync(token);
+                if (version != _requestVersion || _disposed) return;
+                Categories.Clear(); Categories.Add(AllCategories);
+                foreach (var lookupCategory in categories) Categories.Add(lookupCategory);
+                SelectedCategory = AllCategories;
+            }
             var term = SearchTerm?.Trim() ?? "";
             var categoryId = SelectedCategory is { IngredientCategoryID: > 0 } category
                 ? category.IngredientCategoryID : (int?)null;
-            var all = await _ingredients.GetIngredientsAsync(categoryId, _loadCts.Token);
+            var all = await _ingredients.GetIngredientsAsync(categoryId, token);
             var rows = all.Where(i => term.Length == 0 ||
                 i.Name.Contains(term, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            if (version != _requestVersion) return;
+            if (version != _requestVersion || _disposed) return;
 
-            Ingredients.Clear();
-            foreach (var row in rows)
+            _populating = true;
+            try
             {
-                if (string.IsNullOrEmpty(row.IngredientCategoryName))
-                    row.IngredientCategoryName = UngroupedLabel;
-                Ingredients.Add(row);
+                Ingredients.Clear();
+                foreach (var row in rows)
+                {
+                    if (string.IsNullOrEmpty(row.IngredientCategoryName))
+                        row.IngredientCategoryName = UngroupedLabel;
+                    Ingredients.Add(row);
+                }
             }
+            finally { _populating = false; }
             UpdateGrouping();
+            _loaded = true;
             OnPropertyChanged(nameof(IngredientsView));
         }
         catch (AppDbException ex)
@@ -208,7 +191,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
     /// previous pending refresh so only one query fires once the user pauses.</summary>
     partial void OnSearchTermChanged(string value)
     {
-        if (!_loaded || _disposed) return;
+        if (_disposed) return;
         _searchCts?.Cancel();
         _searchCts?.Dispose();
         ++_requestVersion;

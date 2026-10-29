@@ -8,8 +8,9 @@ public partial class SettingsWindow:Window
     {
         InitializeComponent();
         AppVersion.Text="MealPrepApp " + typeof(App).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute),false).Cast<System.Reflection.AssemblyInformationalVersionAttribute>().Single().InformationalVersion.Split('+')[0];
-        if(Avalonia.Application.Current is not App app) return;
         ThemePicker.ItemsSource=new[]{"Sistem","Luminos","Întunecat"};
+        ThemePicker.SelectedIndex=0;
+        if(Avalonia.Application.Current is not App app) return;
         ThemePicker.SelectedIndex=(int)app.Preferences.Theme;
         ListViewCheck.IsChecked=app.Preferences.RecipeListView;
         MotionCheck.IsChecked=app.Preferences.ReducedMotion;

@@ -84,7 +84,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     [ObservableProperty] private string _sortOrder="Titlu";
     public IReadOnlyList<string> SortOrders { get; } = new[] { "Titlu", "Cele mai noi", "Timp de preparare" };
     partial void OnListViewChanged(bool value) { Preferences.RecipeListView=value; }
-    partial void OnSortOrderChanged(string value) { if(_loaded) {PageNumber=1;_ = RefreshAsync();} }
+    partial void OnSortOrderChanged(string value) { if(_loaded && !_preparing && !_disposed) {PageNumber=1;_ = RefreshAsync();} }
     private void SortRows()
     {
         var sorted=SortOrder switch { "Cele mai noi" => Recipes.OrderByDescending(r=>r.CreatedAt), "Timp de preparare" => Recipes.OrderBy(r=>(r.PrepTimeMinutes ?? 0)+(r.CookTimeMinutes ?? 0)), _ => Recipes.OrderBy(r=>r.Title) };
@@ -133,43 +133,19 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
 
     private void OnPreferencesChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
     {if(e.PropertyName==nameof(Preferences.RecipeListView))ListView=Preferences.RecipeListView;}
-    public async Task LoadAsync()
+    public Task LoadAsync() => RefreshAsync();
+
+    private bool _preparing;
+    public void PrepareDestination(string filter, string term)
     {
-        if (_disposed) return;
-        if (_loaded) { await RefreshAsync(); return; }
-        ClearError();
-        IsBusy = true;
-        try
-        {
-            var categories = await _lookups.GetCategoriesAsync();
-            if (_disposed) return;
-            Categories.Clear();
-            Categories.Add(AllCategories);
-            foreach (var category in categories)
-                Categories.Add(category);
-            SelectedCategory = AllCategories;
-
-            await RefreshAsync();
-        }
-        catch (AppDbException ex)
-        {
-            ErrorMessage = ex.FriendlyMessage;
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
-        }
-        finally
-        {
-            IsBusy = false;
-            _loaded = true;
-        }
+        _searchCts?.Cancel();
+        _loadCts?.Cancel();
+        ++_requestVersion;
+        _preparing = true;
+        try { ActiveFilter = filter; SearchTerm = term; SelectedCategory = AllCategories; PageNumber = 1; }
+        finally { _preparing = false; }
     }
-
-    /// <summary>Re-runs the query for the current sidebar filter / search / category state.</summary>
-    public Task ApplyDestinationAsync() { _searchCts?.Cancel(); PageNumber=1; return RefreshAsync(); }
+    public Task ApplyDestinationAsync() { _searchCts?.Cancel(); PageNumber=1; return LoadAsync(); }
 
     private async Task RefreshAsync()
     {
@@ -183,38 +159,53 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         IsBusy = true;
         try
         {
-            if (ActiveFilter == "Drafts")
+            if (!_loaded)
             {
-                var drafts = await _drafts.GetDraftsAsync(_session.CurrentUserId);
-                if (version != _requestVersion) return;
+                var categories = await _lookups.GetCategoriesAsync(token);
+                if (version != _requestVersion || _disposed) return;
+                Categories.Clear(); Categories.Add(AllCategories);
+                foreach (var lookupCategory in categories) Categories.Add(lookupCategory);
+                _preparing = true;
+                try { SelectedCategory = Categories.FirstOrDefault(c => c.CategoryID == (SelectedCategory?.CategoryID ?? 0)) ?? AllCategories; }
+                finally { _preparing = false; }
+            }
+            var userId = _session.CurrentUserId;
+            var filter = ActiveFilter;
+            var term = SearchTerm.Trim();
+            var categoryId = SelectedCategory is { CategoryID: > 0 } category ? category.CategoryID : (int?)null;
+            var page = PageNumber;
+            var sort = SortOrder;
+            if (filter == "Drafts")
+            {
+                var drafts = await _drafts.GetDraftsAsync(userId, token);
+                if (version != _requestVersion || _disposed) return;
                 Drafts.Clear();
-                foreach (var draft in drafts.Where(d=>(SelectedCategory is not {CategoryID:>0} || d.CategoryID==SelectedCategory.CategoryID) && (d.Title ?? "").Contains(SearchTerm.Trim(),StringComparison.CurrentCultureIgnoreCase)))
+                foreach (var draft in drafts.Where(d=>(!categoryId.HasValue || d.CategoryID==categoryId) && (d.Title ?? "").Contains(term,StringComparison.CurrentCultureIgnoreCase)))
                     Drafts.Add(draft);
                 HasNextPage=false;
                 Recipes.Clear();
+                _loaded = true;
                 return;
             }
 
             Drafts.Clear();
-            var term = SearchTerm?.Trim() ?? "";
             IReadOnlyList<RecipeListItem> rows;
-            if(ActiveFilter=="Frigider" && _pantry != null)
+            if(filter=="Frigider" && _pantry != null)
             {
-                var stock=await _pantry.GetPantryAsync(_session.CurrentUserId);
-                var matches=await _recipes.FindRecipesByIngredientsAsync(stock.Select(p=>p.IngredientID).Distinct().ToArray(),1);
-                var filtered=matches.OrderBy(r=>r.Title).Where(r=>(SelectedCategory is not {CategoryID:>0} || r.CategoryID==SelectedCategory.CategoryID) && r.Title.Contains(term,StringComparison.CurrentCultureIgnoreCase)).ToArray();
-                rows=filtered.Skip((PageNumber-1)*PageSize).Take(PageSize).Select(r=>new RecipeListItem{RecipeID=r.RecipeID,Title=r.Title,CategoryName=r.CategoryName,CategoryID=r.CategoryID,TotalCount=filtered.Length,MatchLabel=$"{r.MatchedIngredients}/{r.TotalIngredients} ingrediente potrivite • cantități neverificate"}).ToArray();
+                var stock=await _pantry.GetPantryAsync(userId, token);
+                var matches=await _recipes.FindRecipesByIngredientsAsync(stock.Select(p=>p.IngredientID).Distinct().ToArray(),1, token);
+                var filtered=matches.OrderBy(r=>r.Title).Where(r=>(!categoryId.HasValue || r.CategoryID==categoryId) && r.Title.Contains(term,StringComparison.CurrentCultureIgnoreCase)).ToArray();
+                rows=filtered.Skip((page-1)*PageSize).Take(PageSize).Select(r=>new RecipeListItem{RecipeID=r.RecipeID,Title=r.Title,CategoryName=r.CategoryName,CategoryID=r.CategoryID,TotalCount=filtered.Length,MatchLabel=$"{r.MatchedIngredients}/{r.TotalIngredients} ingrediente potrivite • cantități neverificate"}).ToArray();
             }
-            else rows = await _recipes.BrowseAsync(_session.CurrentUserId, ActiveFilter, term,
-                SelectedCategory is { CategoryID: > 0 } category ? category.CategoryID : null,
-                PageNumber, PageSize, token, SortOrder);
-            if (version != _requestVersion) return;
-            HasNextPage = rows.Count > 0 && PageNumber * PageSize < rows[0].TotalCount;
+            else rows = await _recipes.BrowseAsync(userId, filter, term, categoryId, page, PageSize, token, sort);
+            if (version != _requestVersion || _disposed) return;
+            HasNextPage = rows.Count > 0 && page * PageSize < rows[0].TotalCount;
 
             Recipes.Clear();
             foreach (var row in rows)
                 Recipes.Add(row);
-            if(ActiveFilter=="Frigider")SortRows();
+            if(filter=="Frigider")SortRows();
+            _loaded = true;
         }
         catch (AppDbException ex)
         {
@@ -268,7 +259,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     /// previous pending refresh so only one query fires once the user pauses.</summary>
     partial void OnSearchTermChanged(string value)
     {
-        if (!_loaded || _disposed) return;
+        if (_disposed || _preparing) return;
         _searchCts?.Cancel();
         _searchCts?.Dispose();
         _requestVersion++;
@@ -296,7 +287,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     /// <summary>Category-filter changes re-query immediately — but only once the initial load is done.</summary>
     partial void OnSelectedCategoryChanged(Category? value)
     {
-        if (_loaded && !_disposed)
+        if (_loaded && !_disposed && !_preparing)
         {
             PageNumber = 1;
             _ = RefreshAsync();

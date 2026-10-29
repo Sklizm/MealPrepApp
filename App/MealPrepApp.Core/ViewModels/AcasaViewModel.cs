@@ -9,7 +9,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels;
 
 /// <summary>Backs the Acasa dashboard: KPI tiles + the "Retete Recente" grid.</summary>
-public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable
+public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
     private readonly DashboardRepository _dashboard;
     private readonly ISessionService _session;
@@ -43,35 +43,42 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable
         _shell = shell; _mealPlan=mealPlan; _drafts=drafts; _services=services;
     }
 
+    private int _loadVersion;
+    private bool _disposed;
+    private CancellationTokenSource? _loadCts;
+    public void Dispose() { if (_disposed) return; _disposed = true; ++_loadVersion; _loadCts?.Cancel(); _loadCts?.Dispose(); }
+
     public async Task LoadAsync()
     {
-        ClearError();
-        IsBusy = true;
+        if (_disposed) return;
+        var version = ++_loadVersion;
+        _loadCts?.Cancel(); _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource(); var token = _loadCts.Token;
+        var userId = _session.CurrentUserId; var date = DateTime.Today;
+        ClearError(); IsBusy = true;
         try
         {
-            if(_mealPlan != null) { var today=await _mealPlan.GetWeeklyPlanAsync(_session.CurrentUserId,DateTime.Today); TodayMeals.Clear(); foreach(var entry in today.Where(e=>e.PlannedDate.Date==DateTime.Today)) TodayMeals.Add(entry); }
-            if(_drafts != null) HasDrafts=(await _drafts.GetDraftsAsync(_session.CurrentUserId)).Count>0;
-            Counts = await _dashboard.GetDashboardCountsAsync(_session.CurrentUserId);
-
-            var recent = await _dashboard.GetRecentRecipesAsync(_session.CurrentUserId);
-            RecentRecipes.Clear();
-            foreach (var recipe in recent)
-                RecentRecipes.Add(recipe);
-        }
-        catch (AppDbException ex)
-        {
-            ErrorMessage = ex.FriendlyMessage;
+            // Exactly four independent reads, with one connection per stored procedure.
+            var mealsTask = _mealPlan?.GetWeeklyPlanAsync(userId, date, token) ?? Task.FromResult<IReadOnlyList<MealPlanEntry>>(Array.Empty<MealPlanEntry>());
+            var draftsTask = _drafts?.GetDraftsAsync(userId, token) ?? Task.FromResult<IReadOnlyList<RecipeDraftListItem>>(Array.Empty<RecipeDraftListItem>());
+            var countsTask = _dashboard.GetDashboardCountsAsync(userId, token);
+            var recentTask = _dashboard.GetRecentRecipesAsync(userId, cancellationToken: token);
+            await Task.WhenAll(mealsTask, draftsTask, countsTask, recentTask);
+            if (version != _loadVersion || _disposed) return;
+            TodayMeals.Clear(); foreach (var entry in mealsTask.Result.Where(e => e.PlannedDate.Date == date)) TodayMeals.Add(entry);
+            HasDrafts = draftsTask.Result.Count > 0; Counts = countsTask.Result;
+            RecentRecipes.Clear(); foreach (var recipe in recentTask.Result) RecentRecipes.Add(recipe);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            if (version == _loadVersion && !_disposed)
+            {
+                AppDiagnostics.Record(ex);
+                ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Secțiunea nu a putut fi încărcată. Încearcă din nou.";
+            }
         }
-        finally
-        {
-            IsBusy = false;
-        }
+        finally { if (version == _loadVersion && !_disposed) IsBusy = false; }
     }
 
     /// <summary>Clicking a KPI tile jumps to that section (e.g. "Retete", "Planificare").</summary>

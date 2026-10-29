@@ -9,20 +9,22 @@ public sealed class NavigationService : INavigationService, IDisposable
     public object? CurrentView { get; private set; }
     public event EventHandler? CurrentViewChanged;
     public void Dispose() { foreach(var page in _pages.Values.Append(CurrentView).Distinct()) if(page is IDisposable d) d.Dispose(); _pages.Clear(); CurrentView=null; }
-    public Task NavigateToAsync<TViewModel>() where TViewModel:class
+    public Task NavigateToAsync<TViewModel>(Action<TViewModel>? prepare = null) where TViewModel:class
     {
         var type=typeof(TViewModel);
         // Parameterized editors/details are always constructed by the caller.
         if (!_pages.TryGetValue(type,out var page)) _pages[type]=page=_services.GetRequiredService<TViewModel>();
-        return NavigateToAsync(page);
+        return NavigateCoreAsync(page, prepare is null ? null : () => prepare((TViewModel)page));
     }
-    public async Task NavigateToAsync(object viewModel)
+    public Task NavigateToAsync(object viewModel) => NavigateCoreAsync(viewModel, null);
+    private async Task NavigateCoreAsync(object viewModel, Action? prepare)
     {
         await _gate.WaitAsync();
         try
         {
-            if (ReferenceEquals(CurrentView,viewModel)) return;
+            if (ReferenceEquals(CurrentView,viewModel) && prepare is null) return;
             if (CurrentView is ILeaveGuard guard && !await guard.CanLeaveAsync()) return;
+            prepare?.Invoke();
             var previous=CurrentView;
             CurrentView=viewModel; CurrentViewChanged?.Invoke(this,EventArgs.Empty);
             if (previous is IDisposable disposable && !_pages.Values.Contains(previous)) disposable.Dispose();

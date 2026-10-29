@@ -4,6 +4,7 @@ using System.Reflection;
 using MealPrepApp.Tests;
 
 TestHost.BuildAvaloniaApp().SetupWithoutStarting();
+if(args.Contains("--refinement-screenshots")) { RedesignSamples.Render(Path.GetFullPath("dist/refinement/screenshots")); return 0; }
 if(args.Contains("--screenshots")) { RedesignSamples.Render(Path.GetFullPath("docs/redesign/screenshots")); return 0; }
 var tests = new RegressionTests();
 int count = 0, failures = 0;

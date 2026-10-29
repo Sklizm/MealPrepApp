@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Rapoarte.ListaCumparaturiPrintView" x:DataType="vm:ListaCumparaturiPrintViewModel" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32">
         <!-- Title -->
         <TextBlock Grid.Row="0" Text="Lista de cumpărături pentru tiparire" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Toolbar -->
@@ -16,7 +16,11 @@
             </StackPanel>
         </DockPanel>
         <!-- Error message -->
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding GenereazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <!-- Content -->
         <Grid Grid.Row="3">
             <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Rows}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" IsVisible="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}">

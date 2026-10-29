@@ -18,7 +18,7 @@
             <Setter Property="Margin" Value="0,0,10,10"/>
         </Style>
     </UserControl.Styles>
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32">
         <!-- Title -->
         <TextBlock Grid.Row="0" Text="Statistici lunare" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Month picker toolbar -->
@@ -32,10 +32,14 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <ComboBox Width="100" ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}"/>
-            <Button Content="Afiseaza" Classes="Primary" Margin="8,0,0,0" Command="{Binding AfiseazaCommand}" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="Afișează" Classes="Primary" Margin="8,0,0,0" Command="{Binding AfiseazaCommand}" IsEnabled="{Binding !IsBusy}"/>
         </StackPanel>
         <!-- Error message -->
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding AfiseazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <!-- Content -->
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" IsVisible="{Binding HasData}">
             <StackPanel Spacing="16">

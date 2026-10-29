@@ -111,16 +111,16 @@ public sealed partial class RegressionTests
         shell.Show();
         try
         {
-            var buttons=shell.GetLogicalDescendants().OfType<RadioButton>().Where(b=>b.GroupName=="Navigation").ToArray();
+            var buttons=shell.GetLogicalDescendants().OfType<Button>().Where(b=>b.Content is MealPrepApp.Desktop.Controls.AnimatedNavigationIcon).ToArray();
             Assert.Equal(7,buttons.Length);
             var destinations=new[]{"Acasa","Retete","Planificare","Frigider","Cumparaturi","Ingrediente","Rapoarte"};
             for(int i=0;i<buttons.Length;i++)
             {
                 Assert.NotNull(buttons[i].Command);
-                typeof(RadioButton).GetMethod("OnClick",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(buttons[i],null);
+                typeof(Button).GetMethod("OnClick",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(buttons[i],null);
                 Dispatcher.UIThread.RunJobs();
                 Assert.Equal(destinations[i],vm.ActiveTab);
-                Assert.True(buttons[i].IsChecked);
+                Assert.Contains("selected", buttons[i].Classes);
                 Assert.NotNull(vm.CurrentView);
             }
         }
@@ -340,7 +340,7 @@ public sealed partial class RegressionTests
         public object? CurrentView { get; private set; }
         public event EventHandler? CurrentViewChanged;
         public List<Type> Routes { get; } = new();
-        public Task NavigateToAsync<TViewModel>() where TViewModel : class =>
+        public Task NavigateToAsync<TViewModel>(Action<TViewModel>? prepare = null) where TViewModel : class =>
             NavigateToAsync(typeof(TViewModel));
         public Task NavigateToAsync(object viewModel)
         {

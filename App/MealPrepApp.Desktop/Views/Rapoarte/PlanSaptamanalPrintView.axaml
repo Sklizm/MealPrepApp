@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" x:Class="MealPrepApp.Desktop.Views.Rapoarte.PlanSaptamanalPrintView" x:DataType="vm:PlanSaptamanalPrintViewModel" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32">
         <!-- Title -->
         <TextBlock Grid.Row="0" Text="Plan săptămânal" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Toolbar -->
@@ -8,7 +8,7 @@
                 <Button Content="‹" Classes="Secondary" Command="{Binding PreviousWeekCommand}"/>
                 <DatePicker SelectedDate="{Binding SelectedDate, Converter={StaticResource DateTimeToDateTimeOffset}}" VerticalAlignment="Center"/>
                 <Button Content="›" Classes="Secondary" Command="{Binding NextWeekCommand}"/>
-                <Button Content="Afiseaza" Classes="Primary" Command="{Binding GenereazaCommand}"/>
+                <Button Content="Afișează" Classes="Primary" Command="{Binding GenereazaCommand}"/>
                 <TextBlock Text="{Binding WeekLabel}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
@@ -16,7 +16,11 @@
             </StackPanel>
         </DockPanel>
         <!-- Error message -->
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
+            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
+            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding GenereazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+        </StackPanel>
         <!-- Weekly Plan DataGrid -->
         <DataGrid Grid.Row="3" ItemsSource="{Binding Days}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="All">
             <DataGrid.Columns>
