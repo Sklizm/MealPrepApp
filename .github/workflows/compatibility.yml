@@ -8,11 +8,42 @@ permissions:
   contents: read
 jobs:
   desktop:
+    name: Desktop tests (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release --logger trx --results-directory TestResults
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-${{ matrix.os }}
+          path: TestResults/
+  wpf:
+    name: WPF grading client
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build App/MealPrepApp/MealPrepApp.csproj -c Release
+  packages:
+    name: Package and install (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -22,17 +53,21 @@ jobs:
         with:
           python-version: '3.11'
       - if: runner.os == 'Windows'
-        run: dotnet build App/MealPrepApp/MealPrepApp.csproj -c Release
-      - if: runner.os == 'Windows'
         name: Install pinned Inno Setup compiler
         run: |
           choco install innosetup --version=6.4.3 --yes --no-progress --allow-downgrade
           if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed.' }
       - if: runner.os == 'Windows'
         run: ./scripts/build-windows.ps1
-      # Run before diagnostic unit tests create the per-user MealPrepApp directory.
+      # This worker has not run unit tests that write per-user diagnostic files.
       - if: runner.os == 'Windows'
         run: ./scripts/test-windows-install.ps1
+      - if: always() && runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-logs
+          path: dist/windows-install-logs/
+          if-no-files-found: ignore
       - if: runner.os == 'macOS'
         run: bash scripts/build-mac.sh -m:1
       - if: runner.os == 'macOS'
@@ -41,12 +76,6 @@ jobs:
         run: bash scripts/build-linux.sh -m:1
       - if: runner.os == 'Linux'
         run: python3 scripts/package-release.py linux-x64
-      - run: dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release --logger trx --results-directory TestResults
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tests-${{ matrix.os }}
-          path: TestResults/
       - uses: actions/upload-artifact@v4
         with:
           name: package-${{ runner.os }}
@@ -55,17 +84,46 @@ jobs:
             dist/release/*-setup.exe
             dist/release/*-setup.exe.metadata.json
           if-no-files-found: error
-  presentation:
+  release-assets:
+    name: Combined release integrity
+    needs: packages
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist/release
+          merge-multiple: true
+      - run: python3 scripts/package-release.py finalize
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-release-manifest
+          path: |
+            dist/release/SHA256SUMS
+            dist/release/release-manifest.json
+          if-no-files-found: error
+  presentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - run: python3 Tests/Scripts/check_repository_paths.py
       - run: python3 Tests/Scripts/check_redesign_contrast.py
       - run: python3 Tests/Scripts/test_database_update.py
       - run: python3 Tests/Scripts/test_release_package.py
+      - run: python3 Tests/Scripts/test_windows_packaging.py
       - run: python3 Tests/Scripts/test_branch_consolidation.py
   database:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Disposable SQL suite

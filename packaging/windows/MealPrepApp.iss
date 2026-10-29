@@ -1,4 +1,5 @@
-; Build through scripts/build-windows.ps1; these values come from release.json.+#ifndef AppVersion
+; Build through scripts/build-windows.ps1; these values come from release.json.
+#ifndef AppVersion
   #error AppVersion is required
 #endif
 #ifndef NumericVersion

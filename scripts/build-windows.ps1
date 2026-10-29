@@ -9,7 +9,7 @@ $ReleaseDir = Join-Path $RepoRoot 'dist/release'
 $Release = Get-Content (Join-Path $RepoRoot 'release.json') -Raw | ConvertFrom-Json
 if (-not (Test-Path $IsccPath)) { throw 'Install Inno Setup 6.4.3 or supply -IsccPath.' }
 $CompilerVersion = (Get-Item $IsccPath).VersionInfo.ProductVersion
-if ($CompilerVersion -notmatch '^6\.4\.3(?:\.|$)') { throw "Expected Inno Setup 6.4.3; found $CompilerVersion" }
+if ($CompilerVersion -notmatch '^6\.4\.3(?:\D|$)') { throw "Expected Inno Setup 6.4.3; found $CompilerVersion" }
 
 Push-Location $RepoRoot
 try {

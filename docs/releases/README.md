@@ -7,7 +7,7 @@ checks prevent version drift. Never reuse or overwrite a published version/tag.
 ## Verify and prepare a draft
 
 1. Work on `main`. Update release metadata, assembly/plist versions, and `docs/releases/v<version>.md` when preparing a new version. Numeric installer/file versions have four components; macOS bundle versions remain numeric.
-2. Push `main` and inspect **Compatibility**. It runs desktop tests on all three OSes, compiles WPF, creates self-contained platform packages, tests Windows installation, and runs presentation, packaging, updater, and disposable SQL checks.
+2. Push `main` and inspect **Compatibility**. Independent jobs run desktop tests on all three OSes, compile WPF, create self-contained platform packages, test Windows installation, and run presentation, packaging, updater, and disposable SQL checks. A WPF failure does not hide installer or application-test results. Combined release integrity is checked after all platform packages succeed.
 3. Run **Draft release candidate** manually on `main`. It reruns Compatibility for that exact dispatch SHA, collects all three packages, verifies matching source/version/migrations, and creates a tag plus a **draft** release. It does not publish automatically. Prerelease flags follow the version suffix.
 4. Download the assets, verify their hashes, and perform native acceptance. Record the tested commit/version, OS, scaling, result, and defects. Publish the draft manually only when the required checks pass.
 
