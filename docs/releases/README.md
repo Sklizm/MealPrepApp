@@ -1,49 +1,75 @@
-# Release candidates
+# Releases
 
-Release metadata is in `release.json`. Desktop assembly defaults are in `Version.props`; a regression check prevents version drift. macOS uses numeric bundle versions plus the complete candidate version in `MealPrepReleaseVersion`; Settings displays the assembly's candidate version.
+`release.json` is the release metadata source. `Version.props` supplies assembly and
+numeric installer versions; the macOS plist supplies numeric bundle defaults. Regression
+checks prevent version drift. Never reuse or overwrite a published version/tag.
 
-## Prepare a draft
+## Verify and prepare a draft
 
-1. Push the final source commit to `feature/cross-platform-avalonia` and inspect Compatibility CI. Do not merge automatically.
-2. Run **Draft release candidate** manually, selecting that branch. The workflow uses the dispatch commit SHA for both its reusable verification workflow and release tagging. It reruns every required check and only then creates `v1.0.0-rc.1` and a draft prerelease with archives, checksums and provenance metadata. It never publishes it. An existing tag aborts the run rather than overwriting a candidate.
-3. GitHub requires a dispatch workflow definition on the default branch before it can be manually triggered. If it is not registered yet, submit a reviewed PR to register the workflows and their required scripts/metadata on the default branch, then dispatch using the feature branch. This implementation does not merge that PR automatically.
-4. If tag creation succeeds but release upload fails, inspect the run and the tag's SHA. Remove only the failed candidate tag/draft after verifying no published release uses it, then retry. The workflow deliberately refuses automatic replacement.
+1. Work on `main`. Update release metadata, assembly/plist versions, and `docs/releases/v<version>.md` when preparing a new version. Numeric installer/file versions have four components; macOS bundle versions remain numeric.
+2. Push `main` and inspect **Compatibility**. It runs desktop tests on all three OSes, compiles WPF, creates self-contained platform packages, tests Windows installation, and runs presentation, packaging, updater, and disposable SQL checks.
+3. Run **Draft release candidate** manually on `main`. It reruns Compatibility for that exact dispatch SHA, collects all three packages, verifies matching source/version/migrations, and creates a tag plus a **draft** release. It does not publish automatically. Prerelease flags follow the version suffix.
+4. Download the assets, verify their hashes, and perform native acceptance. Record the tested commit/version, OS, scaling, result, and defects. Publish the draft manually only when the required checks pass.
 
-The shared workflow follows [GitHub's reusable workflow model](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows). Tests and SQL logs are retained as Actions artifacts; package artifacts are available from ordinary CI runs too.
+An existing tag aborts the workflow. If tag creation succeeds but upload fails, inspect
+the tag's SHA and any draft first; remove only the failed candidate after verifying it
+was never published, then retry. Do not silently replace tags or published downloads.
+The workflow must be registered on GitHub's default branch before manual dispatch works.
 
 ## Build the same files locally
 
-From a clean checkout of the candidate commit:
+On a Windows x64 worker with the prerequisites in the [Windows guide](../platforms/windows.md):
+
+```powershell
+pwsh -File scripts/build-windows.ps1
+pwsh -File scripts/test-windows-install.ps1
+```
+
+On a .NET host with the macOS/Linux runtime packs available:
 
 ```bash
 bash scripts/build-mac.sh -m:1
 python3 scripts/package-release.py macos-arm64
 bash scripts/build-linux.sh -m:1
 python3 scripts/package-release.py linux-x64
+```
+
+Build every platform from the same clean commit. Collect these outputs into `dist/release/`:
+
+- `MealPrepApp-<version>-windows-x64-setup.exe` and its `.exe.metadata.json` sidecar;
+- `MealPrepApp-macos-arm64.tar.gz`;
+- `MealPrepApp-linux-x64.tar.gz`.
+
+Then run:
+
+```bash
 python3 scripts/package-release.py finalize
 ```
 
-Output: `dist/release/`, including both archives, `SHA256SUMS`, and `release-manifest.json`. Archive validation rejects local settings, private key/backup files and symlinks, checks executable permissions, and records source SHA/version/migration requirements. Finalization rejects mixed source commits or versions. It does not validate native execution.
+Finalization produces `SHA256SUMS` and `release-manifest.json`, requiring all three
+platforms to match the selected commit, version, and migration list. The Windows sidecar
+binds the installer bytes to its build metadata. These checks establish artifact
+consistency, not signing or independent supply-chain attestation.
 
-## Local verification
+Payload validation rejects local settings, private-key/backup files, and symlinks.
+Unix archives retain executable permissions. The Windows pipeline validates its payload
+before compiler input and includes the same metadata inside the installation. The
+compiler is pinned to Inno Setup 6.4.3. Packages remain unsigned and macOS is unnotarized.
 
-The candidate preparation passed a Release compilation (zero warnings/errors), four
-archive/version boundary tests, three backup-updater orchestration tests, 28 semantic
-contrast checks, all 21 direct regression methods, macOS/Linux self-contained builds and workflow YAML
-parsing. A redundant build-server-disabled compilation attempt timed out after 90 seconds;
-the initial Release compilation succeeded. Full hosted Actions validation remains pending;
-YAML parsing alone does not validate GitHub execution.
+## Acceptance
 
-## Acceptance evidence
-
-| Check | Current evidence |
+| Area | Required evidence |
 |---|---|
-| Live migrations and SQL suite | Both reported passed by Codrin from normal SSH |
-| Independent deployed inspection | Pending Docker access; run `bash scripts/verify-deployed-database.sh` (read-only object checks) |
-| Current GitHub CI | Pending access; this agent cannot resolve GitHub from the execution sandbox |
-| Native Mac and Hyprland full flow | Pending; no desktop sessions available to this agent |
-| Extracted candidate download launches and hashes | Pending creation/download of CI assets |
+| Automated desktop tests | Passing Linux, Windows, and macOS test results for the release SHA |
+| Windows install | Disposable CI install, first-launch window, reinstall, shortcuts, registry, uninstall, and user-data preservation |
+| Windows interactive acceptance | Setup wizard, first connection, sign-in, application flow, update from a previous version, and uninstall on a native machine |
+| macOS | Download approval, Applications install, first connection, sign-in, native menus/file pickers, update and uninstall |
+| Linux / Hyprland | Native dependencies, XWayland launch, launcher, first connection, sign-in and update; Nix reproducibility tracked separately |
+| Application flow | Find → scale → cook/plan → reopen saved checklist → mark purchases → explicit pantry import; dirty-editor guards and keyboard navigation |
+| Database | Disposable SQL suite and existing deployment's required migration state; no live migration runs as part of release packaging |
+| Download integrity | Hash checks and matching source/version/migrations for every attached asset |
 
-Record OS, display scaling, source SHA, result and observed defects for each native run. Exercise find → scale → cook/plan → generate/reopen checklist → mark purchases → explicit pantry import; repeat import and week copying; verify dirty-editor choices, timer navigation, focus, shortcuts, menus, file pickers, themes and 860×600/1280×800/1440×900 layouts at 100/150/200% scaling.
-
-Keep the candidate draft until these checks pass. Update evidence and release notes before publication. Nix reproducibility, signing/notarization and in-app updates are separate work.
+Headless rendering and cross-publishing do not establish native acceptance. A reinstall
+smoke test checks installer identity and data retention; native upgrades from an older
+released version remain a separate acceptance check. See [implementation evidence](implementation-validation.md)
+and [earlier redesign evidence](../redesign/validation.md).

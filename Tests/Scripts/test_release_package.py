@@ -52,14 +52,59 @@ class ReleaseTests(unittest.TestCase):
         output = self.root / 'archives'
         with patch.object(release, 'ROOT', self.root), patch.object(release.subprocess, 'check_output', return_value='a' * 40):
             for platform in release.ARCHIVES: release.package(platform, output)
+            windows = self.root / 'dist/windows'
+            windows.mkdir(parents=True)
+            (windows / 'MealPrepApp.Desktop.exe').write_bytes(b'MZ fixture')
+            release.prepare_windows()
+            (output / release.installer_name()).write_bytes(b'MZ installer fixture')
+            release.package('windows-x64', output)
             release.finalize(output)
             records = json.loads((output / 'release-manifest.json').read_text())
-            self.assertEqual(len(records), 2)
-            self.assertEqual(len((output / 'SHA256SUMS').read_text().splitlines()), 2)
+            self.assertEqual(len(records), 3)
+            self.assertEqual(len((output / 'SHA256SUMS').read_text().splitlines()), 3)
             with tarfile.open(output / release.ARCHIVES['linux-x64']) as tar:
                 self.assertEqual(tar.getmember('MealPrepApp-linux-x64/MealPrepApp.Desktop').mode & 0o777, 0o755)
             with patch.object(release.subprocess, 'check_output', return_value='b' * 40):
                 with self.assertRaises(ValueError): release.finalize(output)
+            release.package('linux-x64', output)
+            self.assertFalse((output / 'SHA256SUMS').exists())
+            self.assertFalse((output / 'release-manifest.json').exists())
+
+    def test_windows_validation_rejects_private_payload_and_invalid_executables(self):
+        windows = self.root / 'dist/windows'
+        windows.mkdir(parents=True)
+        exe = windows / 'MealPrepApp.Desktop.exe'
+        exe.write_bytes(b'not an executable')
+        with self.assertRaises(ValueError): release.validate(windows, exe, windows=True)
+        exe.write_bytes(b'MZ fixture')
+        release.validate(windows, exe, windows=True)
+        (windows / 'appsettings.Local.json').write_text('private')
+        with self.assertRaises(ValueError): release.validate(windows, exe, windows=True)
+
+    def test_windows_installer_hash_and_source_must_match_metadata(self):
+        (self.root / 'release.json').write_text(json.dumps({'version': '1.0.0-rc.1', 'requiredMigrations': []}))
+        windows = self.root / 'dist/windows'
+        windows.mkdir(parents=True)
+        (windows / 'MealPrepApp.Desktop.exe').write_bytes(b'MZ fixture')
+        output = self.root / 'release'
+        output.mkdir()
+        with patch.object(release, 'ROOT', self.root), patch.object(release.subprocess, 'check_output', return_value='a' * 40):
+            release.prepare_windows()
+            for platform in release.ARCHIVES:
+                if platform == 'macos-arm64':
+                    mac = self.root / 'dist/mac/MealPrepApp.app/Contents/MacOS'
+                    mac.mkdir(parents=True)
+                    exe = mac / 'MealPrepApp.Desktop'
+                    exe.write_text('fixture')
+                    exe.chmod(0o755)
+                release.package(platform, output)
+            installer = output / release.installer_name()
+            installer.write_bytes(b'MZ fixture')
+            release.package('windows-x64', output)
+            installer.write_bytes(b'MZ tampered')
+            with self.assertRaises(ValueError): release.finalize(output)
+            with patch.object(release.subprocess, 'check_output', return_value='b' * 40):
+                with self.assertRaises(ValueError): release.package('windows-x64', output)
 
     def test_repository_versions_are_consistent(self):
         config = json.loads((ROOT / 'release.json').read_text())

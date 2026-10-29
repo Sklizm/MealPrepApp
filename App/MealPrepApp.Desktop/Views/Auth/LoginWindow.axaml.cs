@@ -43,5 +43,20 @@ public partial class LoginWindow : Window
         _ = MealPrepApp.Desktop.Services.UiOperation.RunAsync(() => App.Services.GetRequiredService<MealPrepApp.Services.IDialogService>()
             .ShowInfoAsync("Recuperare cont", "Contacteaza administratorul pentru recuperarea contului."));
 
+    private async void EditConnection(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var app = (App)Avalonia.Application.Current!;
+        string? savedConnection = null;
+        ConnectionSetupWindow setup = null!;
+        setup = new ConnectionSetupWindow(app.ConnectionSettings, connection =>
+        {
+            savedConnection = connection;
+            setup.Close();
+            return Task.CompletedTask;
+        });
+        await setup.ShowDialog(this);
+        if (savedConnection != null) app.ApplyConnection(savedConnection);
+    }
+
     private void OpenShell() => MealPrepApp.Desktop.Services.WindowCoordinator.ShowShell();
 }

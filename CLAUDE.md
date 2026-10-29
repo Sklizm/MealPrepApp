@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Read [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) first. `main` is the single maintained branch. This file adds architectural context for agents working in the repository.
 
 ## Repository Overview & Architecture
 
 MealPrepApp is a cross-platform .NET 10 desktop solution backed by a 24/7 SQL Server database.
 
 - `App/MealPrepApp.Core/` — Pure .NET 10 library. Contains all Models, Dapper repositories, Services (`IFilePickerService`, `IDialogService`), and platform-neutral ViewModels. Zero UI or platform dependencies.
-- `App/MealPrepApp.Desktop/` — Avalonia UI 11.3 desktop application. Targets macOS (Apple Silicon `osx-arm64`) and Linux (`linux-x64` / NixOS Wayland). Uses native window chrome, macOS top `NativeMenu`, and Skia rendering. Linux uses X11/XWayland.
+- `App/MealPrepApp.Desktop/` — Avalonia UI 11.3 desktop application. Targets Windows x64, macOS (Apple Silicon `osx-arm64`), and Linux (`linux-x64` / NixOS XWayland). Uses native window chrome, macOS top `NativeMenu`, and Skia rendering. Linux uses X11/XWayland.
 - `App/MealPrepApp/` — Original Windows WPF desktop application targeting `net10.0-windows`. Preserved for university practica grading.
 - `Database/` — SQL Server 2022 database scripts: schema, stored procedures, seeds, and the idempotent `run_all.sql`.
 - `docker-compose.db.yml` — Docker Compose configuration for the 24/7 Home Server SQL Server container.
@@ -15,11 +15,14 @@ MealPrepApp is a cross-platform .NET 10 desktop solution backed by a 24/7 SQL Se
 - `scripts/` — Cross-compilation packaging scripts:
   - `build-mac.sh`: Produces self-contained `MealPrepApp.app` bundle for macOS.
   - `build-linux.sh`: Produces self-contained folder for Linux.
+  - `build-windows.ps1`: Produces a self-contained Avalonia Windows installer using pinned Inno Setup 6.4.3.
+  - `install-mac.sh`: Copies the built app into Applications.
+  - `consolidate-main.sh`: Audits merged branches and successful main CI before deleting superseded branches.
 - `Vault/` — Obsidian project memory and decisions log.
 
 ## Building, validation and database updates
 
-Use the current commands in [README.md](README.md) for .NET 10 builds, macOS transfer
+Use the [platform guides](docs/platforms/) and current commands in [README.md](README.md) for .NET 10 builds, macOS transfer
 archives, Linux packaging and per-user connection settings. Linux uses X11/XWayland.
 Nix dependency metadata is an unvalidated bootstrap; see [nix/README.md](nix/README.md).
 

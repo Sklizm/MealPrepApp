@@ -1,3 +1,5 @@
+> Historical implementation guide for the October 2026 redesign. Use the [current README](../../README.md) and [platform guides](../platforms/) for installation and configuration.
+
 # Cooking-centred Desktop redesign
 
 The Avalonia client redesign builds on the compatibility repairs and preserves the WPF

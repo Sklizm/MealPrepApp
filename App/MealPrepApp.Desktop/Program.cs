@@ -11,6 +11,9 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Shared with the installer: updates/uninstall require all app instances to close.
+        using var installationMutex = OperatingSystem.IsWindows()
+            ? new Mutex(false, "MealPrepApp.Desktop.Running") : null;
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
             if (e.ExceptionObject is Exception ex) MealPrepApp.Services.AppDiagnostics.Record(ex);

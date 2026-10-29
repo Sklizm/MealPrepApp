@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MealPrepApp.Desktop.Views.ConnectionSetupWindow" Title="MealPrep • Conexiune"
+        Width="520" Height="700" MinWidth="440" MinHeight="560"
+        Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
+    <ScrollViewer>
+        <StackPanel Margin="32" Spacing="12">
+            <TextBlock Text="Conexiune la baza de date" Classes="Title" TextWrapping="Wrap"/>
+            <TextBlock Text="Introdu datele de acces primite de la administrator. Baza de date trebuie să fie deja configurată; conectează-te la rețeaua serverului sau la Tailscale." Classes="Muted" TextWrapping="Wrap"/>
+            <StackPanel Name="Fields" Spacing="8">
+                <TextBlock Text="Server (adresă,port)"/>
+                <TextBox Name="ServerBox" Watermark="100.x.x.x,1433" AutomationProperties.Name="Server"/>
+                <TextBlock Text="Bază de date"/>
+                <TextBox Name="DatabaseBox" AutomationProperties.Name="Bază de date"/>
+                <TextBlock Text="Utilizator SQL"/>
+                <TextBox Name="UserBox" AutomationProperties.Name="Utilizator SQL"/>
+                <TextBlock Text="Parolă SQL (gol = păstrează parola existentă)" TextWrapping="Wrap"/>
+                <TextBox Name="PasswordBox" PasswordChar="●" AutomationProperties.Name="Parolă SQL"/>
+                <CheckBox Name="TrustCertificate" Content="Acceptă certificatul propriu al serverului"/>
+                <TextBlock Text="Activează doar pentru un server cunoscut, de exemplu serverul personal prin Tailscale. Criptarea conexiunii rămâne activă." Classes="Muted" TextWrapping="Wrap"/>
+            </StackPanel>
+            <WrapPanel>
+                <Button Name="TestButton" Content="Testează conexiunea" Classes="Secondary" Click="TestConnection" Margin="0,0,8,8"/>
+                <Button Name="SaveButton" Content="Salvează și continuă" Classes="Primary" Click="SaveConnection" Margin="0,0,8,8"/>
+                <Button Name="CancelButton" Content="Anulează" Classes="Secondary" Click="Cancel"/>
+            </WrapPanel>
+            <TextBlock Name="Status" TextWrapping="Wrap"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

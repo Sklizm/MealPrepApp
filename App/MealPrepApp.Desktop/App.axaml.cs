@@ -22,10 +22,11 @@ namespace MealPrepApp.Desktop;
 public partial class App : Application
 {
     public PresentationPreferences Preferences { get; private set; }=null!;
-    private ServiceProvider _services = null!;
+    private ServiceProvider? _services;
+    internal ConnectionSettingsStore ConnectionSettings { get; } = new();
     internal IServiceScope? SessionScope { get; set; }
 
-    public static IServiceProvider Services => ((App)Current!).SessionScope?.ServiceProvider ?? ((App)Current!)._services;
+    public static IServiceProvider Services => ((App)Current!).SessionScope?.ServiceProvider ?? ((App)Current!)._services!;
 
     public override void Initialize()
     {
@@ -47,43 +48,45 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var configBuilder = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false);
-
-        // Probe multiple locations for appsettings.Local.json so it loads reliably
-        // whether running via 'dotnet run' from root, IDE, or compiled bundle.
-        string[] localSettingsCandidates =
-        [
-            Path.Combine(AppContext.BaseDirectory, "appsettings.Local.json"),
-            Path.Combine(Directory.GetCurrentDirectory(), "appsettings.Local.json"),
-            Path.Combine(Directory.GetCurrentDirectory(), "App", "MealPrepApp.Desktop", "appsettings.Local.json")
-        ];
-
-        var localPath = localSettingsCandidates.FirstOrDefault(File.Exists);
-        if (localPath != null)
+        var loaded = ConnectionSettings.Load();
+        if (loaded.NeedsSetup)
         {
-            configBuilder.AddJsonFile(localPath, optional: true, reloadOnChange: false);
+            var setup = new ConnectionSetupWindow(ConnectionSettings, connection =>
+            {
+                ApplyConnection(connection);
+                return Task.CompletedTask;
+            });
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow = setup;
         }
-
-        var userSettings = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MealPrepApp", "appsettings.Local.json");
-        configBuilder.AddJsonFile(userSettings, optional: true);
-        var config = configBuilder.Build();
-
-        var services = new ServiceCollection();
-        ConfigureServices(services, config);
-        _services = services.BuildServiceProvider();
-
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            WindowCoordinator.ShowLogin();
-        }
+        else StartServices(loaded.Configuration);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-            lifetime.Exit += (_, _) => { SessionScope?.Dispose(); _services.Dispose(); };
+            lifetime.Exit += (_, _) => { SessionScope?.Dispose(); _services?.Dispose(); };
         base.OnFrameworkInitializationCompleted();
+    }
+
+    internal void ApplyConnection(string connection)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddConfiguration(ConnectionSettings.Load().Configuration)
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:MealPrepDB"] = connection })
+            .Build();
+        StartServices(configuration);
+    }
+
+    private void StartServices(IConfiguration configuration)
+    {
+        var services = new ServiceCollection();
+        ConfigureServices(services, configuration);
+        var previousServices = _services;
+        var previousScope = SessionScope;
+        _services = services.BuildServiceProvider();
+        SessionScope = null;
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
+            WindowCoordinator.ShowLogin();
+        previousScope?.Dispose();
+        previousServices?.Dispose();
     }
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration config)

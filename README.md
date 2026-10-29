@@ -2,8 +2,8 @@
 
 Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Server database. Built for the UTM software engineering practicum.
 
-- **macOS Apple Silicon and Linux x64:** Avalonia 11.3 Desktop client with Romanian labels, native window decorations, Inter typography and warm System / Light / Dark themes.
-- **Windows:** the original WPF client is retained for grading and shares Core logic. The Desktop redesign does not replace its interface.
+- **Windows x64, macOS Apple Silicon, and Linux x64:** Avalonia 11.3 Desktop client with Romanian labels, native window decorations, Inter typography and warm System / Light / Dark themes.
+- **Grading:** the original Windows WPF client is retained alongside Avalonia and shares Core logic. See the [Windows guide](docs/platforms/windows.md#wpf-grading-client).
 - **Database:** SQL Server 2022, accessed through stored procedures with UTC timestamps, mutation auditing and recipe concurrency checks.
 
 ![Home in the light theme](docs/redesign/screenshots/home-Light-1280-100.png)
@@ -31,104 +31,81 @@ Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Se
 | `App/MealPrepApp/` | Windows WPF practica client |
 | `Database/` | Schema, stored procedures, seeds and additive migrations |
 | `Tests/` | Headless UI/Core regressions, isolated SQL tests and updater checks |
-| `scripts/` | Packaging, Linux launcher installation and backup-first database updates |
+| `scripts/` | Platform builds, installation, release validation and backup-first database updates |
+| `packaging/` | Windows installer definition |
+| `docs/platforms/` | Windows, macOS, and Linux installation and development guides |
 | `nix/` | [Nix setup and dependency bootstrap](nix/README.md) |
 | `docs/redesign/` | [Screenshots, implementation notes and acceptance flow](docs/redesign/README.md) |
 | `Raport/` | [Romanian academic report generator](Raport/README.md) |
 | `Vault/` | Historical project notes and decisions |
 
-## Downloads and release candidates
+## Install and run
 
-CI retains Mac/Linux archives and test results as Actions artifacts. The manually triggered **Draft release candidate** workflow verifies the selected commit before preparing a draft prerelease with checksums. A public release has not been created by this agent. See the [release procedure and acceptance evidence](docs/releases/README.md) and [candidate notes](docs/releases/v1.0.0-rc.1.md).
+`main` is the single maintained branch for every OS. Download packages from
+[Releases](https://github.com/Sklizm/MealPrepApp/releases). Before a release is published,
+successful **Compatibility** runs under GitHub Actions retain platform packages as artifacts.
 
-## Build and run
+| Platform | Package and instructions |
+|---|---|
+| Windows x64 | [Setup executable, Start Menu integration, updates and uninstall](docs/platforms/windows.md) |
+| macOS Apple Silicon | [App bundle and Applications installation](docs/platforms/macos.md) |
+| Linux x64 / NixOS | [Standalone folder, launcher and native dependencies](docs/platforms/linux.md) |
 
-Install the .NET 10 SDK and Python 3.11+ for packaging; `global.json` selects the 10.0 SDK family. Run these commands from the repository root. Self-contained packages include the runtime, but building requires the SDK and a successful NuGet restore.
+Packages include the .NET runtime. They require access to an existing SQL Server deployment;
+they do not install or migrate the database. See [release preparation](docs/releases/README.md)
+for build provenance, checksums, and native acceptance requirements.
 
-### macOS Apple Silicon
+## Development
 
-Build on the Mac or cross-publish from a .NET host, then create a transfer archive:
-
-```bash
-bash scripts/build-mac.sh -m:1 &&
-tar -czf dist/MealPrepApp-macos-arm64.tar.gz -C dist/mac MealPrepApp.app
-```
-
-Transfer the archive to the Mac and extract it. Quit any running copy, then drag
-`MealPrepApp.app` into **Applications** in Finder (choose Replace when updating).
-Open **Applications → MealPrepApp** to launch it; you can also keep it in the Dock.
-
-If you have the repository on the Mac, install the built bundle from its root:
-
-```bash
-bash scripts/install-mac.sh
-open /Applications/MealPrepApp.app
-```
-
-The installer also accepts an extracted bundle path and an optional destination:
+Install Git, .NET 10 SDK, and Python 3.11+; `global.json` selects the .NET 10 SDK family.
+Windows installer builds additionally require PowerShell 7 and Inno Setup 6.4.3.
+Platform guides contain complete packaging commands.
 
 ```bash
-bash scripts/install-mac.sh "$HOME/Downloads/MealPrepApp.app"
-# Install only for your user if /Applications is not writable:
-bash scripts/install-mac.sh "$HOME/Downloads/MealPrepApp.app" "$HOME/Applications"
-```
-
-The script produces `dist/mac/MealPrepApp.app`; the separate `tar` command produces the archive. The bundle uses native window decorations, a native menu and file pickers. Packaging does not sign or notarize it.
-
-### Linux x64
-
-```bash
-bash scripts/build-linux.sh -m:1
-./dist/linux/MealPrepApp.Desktop
-```
-
-To install a launcher pointing to this folder:
-
-```bash
-bash scripts/install-linux.sh
-```
-
-Keep the published folder at that location, or rerun the installer after moving it. Linux uses **X11 / XWayland**, including under Hyprland; this version has no native Wayland backend. NixOS users should follow the [Nix README](nix/README.md) for native-library dependencies and the package bootstrap.
-
-### Development
-
-```bash
+git clone --branch main https://github.com/Sklizm/MealPrepApp.git
+cd MealPrepApp
 dotnet run --project App/MealPrepApp.Desktop
 ```
 
-### Windows WPF
-
-On Windows with the .NET 10 SDK:
-
-```powershell
-dotnet build App/MealPrepApp/MealPrepApp.csproj -c Release
-dotnet run --project App/MealPrepApp/MealPrepApp.csproj
-```
-
-To publish the practica executable, run `App\publish-windows-exe.cmd`. Output: `App/publish/MealPrepApp-win-x64/MealPrepApp.exe`.
+Work directly on `main`, pull before changing files, and run relevant checks before pushing.
+Preserve Git history. The [contributor guide](CONTRIBUTING.md) covers verification,
+branch consolidation, releases, and the retained WPF grading client.
 
 ## Connection settings
 
-Deploy the database before using the client. Desktop loads `appsettings.json`, the first matching development/local override, then the per-user override. Configure the connection through **Setări** after signing in, or create the per-user file before the first login:
+A fresh installation opens **Conexiune la baza de date** before login. Enter the server
+as `address,port`, database, SQL username, and password supplied by the administrator.
+Use **Testează conexiunea**, then **Salvează și continuă**. Saving proceeds to login
+without restarting; it is allowed while the server is temporarily unreachable.
 
-| Platform | Typical per-user directory |
+The login screen always offers **Conexiune la baza de date** so connection failures can
+be corrected before signing in. The same editor is available from **Setări**; changes
+made during a signed-in session apply after restarting.
+
+For the home-server deployment, obtain its current Tailscale IPv4 on the server with
+`tailscale ip -4`. Connect the client to Tailscale and use that address with TCP port 1433.
+The optional certificate-trust checkbox is for a known server with its own certificate;
+connection encryption stays enabled. Database access credentials are separate from your
+MealPrepApp account credentials.
+
+Settings, preferences, and redacted diagnostic logs are stored per user:
+
+| Platform | Typical directory |
 |---|---|
+| Windows | `%LOCALAPPDATA%\MealPrepApp\` |
 | macOS | `~/Library/Application Support/MealPrepApp/` |
 | Linux | `~/.local/share/MealPrepApp/` |
 
-The actual directory follows .NET `LocalApplicationData` and platform environment settings. Put `appsettings.Local.json` there using `App/MealPrepApp.Desktop/appsettings.Local.template.json` as a template. Development also probes `App/MealPrepApp.Desktop/appsettings.Local.json` when launched from the repository root. WPF uses its own local template under `App/MealPrepApp/`.
+The actual directory follows .NET `LocalApplicationData` and platform environment settings.
+Connection settings use `appsettings.Local.json`; appearance uses `preferences.json`;
+logs are under `logs/`. Credentials are excluded from Git, release packages, and diagnostics.
+Updating or uninstalling the app preserves these files.
 
-```json
-{
-  "ConnectionStrings": {
-    "MealPrepDB": "Server=<server-tailscale-ip>,1433;Database=MealPrepDB;User Id=mealprep_app;Password=<deployment-password>;TrustServerCertificate=True;Encrypt=True"
-  }
-}
-```
-
-For the home-server deployment, obtain its current Tailscale IPv4 on the server with `tailscale ip -4`. The client must be able to reach that host on TCP 1433. Use a comma before the SQL port. Connection changes saved in settings require restarting the app.
-
-Local credentials are gitignored and excluded from published packages. Theme, recipe-view and reduced-motion choices live separately in `preferences.json`. Redacted diagnostics live in the per-user `MealPrepApp/logs/` directory.
+Manual configuration remains supported using
+`App/MealPrepApp.Desktop/appsettings.Local.template.json`. Desktop loads `appsettings.json`,
+the first matching development/local override, then the per-user override. Missing,
+placeholder, or malformed settings open connection setup. WPF retains its separate template
+under `App/MealPrepApp/`; see the Windows grading instructions.
 
 ## Database setup and upgrades
 
@@ -177,6 +154,8 @@ Use a SQL-policy-compliant password without single quotes or newlines: the initi
 dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
 dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release
 python3 Tests/Scripts/test_database_update.py
+python3 Tests/Scripts/test_release_package.py
+python3 Tests/Scripts/test_branch_consolidation.py
 python3 Tests/Scripts/check_redesign_contrast.py
 bash scripts/test-database.sh
 ```
@@ -187,7 +166,7 @@ The direct runner works in environments where VSTest cannot create its local TCP
 dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --screenshots
 ```
 
-The redesign has a successful Release build, **21 direct regression checks**, **28 contrast checks**, **72 shell renders** across two themes, three sizes and three render DPIs, and successful macOS/Linux packaging. GitHub Actions is configured for cross-platform tests, Windows WPF compilation, packaging and disposable SQL checks.
+The earlier redesign evidence includes 21 direct regression checks, 28 contrast checks, 72 shell renders and macOS/Linux builds. New connection and installer checks are tracked in [release validation](docs/releases/README.md). GitHub Actions verifies cross-platform tests, Windows installation, WPF compilation, packaging, and disposable SQL checks. Native acceptance is recorded separately from successful builds.
 
 Codrin reports the expanded SQL suite and both live migrations passed from normal SSH. Independent deployed inspection, WPF compilation and the full native macOS/Hyprland acceptance flow still require verification outside the restricted build environment. Codrin reports the rebuilt app looks good; this does not establish every acceptance check. The agent has not applied the database migrations. See [current evidence and limitations](docs/redesign/validation.md) and the [earlier compatibility repair history](docs/compatibility-repair.md).
 

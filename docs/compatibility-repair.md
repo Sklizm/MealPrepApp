@@ -1,3 +1,5 @@
+> Historical compatibility-repair record. Current setup commands are in the [README](../README.md) and [platform guides](platforms/).
+
 # Compatibility repair status
 
 Historical compatibility repair record; source baseline: `5315468`. The later
