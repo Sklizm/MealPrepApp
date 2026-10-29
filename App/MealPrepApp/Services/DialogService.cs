@@ -33,22 +33,19 @@ public sealed class DialogService : IDialogService
 
     public Task<bool> ShowDialogAsync(object viewModel) => Task.FromResult(viewModel switch
     {
-        PlanMealDialogViewModel => ShowDialog<PlanMealDialog>(viewModel),
-        PantryItemDialogViewModel => ShowDialog<PantryItemDialog>(viewModel),
-        IngredientAddDialogViewModel => ShowDialog<IngredientAddDialog>(viewModel),
-        IngredientNutritionDialogViewModel => ShowDialog<IngredientNutritionDialog>(viewModel),
-        ChangePasswordViewModel => ShowDialog<ChangePasswordDialog>(viewModel),
-        ForgotPasswordViewModel => ShowDialog<ForgotPasswordDialog>(viewModel),
+        PlanMealDialogViewModel => ShowDialog(new PlanMealDialog(), viewModel),
+        PantryItemDialogViewModel => ShowDialog(new PantryItemDialog(), viewModel),
+        IngredientAddDialogViewModel => ShowDialog(new IngredientAddDialog(), viewModel),
+        IngredientNutritionDialogViewModel => ShowDialog(new IngredientNutritionDialog(), viewModel),
+        ChangePasswordViewModel change => ShowDialog(new ChangePasswordDialog(change), change),
+        ForgotPasswordViewModel forgot => ShowDialog(new ForgotPasswordDialog(forgot), forgot),
         _ => throw new NotSupportedException($"No WPF dialog registered for ViewModel '{viewModel.GetType().Name}'.")
     });
 
-    public bool ShowDialog<TWindow>(object viewModel) where TWindow : Window, new()
+    private static bool ShowDialog(Window window, object viewModel)
     {
-        var window = new TWindow
-        {
-            DataContext = viewModel,
-            Owner = ActiveOwner(),
-        };
+        window.DataContext = viewModel;
+        window.Owner = ActiveOwner();
         try { return window.ShowDialog() == true; }
         finally { if (viewModel is IDisposable disposable) disposable.Dispose(); }
     }
