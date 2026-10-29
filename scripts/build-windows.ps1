@@ -9,8 +9,8 @@ $ReleaseDir = Join-Path $RepoRoot 'dist/release'
 $Release = Get-Content (Join-Path $RepoRoot 'release.json') -Raw | ConvertFrom-Json
 $Tool = Get-Content (Join-Path $RepoRoot 'packaging/windows/inno-setup.json') -Raw | ConvertFrom-Json
 if (-not (Test-Path $IsccPath)) { throw "Install Inno Setup $($Tool.version) or supply -IsccPath." }
-$CompilerVersion = [regex]::Match((Get-Item $IsccPath).VersionInfo.ProductVersion, '^\d+\.\d+\.\d+').Value
-if ($CompilerVersion -ne $Tool.version) { throw "Expected Inno Setup $($Tool.version); found $CompilerVersion" }
+python (Join-Path $PSScriptRoot 'check-inno-setup.py') $IsccPath
+if ($LASTEXITCODE -ne 0) { throw 'Inno Setup failed its compiler/preprocessor probe.' }
 
 Push-Location $RepoRoot
 try {

@@ -20,12 +20,12 @@ try {
     if ($Process.ExitCode -notin @(0, 3010)) { throw "Inno Setup installation failed ($($Process.ExitCode)); see $LogFile" }
     $Compiler = Join-Path $Destination 'ISCC.exe'
     if (-not (Test-Path $Compiler)) { throw "Compiler missing after installation: $Compiler" }
-    $Version = [regex]::Match((Get-Item $Compiler).VersionInfo.ProductVersion, '^\d+\.\d+\.\d+').Value
-    if ($Version -ne $Tool.version) { throw "Expected Inno Setup $($Tool.version); found $Version" }
+    python (Join-Path $PSScriptRoot 'check-inno-setup.py') $Compiler
+    if ($LASTEXITCODE -ne 0) { throw 'Installed Inno Setup failed its compiler/preprocessor probe.' }
     if ($env:GITHUB_ENV) {
         "MEALPREP_ISCC=$Compiler" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
     }
-    Write-Host "Verified Inno Setup $Version at $Compiler"
+    Write-Host "Verified Inno Setup $($Tool.version) at $Compiler"
 }
 finally {
     if (Test-Path $Download) { Remove-Item $Download -Force }

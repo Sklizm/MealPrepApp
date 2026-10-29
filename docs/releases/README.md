@@ -58,6 +58,9 @@ compiler is pinned to Inno Setup 6.4.3 in `packaging/windows/inno-setup.json`.
 CI downloads the versioned official GitHub asset, checks its published SHA-256 before
 execution, installs it to a dedicated tool directory, and passes that compiler path to
 the build. This avoids dependence on Chocolatey's available package versions.
+Both setup and build verify the loaded compiler engine using a small output-disabled
+compile with a preprocessor expression. `ISCC.exe` launcher file metadata is not used
+as the engine version. The probe must compile successfully and report the pinned version.
 Packages remain unsigned and macOS is unnotarized.
 
 ## Acceptance
