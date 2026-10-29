@@ -54,10 +54,23 @@ bash scripts/build-mac.sh -m:1 &&
 tar -czf dist/MealPrepApp-macos-arm64.tar.gz -C dist/mac MealPrepApp.app
 ```
 
-Transfer the archive to the Mac, extract it and replace the previous app. Launch on macOS:
+Transfer the archive to the Mac and extract it. Quit any running copy, then drag
+`MealPrepApp.app` into **Applications** in Finder (choose Replace when updating).
+Open **Applications → MealPrepApp** to launch it; you can also keep it in the Dock.
+
+If you have the repository on the Mac, install the built bundle from its root:
 
 ```bash
-open dist/mac/MealPrepApp.app
+bash scripts/install-mac.sh
+open /Applications/MealPrepApp.app
+```
+
+The installer also accepts an extracted bundle path and an optional destination:
+
+```bash
+bash scripts/install-mac.sh "$HOME/Downloads/MealPrepApp.app"
+# Install only for your user if /Applications is not writable:
+bash scripts/install-mac.sh "$HOME/Downloads/MealPrepApp.app" "$HOME/Applications"
 ```
 
 The script produces `dist/mac/MealPrepApp.app`; the separate `tar` command produces the archive. The bundle uses native window decorations, a native menu and file pickers. Packaging does not sign or notarize it.
