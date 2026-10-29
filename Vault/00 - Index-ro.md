@@ -41,7 +41,7 @@ Aceasta este intrarea pentru raportul de practica — documentele legate sunt ve
 - [[Sessions/2026-05-11 - Phase 4 design and ingredient categories-ro]]
 - [[Sessions/2026-05-15 - Ingredients Romanian + AppPassword default-ro]]
 - [[Sessions/2026-05-18 - Phases A-E confirmed, Phase F built-ro]]
-- [[Sessions/2026-05-21 - UI restyle: dropdowns, popups, window chrome-ro]]
+- [[Sessions/2026-05-21 - UI restyle - dropdowns, popups, window chrome-ro]]
 - [[Sessions/2026-05-22 - Recipe crash fixed; Planificare + Rapoarte shipped-ro]]
 - [[Sessions/2026-05-23 - Hermes takeover-ro]]
 - [[Sessions/2026-05-25 - TODO cleanup and draft-photo DB verification-ro]]

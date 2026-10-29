@@ -59,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: python3 Tests/Scripts/check_repository_paths.py
       - run: python3 Tests/Scripts/check_redesign_contrast.py
       - run: python3 Tests/Scripts/test_database_update.py
       - run: python3 Tests/Scripts/test_release_package.py
