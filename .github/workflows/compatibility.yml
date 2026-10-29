@@ -54,11 +54,9 @@ jobs:
           python-version: '3.11'
       - if: runner.os == 'Windows'
         name: Install pinned Inno Setup compiler
-        run: |
-          choco install innosetup --version=6.4.3 --yes --no-progress --allow-downgrade
-          if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed.' }
+        run: ./scripts/install-inno-setup.ps1
       - if: runner.os == 'Windows'
-        run: ./scripts/build-windows.ps1
+        run: ./scripts/build-windows.ps1 -IsccPath $env:MEALPREP_ISCC
       # This worker has not run unit tests that write per-user diagnostic files.
       - if: runner.os == 'Windows'
         run: ./scripts/test-windows-install.ps1

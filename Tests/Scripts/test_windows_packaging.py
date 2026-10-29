@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check installer source contracts without pretending to run the Windows compiler."""
 from pathlib import Path
+import json
 import re
 import unittest
 
@@ -8,6 +9,15 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class WindowsPackagingTests(unittest.TestCase):
+    def test_compiler_pin_identifies_a_versioned_official_asset_and_checksum(self):
+        tool = json.loads((ROOT / 'packaging/windows/inno-setup.json').read_text())
+        self.assertRegex(tool['version'], r'^\d+\.\d+\.\d+$')
+        tag = 'is-' + tool['version'].replace('.', '_')
+        self.assertEqual(tool['releaseUrl'], f'https://github.com/jrsoftware/issrc/releases/tag/{tag}')
+        self.assertEqual(tool['downloadUrl'],
+                         f'https://github.com/jrsoftware/issrc/releases/download/{tag}/innosetup-{tool["version"]}.exe')
+        self.assertRegex(tool['sha256'], r'^[0-9a-f]{64}$')
+
     def test_installer_preprocessor_guards_are_balanced_and_cover_build_inputs(self):
         source = (ROOT / 'packaging/windows/MealPrepApp.iss').read_text()
         guards, active = set(), []

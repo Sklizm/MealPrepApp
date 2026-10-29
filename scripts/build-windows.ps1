@@ -7,9 +7,10 @@ $RepoRoot = Split-Path $PSScriptRoot -Parent
 $Payload = Join-Path $RepoRoot 'dist/windows'
 $ReleaseDir = Join-Path $RepoRoot 'dist/release'
 $Release = Get-Content (Join-Path $RepoRoot 'release.json') -Raw | ConvertFrom-Json
-if (-not (Test-Path $IsccPath)) { throw 'Install Inno Setup 6.4.3 or supply -IsccPath.' }
-$CompilerVersion = (Get-Item $IsccPath).VersionInfo.ProductVersion
-if ($CompilerVersion -notmatch '^6\.4\.3(?:\D|$)') { throw "Expected Inno Setup 6.4.3; found $CompilerVersion" }
+$Tool = Get-Content (Join-Path $RepoRoot 'packaging/windows/inno-setup.json') -Raw | ConvertFrom-Json
+if (-not (Test-Path $IsccPath)) { throw "Install Inno Setup $($Tool.version) or supply -IsccPath." }
+$CompilerVersion = [regex]::Match((Get-Item $IsccPath).VersionInfo.ProductVersion, '^\d+\.\d+\.\d+').Value
+if ($CompilerVersion -ne $Tool.version) { throw "Expected Inno Setup $($Tool.version); found $CompilerVersion" }
 
 Push-Location $RepoRoot
 try {

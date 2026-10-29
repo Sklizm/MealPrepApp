@@ -54,7 +54,11 @@ consistency, not signing or independent supply-chain attestation.
 Payload validation rejects local settings, private-key/backup files, and symlinks.
 Unix archives retain executable permissions. The Windows pipeline validates its payload
 before compiler input and includes the same metadata inside the installation. The
-compiler is pinned to Inno Setup 6.4.3. Packages remain unsigned and macOS is unnotarized.
+compiler is pinned to Inno Setup 6.4.3 in `packaging/windows/inno-setup.json`.
+CI downloads the versioned official GitHub asset, checks its published SHA-256 before
+execution, installs it to a dedicated tool directory, and passes that compiler path to
+the build. This avoids dependence on Chocolatey's available package versions.
+Packages remain unsigned and macOS is unnotarized.
 
 ## Acceptance
 

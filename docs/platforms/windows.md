@@ -31,7 +31,7 @@ Your shared server database is unaffected.
 ## Build the installer
 
 Requires Git, .NET 10 SDK, Python 3.11+, PowerShell 7, and
-[Inno Setup 6.4.3](https://jrsoftware.org/files/is6-whatsnew.htm).
+[Inno Setup 6.4.3](https://github.com/jrsoftware/issrc/releases/tag/is-6_4_3).
 The build script checks the compiler version. In a Windows terminal:
 
 ```powershell
@@ -43,7 +43,9 @@ pwsh -File scripts/build-windows.ps1
 Output is `dist/release/MealPrepApp-<version>-windows-x64-setup.exe` with a matching
 metadata sidecar. A custom compiler location can be supplied with `-IsccPath`.
 The script publishes a self-contained Windows x64 payload, validates it for private
-files, and compiles the installer. GitHub Actions runs the same script.
+files, and compiles the installer. GitHub Actions runs the same script, using a compiler
+downloaded from the official release and verified against the checksum in
+`packaging/windows/inno-setup.json`; it does not use Chocolatey to install the compiler.
 
 For development without installation:
 

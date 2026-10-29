@@ -9,7 +9,7 @@ These results cover the implementation change, not a published or signed release
 - 28 direct in-process application regressions, including connection precedence, malformed-file recovery, private atomic saves, placeholder detection, password masking, failed test/retry/cancellation, save/continue without network access or restart, and resolution of WPF shared markup types against the compiled Core assembly.
 - Six release tests covering private files, executable permissions, symlinks, Windows payload checks, installer hash/source binding, archive metadata, and version consistency.
 - Four branch-cleanup integration tests against disposable local Git repositories: successful cleanup, unmerged-work rejection, missing-CI rejection, and preservation of a branch moved after audit.
-- Two Windows packaging contract tests: balanced preprocessor guards/build inputs and the installer/application mutex contract. These are source checks, not native installer compilation.
+- Three Windows packaging contract tests: the versioned official compiler asset/checksum pin, balanced preprocessor guards/build inputs, and the installer/application mutex contract. These are source checks, not native installer compilation. The compiler downloader replaces the unavailable Chocolatey 6.4.3 package with the official release asset and published SHA-256.
 - Three existing database-updater orchestration tests and 28 semantic contrast checks.
 - macOS Apple Silicon and Linux x64 self-contained publishing and archive creation using cached runtime packs. This establishes packaging, not native macOS execution.
 - Shell syntax, workflow YAML parsing, local documentation links, and whitespace checks.
