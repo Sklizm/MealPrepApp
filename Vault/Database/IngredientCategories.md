@@ -31,4 +31,4 @@ The app design's Ingrediente sidebar has a "Categorii" entry. Without this table
 ## Used by
 - The "Categorii" sub-view of the Ingrediente tab in the app.
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

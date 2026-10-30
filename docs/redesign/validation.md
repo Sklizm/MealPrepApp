@@ -3,14 +3,12 @@
 The source changes are implemented. Full release acceptance remains pending: isolated SQL execution, standard xUnit/VSTest, WPF compilation and native
 macOS/Hyprland smoke tests remain outstanding for the environmental reasons below.
 
-Codrin reports that the SQL suite and both live migrations passed from normal SSH. The
-agent cannot independently inspect the deployment because Docker access remains blocked.
-The earlier SQL limitations below describe agent execution, not a rejection of that report.
+Manual validation reports indicate that the SQL suite and both live migrations passed from normal SSH. The recorded checks do not independently verify that deployment; local Docker access was unavailable.
 
-Codrin reports that the rebuilt interface looks good. This is user feedback; the full
+Manual validation reports indicate that the rebuilt interface looks good. This is user feedback; the full
 native acceptance checklist remains unverified; SQL success is user-reported.
 
-## Passed on ideapad-server
+## Passed on the Linux build host
 
 - Release compilation of Core, Desktop, tests and direct runner: zero warnings/errors.
   `dotnet build Tests/MealPrepApp.RegressionRunner -c Release --no-restore -m:1 -v quiet`

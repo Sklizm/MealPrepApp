@@ -23,4 +23,4 @@ Fisier: `Database/01_users.sql`
 ## Folosit de
 - [[Recipes-ro]] (FK → UserID)
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

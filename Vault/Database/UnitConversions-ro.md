@@ -28,4 +28,4 @@ Tabelul trateaza intentionat doar conversii simple in aceeasi dimensiune, cum ar
 - `sp_GetRecipeNutrition` converteste cantitatile ingredientelor din reteta in unitatea-baza a nutritiei ingredientului cand exista o conversie directa.
 - Conversiile lipsa sau incompatibile sunt numarate si afisate ca date incomplete, nu estimate fals.
 
-Vezi [[IngredientNutrition-ro]], [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[IngredientNutrition-ro]], [[Schema Overview-ro]]

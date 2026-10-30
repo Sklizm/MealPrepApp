@@ -31,4 +31,4 @@ Junction table: which ingredients (and how much) go into each recipe.
 Deleting a [[Recipes|Recipe]] removes its ingredient rows automatically — they have no
 meaning without their parent recipe. This is the **only** cascade in the schema.
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

@@ -31,4 +31,4 @@ Sidebar-ul Ingrediente din designul aplicatiei are o intrare "Categorii". Fara a
 ## Folosit de
 - Sub-vizualizarea "Categorii" a tab-ului Ingrediente din aplicatie.
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

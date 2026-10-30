@@ -139,7 +139,7 @@
                            Foreground="{StaticResource CreamBrush}"
                            FontSize="{StaticResource FontSizeSmall}"
                            VerticalAlignment="Center" HorizontalAlignment="Left" />
-                <TextBlock Text="Railean Margarita · P-2331"
+                <TextBlock Text="MealPrepApp"
                            Foreground="{StaticResource MossLightBrush}"
                            FontSize="{StaticResource FontSizeSmall}"
                            VerticalAlignment="Center" HorizontalAlignment="Right" />

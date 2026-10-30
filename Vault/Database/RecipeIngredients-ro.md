@@ -31,4 +31,4 @@ Tabel de jonctiune: care ingrediente (si cat de mult) intra in fiecare reteta.
 Stergerea unei [[Recipes-ro|Retete]] elimina automat randurile sale de ingrediente — nu au
 sens fara reteta parinte. Aceasta este **singura** cascada din schema.
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

@@ -36,4 +36,4 @@ Ce are fiecare utilizator in stoc, defalcat pe ingredient + unitate.
 ## Folosit de
 - `sp_GetShoppingList` — LEFT JOIN pentru a scadea cantitatea din stoc din cererea planificata.
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

@@ -26,7 +26,7 @@ Un rand per masa planificata: o reteta atribuita unei date + slot de masa pentru
 - `IX_MealPlanEntries_CategoryID` — index de coloana FK
 
 ## De ce CategoryID = slot de masa
-Refolosirea tabelului existent [[Categories-ro]] pentru sloturile de masa evita o taxonomie paralela. DB-ul accepta oricare dintre cele 6 categorii; view-ul saptamanal al UI-ului alege sa randeze doar 4 coloane. Vezi intrarea din [[Decisions Log-ro]] "Meal-slot is a FK to Categories".
+Refolosirea tabelului existent [[Categories-ro]] pentru sloturile de masa evita o taxonomie paralela. DB-ul accepta oricare dintre cele 6 categorii; view-ul saptamanal al UI-ului alege sa randeze doar 4 coloane. Vezi intrarea din [[Schema Overview-ro]] "Meal-slot is a FK to Categories".
 
 ## De ce RecipeID face cascada dar UserID nu
 O intrare de plan de masa nu are sens fara reteta sa — randurile orfane ar fi doar zgomot pe calendar. Stergerea unui utilizator cu mese planificate este aceeasi operatie explicita ca stergerea unui utilizator cu retete (consistent cu restul schemei).
@@ -40,4 +40,4 @@ O intrare de plan de masa nu are sens fara reteta sa — randurile orfane ar fi 
 
 Procedurile de citire fac join cu Title-ul retetei si Name-ul categoriei pentru consum direct in UI.
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

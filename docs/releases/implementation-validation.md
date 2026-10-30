@@ -1,6 +1,6 @@
 # Installer and repository consolidation validation
 
-Local verification on 2026-10-29, host `ideapad-server` (Linux), .NET SDK 10.0.113.
+Local verification on 2026-10-29, Linux build host, .NET SDK 10.0.113.
 These results cover the implementation change, not a published or signed release.
 
 ## Passed locally

@@ -1,9 +1,9 @@
-# Historical project notes
+# Database and design references
 
-This directory preserves dated project decisions, sessions, and design snapshots.
-Some notes describe old branches, Windows-only clients, or superseded setup commands.
-They are historical context rather than current operational instructions.
+This directory contains archived schema notes and interface design references. Some documents describe earlier versions; use the [app README](../README.md), [platform guides](../docs/platforms/), and [contributor guide](../CONTRIBUTING.md) for current instructions.
 
-Use the [repository README](../README.md), [platform guides](../docs/platforms/), and
-[contributor guide](../CONTRIBUTING.md) for the maintained application on `main`.
-The [Romanian academic report](../Raport/README.md) remains separate.
+- [Database schema](Database/Schema%20Overview.md) and [Romanian reference](Database/Schema%20Overview-ro.md).
+- [Design reference](Design/App%20Design%20Spec.md) and [Romanian reference](Design/App%20Design%20Spec-ro.md).
+- [Current architecture and project layout](../CONTRIBUTING.md#project-layout).
+
+Database scripts and stored procedures under `Database/` are the implementation source of truth. These notes do not replace migration tests or release acceptance.

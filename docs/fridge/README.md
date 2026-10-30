@@ -1,4 +1,10 @@
-# Illustrated Frigider and animation completion
+# Pantry browsing
+
+Open **Frigider** to browse stock by illustrated category. Select a food to see its ingredients, use **Toate** to return to grouped stock, or search within the selected category. Add ingredients, edit quantities, and confirm removals from the stock list. **Ce pot găti?** opens recipes matched against your pantry.
+
+Empty categories remain visible with a zero-stock label. Search and sorting work locally. On smaller windows, the shelves appear above a scrollable stock list; wider windows show them side by side.
+
+## Implementation reference
 
 Implemented on 2026-10-30. Avalonia uses an illustrated fridge with category buttons,
 stock counts and a virtualized ingredient list. Wide layouts keep stock beside the
@@ -47,11 +53,10 @@ missing `Microsoft.WindowsDesktop.App.Ref` package. Disposable SQL tests are blo
 Docker socket permissions. No SQL/schema changes or live database writes were made.
 Compatibility CI and native hover/DPI testing on Windows, macOS and Linux remain separate
 acceptance steps. The headless matrix does not establish native scaling or hover acceptance.
-Rebuild the Mac app after pulling this commit before testing the changes.
 
 ## CI clock regression repair (2026-10-30)
 
-Codrin supplied Compatibility logs for `908fe2a`: the reset assertion in
+Compatibility logs were supplied for `908fe2a`: the reset assertion in
 `NavigationActualClockCompletionNeverExposesTheOldPose` failed on all three desktop
 runners (49/50 passed on each). The same failure was reproduced locally by switching
 the direct runner from a shared application to Avalonia's per-test headless sessions,

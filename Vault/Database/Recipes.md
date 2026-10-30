@@ -39,4 +39,4 @@ File: `Database/05_recipes.sql`
 - [[RecipeIngredients]] (FK with `ON DELETE CASCADE`)
 - [[RecipePhotos]] (optional 1:1 photo, FK with `ON DELETE CASCADE`)
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

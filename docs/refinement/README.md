@@ -1,12 +1,16 @@
-# Visual and interaction refinement
+# Appearance and navigation
 
-Local implementation and evidence recorded on 2026-10-29, on `ideapad-server` (Linux).
-Avalonia remains the primary Windows, macOS and Linux client. WPF is retained for grading.
+Use Settings to choose System, Light, or Dark appearance and the reduced-motion preference. The navigation rail provides direct access to the seven app sections, with profile and Settings below. Romanian tooltips identify each icon; Tab, arrow keys, and Enter/Space support keyboard navigation.
+
+The following dated reference records theme, interaction, and validation work. For current installation instructions, use the [platform guides](../platforms/).
+
+Local implementation and evidence recorded on 2026-10-29, on Linux.
+Avalonia remains the primary Windows, macOS and Linux client. WPF remains available as a legacy Windows client.
 No SQL schema, stored-procedure contract, release workflow or publication policy changed.
 
 ![Home with the sage dark palette](screenshots/home-Dark-1280-100.png)
 
-The desktop uses the requested beige/brown and brighter sage semantic palettes, including
+The desktop uses beige/brown and brighter sage semantic palettes, including
 Fluent input, dropdown, calendar, menu, tooltip and selection resources. Primary,
 secondary and destructive buttons retain their roles on hover and press. Placeholder
 text uses full opacity; error-dialog headers use `OnDanger`. Pages share 32-DIP outer
@@ -114,3 +118,5 @@ Run standard `dotnet test` and the remaining README checks in an unrestricted en
 After pushing `main`, require a green **Compatibility** run for that exact commit, including
 Windows Desktop tests, WPF compilation, installer execution, all platform packages and SQL
 checks. No Windows-only result is claimed here. Release publication stays manual.
+
+Recipe-detail screenshots and their recorded hashes were refreshed with a neutral demo account. Other dated validation results retain their original scope.

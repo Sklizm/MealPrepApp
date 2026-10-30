@@ -35,4 +35,4 @@ Bytes-ii imaginii traiesc in SQL Server, astfel incat poza calatoreste impreuna 
 - Imaginile sunt re-encodeate JPEG quality 85 inainte de `sp_SetRecipePhoto`.
 - Cardurile de reteta incarca bytes-ii pozei si ii transforma prin `ByteArrayToImageSourceConverter`.
 
-Vezi [[Schema Overview-ro]], [[Recipes-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]], [[Recipes-ro]], [[Schema Overview-ro]]

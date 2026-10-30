@@ -31,13 +31,13 @@ unit is stored per-recipe in [[RecipeIngredients]] so a user can override.
 ## Seed
 `Database/seeds/ingredients_seed.sql` ships 44 common items (pantry / oils / dairy / produce / proteins / herbs). `MERGE` keyed on `Name`, with `DefaultUnitID` resolved via `LEFT JOIN dbo.Units ON Abbreviation = ...`.
 
-Names are in Romanian without diacritics (`Faina`, `Branza`, `Smantana`, `Piept de pui`, etc.) to match the convention used in [[IngredientCategories]]. An English build of the app should add a localization layer rather than a parallel English seed — see the 2026-05-15 entry in [[Decisions Log]].
+Names are in Romanian without diacritics (`Faina`, `Branza`, `Smantana`, `Piept de pui`, etc.) to match the convention used in [[IngredientCategories]]. An English build of the app should add a localization layer rather than a parallel English seed — see the 2026-05-15 entry in [[Schema Overview]].
 
 ## Procs
-- `sp_AddIngredient(@Name, @DefaultUnitID = NULL, @IngredientCategoryID = NULL)`, `sp_GetIngredients`, `sp_SearchIngredients` — basic CRUD-ish surface. The category parameter on `sp_AddIngredient` was added 2026-05-18 (Phase F follow-up); see [[Decisions Log]].
+- `sp_AddIngredient(@Name, @DefaultUnitID = NULL, @IngredientCategoryID = NULL)`, `sp_GetIngredients`, `sp_SearchIngredients` — basic CRUD-ish surface. The category parameter on `sp_AddIngredient` was added 2026-05-18 (Phase F follow-up); see [[Schema Overview]].
 - `sp_GetIngredientUsage` (Phase 2.5) — `RecipeCount` for one ingredient. App calls this before a delete attempt; if > 0, the FK would block the delete anyway, so the app shows a useful message instead.
 
 ## Used by
 - [[RecipeIngredients]] (IngredientID, required)
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

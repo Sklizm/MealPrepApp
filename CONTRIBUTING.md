@@ -1,50 +1,86 @@
-# Contributing
+# Contributing to MealPrepApp
 
-## One maintained branch
+MealPrepApp uses .NET 10, Avalonia 11.3, and SQL Server 2022. The distributed application is `App/MealPrepApp.Desktop` on Windows x64, macOS Apple Silicon, and Linux x64.
 
-`main` contains application code, database scripts, reports, and instructions for all
-platforms. Work directly on `main`; pull before editing and avoid rewriting shared history.
-Save local work before switching an older checkout from a feature branch.
+## Getting started
 
-Existing platform folders keep their names to preserve project references and grading
-commands. Avalonia is the distributed client on Windows, macOS, and Linux. WPF remains
-in `App/MealPrepApp` for grading; historical WinForms and Vault design snapshots are
-reference material, not alternative supported builds.
+Install Git, the .NET 10 SDK, and Python 3.11+. See the [platform guides](docs/platforms/) for native dependencies and packaging prerequisites. Windows installer builds also require PowerShell 7 and Inno Setup 6.4.3.
+
+```bash
+git clone --branch main https://github.com/Sklizm/MealPrepApp.git
+cd MealPrepApp
+dotnet run --project App/MealPrepApp.Desktop
+```
+
+Use the app's connection setup or copy the relevant `appsettings.Local.template.json` to a local override. Never commit deployment credentials. Database initialization and migrations are documented in the [database guide](docs/database.md).
+
+## Project layout
+
+| Directory | Purpose |
+|---|---|
+| `App/MealPrepApp.Core/` | UI-independent models, ViewModels, services, and Dapper repositories |
+| `App/MealPrepApp.Desktop/` | Avalonia views, vector controls, themes, and desktop integration |
+| `App/MealPrepApp/` | Legacy Windows WPF client sharing Core logic |
+| `App/legacy-winforms/` | Historical Windows interface reference |
+| `Database/` | SQL schema, stored procedures, seeds, and additive migrations |
+| `Tests/` | Core/UI regressions, disposable SQL tests, and script checks |
+| `scripts/` | Builds, packaging, installers, and database maintenance |
+| `packaging/` | Platform installer definitions |
+| `docs/` | Platform guides, release procedures, and technical references |
+| `nix/` | NixOS development and package bootstrap |
+| `Vault/` | Archived database and design references |
+
+## Development rules
+
+- Work on `main`, the maintained branch for all platforms. Pull before editing and preserve shared history.
+- Keep Core free of Avalonia and WPF dependencies. Retain legacy client compatibility and its Windows CI build.
+- Keep data access behind parameterized stored procedures. Database mutations must retain UTC timestamps, auditing, ownership checks, and concurrency handling.
+- Keep connection settings separate from appearance preferences. Credentials, diagnostics containing secrets, generated packages, and backups must stay out of Git.
+- Preserve Romanian UI labels, keyboard access, theme selection, and reduced-motion support. Distinguish loading, empty, error, and retry states.
 
 ## Checks
 
-Run the [README verification commands](README.md#verification). Build the platform you
-changed using its [platform guide](docs/platforms/). Windows CI must also compile WPF.
-Connection setup and shared logic have database-free regressions; run SQL tests against
-the disposable container, never by resetting the live database.
+Run checks appropriate to the change:
 
-Keep Core independent of Avalonia and WPF. C# database access calls stored procedures;
-mutations retain UTC timestamps and auditing. Keep deployment credentials out of Git,
-packages, screenshots, test logs, and diagnostic messages.
+```bash
+dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
+python3 Tests/Scripts/test_database_update.py
+python3 Tests/Scripts/test_release_package.py
+python3 Tests/Scripts/test_windows_packaging.py
+python3 Tests/Scripts/check_repository_paths.py
+python3 Tests/Scripts/test_branch_consolidation.py
+python3 Tests/Scripts/check_redesign_contrast.py
+bash scripts/test-database.sh
+```
 
-## Consolidating older branches
+The SQL suite uses a disposable container. Never reset a deployed database to run tests.
 
-After the implementation is committed locally, fast-forward local `main` to that commit
-only if `main` is its ancestor. Fetch the remote before pushing; merge and validate any
-new remote work instead of force-pushing. Push `main`, then wait for its Compatibility run
-to pass. The cleanup helper requires GitHub CLI authentication:
+If VSTest cannot open its local TCP listener, the direct runner invokes the same test methods in process, with an isolated Avalonia dispatcher for each UI test:
+
+```bash
+dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release
+```
+
+This does not replace standard xUnit discovery in CI. To run one matching test, pass `--filter=<name>` after `--`. For builds that cannot create MSBuild worker sockets, use `-m:1 -p:UseSharedCompilation=false`.
+
+Generate database-free screenshot fixtures with the runner's `--refinement-screenshots` or `--alignment-screenshots` option. See [UI evidence](docs/README.md) for the output locations. Use neutral sample names and synthetic data in screenshots and documentation.
+
+Compatibility CI runs desktop tests on all three platforms, compiles WPF on Windows, checks packaging and Windows installation, and runs SQL and presentation checks. Native keyboard, hover, file picker, and display-scaling acceptance remains separate from headless rendering and cross-publishing.
+
+## Releases
+
+Builds run automatically; release publication is manual. Follow the [release procedure](docs/releases/README.md) and record native acceptance for the exact release commit. Do not replace published tags or assets.
+
+## Branch maintenance
+
+The optional cleanup helper requires a clean `main`, GitHub CLI authentication, matching local/remote commits, successful Compatibility CI for that exact commit, and fully merged branches:
 
 ```bash
 bash scripts/consolidate-main.sh
 ```
 
-The helper requires a clean checkout on `main`, freshly fetches remote heads, verifies
-local and remote `main` agree, checks successful CI for that exact commit, and rejects
-any unmerged remote or local branch. Only after these checks does it set GitHub's default
-branch to `main` and delete merged branches. Remote deletion uses expected-commit leases
-so a branch that moves after the audit is preserved. If remote access or CI is unavailable,
-leave the branches intact and retry after resolving it. Tags and commit history are retained.
+It fetches remote heads, rejects unmerged work, sets the default branch, and deletes only merged branches using expected-commit leases. Leave branches intact if remote access or CI cannot be verified.
 
-## Releases and historical material
+## Documentation
 
-See [release preparation](docs/releases/README.md). Builds run automatically; release
-publication remains manual. Do not claim native tests or signing passed from a source build.
-
-`Raport/` contains the Romanian university report. `Vault/` and the earlier redesign and
-compatibility notes preserve dated decisions and evidence. Use the README and platform
-guides for current setup instructions.
+Write for general users and contributors. Keep personal identities, device inventories, private deployment details, academic framing, and conversational handoff logs out of public documentation. Preserve the distinction between recorded reports, independently verified results, and outstanding acceptance checks.

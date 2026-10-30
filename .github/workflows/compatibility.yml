@@ -27,7 +27,7 @@ jobs:
           name: tests-${{ matrix.os }}
           path: TestResults/
   wpf:
-    name: WPF grading client
+    name: Legacy WPF client
     runs-on: windows-latest
     timeout-minutes: 15
     steps:

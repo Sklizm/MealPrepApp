@@ -36,12 +36,12 @@ Validation evidence:
 - XML parsing for XAML/AXAML/project files; JSON syntax for SDK settings.
 - git diff --check.
 - Source inspection of dialog callers and stored-procedure interfaces.
-- Verified .NET SDK 10.0.113 and runtime 10.0.13 on ideapad-server.
+- Verified .NET SDK 10.0.113 and runtime 10.0.13 on the Linux build host.
 - Parsed 139 C# files with the installed Roslyn compiler libraries: zero syntax errors.
   That syntax check was followed by the Release compilation and direct checks below.
 - Release compilation of Core, Desktop (including compiled XAML), test project and direct
   runner passes with Avalonia 11.3.18 and PKCS 9.0.21.
-- Codrin reports the earlier standard dotnet test run succeeded after the DataGrid version fix
+- Manual validation reports indicate the earlier standard dotnet test run succeeded after the DataGrid version fix
   (before the populated-template regression was added).
   The command included NuGetAuditMode=all; no full output was supplied, so a warning-free
   security audit is not independently confirmed.
@@ -68,8 +68,8 @@ Not yet verified:
   a normal network-enabled shell. Offline restore used NuGetAudit=false because network
   access is denied; this is not a clean security audit. Nix remains unavailable.
 - Standard dotnet test remains blocked inside the sandbox by local TCP restrictions,
-  but Codrin confirms it passed from normal SSH after the dependency correction.
-- Docker socket access remains denied to the agent. Codrin ran scripts/test-database.sh
+  but A manual validation report confirms it passed from normal SSH after the dependency correction.
+- Docker socket access remains denied to the agent. A manual validation run executed scripts/test-database.sh
   from normal SSH and supplied the successful log (also read from /tmp/mealprep-db-tests.log).
   Fresh schema creation, a second migration run, and the scripted SQL assertions passed.
   Production database deployment remains outstanding.
@@ -77,13 +77,13 @@ Not yet verified:
 - Nix deps.json is deliberately an empty bootstrap. Generate real dependency metadata and
   flake.lock with bash scripts/update-nix-deps.sh on a networked Nix host before claiming
   reproducible builds. Both generated artifacts must be reviewed and committed.
-- Codrin confirms the Mac app opens and reaches registration. Registration currently
-  fails with SQL error 258; Mac nc to configured 192.168.100.109:1433 also times out.
+- A manual validation report confirms the Mac app opens and reaches registration. Registration currently
+  fails with SQL error 258; Mac nc to configured <database-host>:1433 also times out.
   This confirms TCP reachability is blocked before database authentication. Current
   server addresses and published database port are awaiting normal-shell verification.
 - Full native Mac and NixOS/Hyprland smoke tests remain required. No virtual X server
   is installed on the headless build host for a real Linux GUI launch.
-- The Mac tab crash is now confirmed by Codrin’s captured stack trace and reproduced
+- The Mac tab crash is now confirmed by a captured stack trace and reproduced
   with populated recipe/ingredient templates on the server. The reproduced failure is
   fixed; native retesting of the rebuilt bundle remains required.
 - Existing stored photos fall back to full bytes in the paged list until reuploaded,
@@ -112,7 +112,7 @@ Dependency update validation:
   was avoided.
 - Offline restore from the newly cached packages and Release builds now pass.
   Nine direct in-process regression methods pass on the corrected graph.
-  Standard VSTest execution also passed from normal SSH, as reported by Codrin.
+  Standard VSTest execution also passed from normal SSH, according to a manual validation report.
 - The successful user-run command enabled NuGetAuditMode=all. Confirm no remaining
   vulnerability warnings in its output; desktop D-Bus smoke tests remain outstanding.
 
@@ -151,7 +151,7 @@ Packaging permission repair:
   removed from Desktop bin/obj; source settings were preserved.
 - Desktop CopyToOutputDirectory for appsettings.Local.json is now Never, matching publish
   exclusion. Build scripts accept extra dotnet publish arguments for offline validation.
-- Linux packaging then completed successfully with --no-restore. Codrin subsequently
+- Linux packaging then completed successfully with --no-restore. A subsequent manual check
   completed macOS packaging from normal SSH; the resulting bundle passed artifact checks.
 - Transfer archive: dist/MealPrepApp-macos-arm64.tar.gz (contains the .app bundle, preserves
   executable permissions, excludes local settings). Native launch has not been tested.

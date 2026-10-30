@@ -36,4 +36,4 @@ What each user currently has in stock, broken down by ingredient + unit.
 ## Used by
 - `sp_GetShoppingList` — LEFT JOIN to subtract on-hand qty from planned demand.
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

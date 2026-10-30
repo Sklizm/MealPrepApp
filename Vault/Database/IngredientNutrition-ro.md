@@ -37,4 +37,4 @@ Nutritia nu este stocata ca total calculat pe `Recipes`, deoarece acel total s-a
 - `UnitConversions` ofera doar conversii directe compatibile; randurile lipsa sau incompatibile sunt numarate si afisate ca incomplete.
 - Rapoartele viitoare zilnice/saptamanale de nutritie ar trebui sa porneasca de la acest model cu sursa la nivel de ingredient.
 
-Vezi [[UnitConversions-ro]], [[Ingredients-ro]], [[Recipes-ro]], [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[UnitConversions-ro]], [[Ingredients-ro]], [[Recipes-ro]], [[Schema Overview-ro]]

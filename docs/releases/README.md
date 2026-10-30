@@ -1,4 +1,6 @@
-# Releases
+# Release management
+
+For installation, use the [platform guides](../platforms/) and published GitHub release assets. This guide describes how to prepare, validate, and manually publish a release.
 
 `release.json` is the release metadata source. `Version.props` supplies assembly and
 numeric installer versions; the macOS plist supplies numeric bundle defaults. Regression

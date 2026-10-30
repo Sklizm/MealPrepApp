@@ -68,7 +68,7 @@ Tipul TVP `dbo.IntList` este folosit de `sp_FindRecipesByIngredients` pentru lis
 - Stergerea unui [[Ingredients-ro|ingredient]] este blocata daca retete, frigider sau nutritie depind de el.
 - Stergerea unei [[Units-ro|unitati]] este blocata daca exista dependente in ingrediente de reteta, frigider, conversii sau nutritie.
 
-Vezi [[Decisions Log-ro]] pentru motivatia cascade/restrict.
+Vezi [[Schema Overview-ro]] pentru motivatia cascade/restrict.
 
 ## Ordinea de build
 Ruleaza `Database/run_all.sql` end-to-end (idempotent). Ordinea manuala:

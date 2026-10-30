@@ -50,5 +50,5 @@ remain under `~/Library/Application Support/MealPrepApp/`; remove that directory
 separately only if you want to reset local settings. The database remains on the server.
 
 If sign-in fails, use **Conexiune la baza de date** on the login screen and check
-Tailscale connectivity, server address/port, certificate settings, and credentials.
+network or VPN connectivity, server address/port, certificate settings, and credentials.
 The app uses native window decorations, menus, and file pickers.

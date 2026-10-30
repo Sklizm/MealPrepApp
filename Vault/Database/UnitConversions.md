@@ -28,4 +28,4 @@ The table deliberately handles only simple same-dimension conversions first, suc
 - `sp_GetRecipeNutrition` converts recipe ingredient quantities into the ingredient nutrition basis unit when a direct conversion exists.
 - Missing or incompatible conversions are counted and surfaced as incomplete instead of being estimated.
 
-See [[IngredientNutrition]], [[Schema Overview]], [[Decisions Log]]
+See [[IngredientNutrition]], [[Schema Overview]]

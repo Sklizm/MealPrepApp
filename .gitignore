@@ -11,13 +11,11 @@ dist/
 # Local connection string — contains the mealprep_app password, never commit
 appsettings.Local.json
 
-# Source snapshot zips used to ship to the VM — redundant with tracked source
+# Local packaging artifacts
 App/*.zip
 App/publish/
 
-# Report generator: Python venv + PDF validation artifact (the .docx stays tracked)
-Raport/.venv/
-Raport/*.pdf
+# Python cache
 __pycache__/
 
 Vault/.obsidian/workspace*.json

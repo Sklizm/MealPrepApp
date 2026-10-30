@@ -4,7 +4,7 @@ GO
 -- Common ingredient nutrition seed.
 -- Values are practical demo defaults, not medical/dietitian-grade data.
 -- Preserve manually edited nutrition rows: this seed inserts only missing rows.
--- If Codrin corrects a value in the app, re-running run_all.sql will not overwrite it.
+-- If a user corrects a value in the app, re-running run_all.sql will not overwrite it.
 
 ;WITH source AS (
     SELECT

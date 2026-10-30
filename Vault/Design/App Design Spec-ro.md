@@ -4,7 +4,7 @@ tags: [design, spec, app]
 
 # Specificatie de Design a Aplicatiei — Planificator de Retete si Mese
 
-Scris pe 2026-05-11, dupa sesiunea de revizuire a designului cu Codrin. Acesta este documentul din care Margarita extrage informatii pentru urmatoarea revizie a machetei in Canva. Deciziile sursa sunt in [[Decisions Log]]; acest document captureaza doar concluziile de design.
+Referinta de design din 2026-05-11. Pentru functionalitatile curente, consultati documentatia aplicatiei.
 
 Partea de baza de date suporta deja tot ce este descris aici — vezi [[Database/Schema Overview]] pentru lista completa de proceduri pe fiecare zona.
 
@@ -149,10 +149,10 @@ Referinta rapida a procedurilor pe care aplicatia le poate apela deja. Detalii c
 
 ## Ce NU acopera aceasta specificatie
 
-- Aspecte vizuale specifice (dimensiuni de tipografie, padding-uri exacte in pixeli, set de iconuri) — Margarita le detine.
-- Structura codului WPF (ViewModels, Repositories, container DI) — in afara scopului documentului de design; acela este teritoriul de implementare al lui Codrin + Margarita.
+- Aspecte vizuale specifice (dimensiuni de tipografie, padding-uri exacte in pixeli, set de iconuri) — consultati resursele temei desktop.
+- Structura codului WPF (ViewModels, Repositories, container DI) — in afara scopului documentului de design; implementarea este documentata in codul aplicatiei.
 - O foaie de parcurs dincolo de v1.
 
 ## Urmatorul pas
 
-Cand Margarita livreaza macheta revizuita, bifeaza elementele din aceasta lista si treci la conectarea WPF.
+Dupa finalizarea machetei revizuite, bifeaza elementele din aceasta lista si treci la conectarea WPF.

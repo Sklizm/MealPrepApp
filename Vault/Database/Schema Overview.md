@@ -76,7 +76,7 @@ The TVP type `dbo.IntList` is used by `sp_FindRecipesByIngredients` to accept an
 - Delete an [[Ingredients|Ingredient]] -> blocked if recipes, pantry or nutrition depend on it.
 - Delete a [[Units|Unit]] -> blocked if recipe ingredients, pantry, conversions or nutrition basis rows depend on it.
 
-See [[Decisions Log]] for the rationale behind each cascade/restrict choice.
+See [[Schema Overview]] for the rationale behind each cascade/restrict choice.
 
 ## Build order
 Run `Database/run_all.sql` end-to-end (idempotent). Manual order if needed:

@@ -4,7 +4,7 @@ tags: [design, spec, app]
 
 # App Design Spec — Planificator de Retete si Mese
 
-Written 2026-05-11, after the design review session with Codrin. This is the spec Margarita pulls from for the next Canva mockup revision. Source decisions live in [[Decisions Log]]; this doc captures the design-side conclusions only.
+Design reference recorded on 2026-05-11. See the current application documentation for supported behavior.
 
 The DB side already supports everything described here — see [[Database/Schema Overview]] for the full proc list per area.
 
@@ -94,7 +94,7 @@ Already settled earlier: full planner scope (planner + pantry + shopping list); 
     - Planificare calendar empty: just renders the empty grid (date numbers visible, no chips)
 22. **Loading state** — shimmer or spinner per list while procs are running. Async-first ViewModels means a click won't freeze the UI.
 
-## Margarita's punch list — fixes on the existing mockup
+## Mockup review checklist — fixes on the existing mockup
 
 - **p1**: 3 tiles — make sure they all look interactive (uniform border on focus, not just the green-filled one). Optional: add a 4th "Favorite (N)" tile.
 - **p1**: "Retete Recente" cards are empty boxes — sketch the actual card content (title, category badge, time).
@@ -149,10 +149,10 @@ Quick reference of procs the app can already call. Full details in [[Database/Sc
 
 ## What this spec does NOT cover
 
-- Visual specifics (typography sizes, exact pixel paddings, icon set) — Margarita owns these.
-- WPF code structure (ViewModels, Repositories, DI container) — out of scope for the design doc; that's Codrin + Margarita's implementation territory.
+- Visual specifics (typography sizes, exact pixel paddings, icon set) — see the desktop theme resources.
+- WPF code structure (ViewModels, Repositories, DI container) — out of scope for the design doc; implementation is documented in the application source.
 - A roadmap past v1.
 
 ## Next
 
-When Margarita ships the revised mockup, mark items off this list and move on to WPF wiring.
+When the revised mockup is available, mark items off this list and move on to WPF wiring.

@@ -741,8 +741,8 @@
   },
   {
     "File": "recipe-Dark-1280-100.png",
-    "Bytes": 93246,
-    "SHA256": "d4e95ab81953f865692d79c3879d126f65b36f3b8a8d2b96475968b0f8c9ef41"
+    "Bytes": 93125,
+    "SHA256": "c90541c031facb36d0c341f9448dd175cd0574c1c3266284811ffa55e1a512e8"
   },
   {
     "File": "recipe-Dark-1280-150.png",
@@ -786,8 +786,8 @@
   },
   {
     "File": "recipe-Light-1280-100.png",
-    "Bytes": 93589,
-    "SHA256": "1d809a2b17a4eda54b6392eab900074078ee833e82221035e0e3ee7db26ad8a9"
+    "Bytes": 93391,
+    "SHA256": "1474b3a7f4163df6cb7261daa4978eb6e6bfe9f0ad2dcbb75d29de5889d5903c"
   },
   {
     "File": "recipe-Light-1280-150.png",

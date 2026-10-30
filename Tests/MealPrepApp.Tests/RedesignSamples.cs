@@ -25,21 +25,21 @@ public static class RedesignSamples
         configure?.Invoke(services);
         return services.BuildServiceProvider();
     }
-    public static void Render(string output, bool alignmentOnly = false)
+    public static void Render(string output, bool alignmentOnly = false, bool recipeOnly = false)
     {
         Directory.CreateDirectory(output);
         Application.Current!.Resources["MotionDuration"]=TimeSpan.Zero; // deterministic settled-state captures
         Application.Current.Resources["MotionEnabled"]=false;
         using var services=Services(configure: s => s.AddSingleton<MealPrepApp.Data.Repositories.ShoppingListRepository,SampleShopping>()); using var scope=services.CreateScope();
         var provider=scope.ServiceProvider;
-        provider.GetRequiredService<ISessionService>().SignIn(1,"Codrin");
+        provider.GetRequiredService<ISessionService>().SignIn(1,"Demo");
         var home=provider.GetRequiredService<AcasaViewModel>();
         home.HasDrafts=true;
         foreach(var title in new[]{"Paste cu roșii și busuioc","Somon la cuptor","Salată de năut"}) home.RecentRecipes.Add(new RecentRecipe { RecipeID=1,Title=title, CategoryName="Prânz",Servings=2 });
         home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Terci cu mere și scorțișoară",CategoryName="Mic dejun",Servings=2});
         home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Paste cu roșii și busuioc",CategoryName="Prânz",Servings=2});
         var detail=provider.GetRequiredService<ReteteDetailViewModel>();
-        detail.Recipe=new RecipeFull { RecipeID=1,UserID=1,Title="Paste cu roșii și busuioc",Description="O masă simplă, cu arome proaspete. Perfectă pentru serile din timpul săptămânii.", CategoryName="Prânz",AuthorUsername="Codrin",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20,Instructions="Fierbe pastele în apă cu sare, conform instrucțiunilor de pe ambalaj.\n\nÎncălzește uleiul și adaugă roșiile. Lasă sosul să fiarbă ușor, apoi amestecă pastele cu sosul și busuiocul.",Ingredients=new() { new(){IngredientName="Paste",Quantity=200,UnitAbbreviation="g"},new(){IngredientName="Roșii",Quantity=400,UnitAbbreviation="g"},new(){IngredientName="Ulei de măsline",Quantity=20,UnitAbbreviation="ml"},new(){IngredientName="Busuioc proaspăt",Quantity=5,UnitAbbreviation="g"} } };
+        detail.Recipe=new RecipeFull { RecipeID=1,UserID=1,Title="Paste cu roșii și busuioc",Description="O masă simplă, cu arome proaspete. Perfectă pentru serile din timpul săptămânii.", CategoryName="Prânz",AuthorUsername="Demo",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20,Instructions="Fierbe pastele în apă cu sare, conform instrucțiunilor de pe ambalaj.\n\nÎncălzește uleiul și adaugă roșiile. Lasă sosul să fiarbă ușor, apoi amestecă pastele cu sosul și busuiocul.",Ingredients=new() { new(){IngredientName="Paste",Quantity=200,UnitAbbreviation="g"},new(){IngredientName="Roșii",Quantity=400,UnitAbbreviation="g"},new(){IngredientName="Ulei de măsline",Quantity=20,UnitAbbreviation="ml"},new(){IngredientName="Busuioc proaspăt",Quantity=5,UnitAbbreviation="g"} } };
         detail.Nutrition=new RecipeNutritionSummary {TotalCalories=980,TotalProteinGrams=26,TotalCarbsGrams=148,TotalFatGrams=28};
         var week=provider.GetRequiredService<PlanificareWeeklyViewModel>();
         foreach(var label in new[]{"Mic dejun","Prânz","Cină","Gustare"}) week.SlotHeaders.Add(label);
@@ -82,7 +82,7 @@ public static class RedesignSamples
                 ("shopping",new MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView{DataContext=shopping}),
                 ("ingredients",new MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView{DataContext=ingredients}),
                 ("reports",new MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView{DataContext=reportRoot}),
-                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
+                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => recipeOnly ? sample.Name=="recipe" : !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
             foreach(var size in new[]{new PixelSize(860,600),new PixelSize(1280,800),new PixelSize(1440,900)})
             {
                 foreach(var scale in new[]{1d,1.5d,2d})
@@ -100,7 +100,7 @@ public static class RedesignSamples
                 }
             }
         }
-        if (!alignmentOnly) { RenderIconFrames(output); RenderAuxiliary(provider,output); }
+        if (!alignmentOnly && !recipeOnly) { RenderIconFrames(output); RenderAuxiliary(provider,output); }
         var manifest=Directory.GetFiles(output,"*.png").Order().Select(path => new {File=Path.GetFileName(path),Bytes=new FileInfo(path).Length,SHA256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()});
         File.WriteAllText(Path.Combine(output,"manifest.json"),System.Text.Json.JsonSerializer.Serialize(manifest,new System.Text.Json.JsonSerializerOptions {WriteIndented=true}));
     }

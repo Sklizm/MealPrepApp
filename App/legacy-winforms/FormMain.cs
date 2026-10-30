@@ -162,7 +162,7 @@ namespace MealPrepApp
             };
             var authorLbl = new Label
             {
-                Text = "Railean Margarita · P-2331",
+                Text = "MealPrepApp",
                 Font = AppColors.FontSmall,
                 ForeColor = AppColors.Cream,
                 AutoSize = false,

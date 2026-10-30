@@ -1,5 +1,5 @@
 -- Master script: runs the entire schema build in dependency order.
--- Idempotent: safe to re-run. Execute from /home/codrin/Practica/Database/.
+-- Idempotent: safe to re-run. Execute from the Database/ directory.
 --
 -- Run with sqlcmd, supplying the app login password:
 --   sqlcmd -S ... -U sa -P ... -C -b -v AppPassword="<your_pwd>" -i run_all.sql

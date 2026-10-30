@@ -35,4 +35,4 @@ Image bytes live in SQL Server so they travel with the database across machines 
 - Images are re-encoded to JPEG quality 85 before calling `sp_SetRecipePhoto`.
 - Recipe cards load photo bytes and convert them with `ByteArrayToImageSourceConverter`.
 
-See [[Schema Overview]], [[Recipes]], [[Decisions Log]]
+See [[Schema Overview]], [[Recipes]], [[Schema Overview]]

@@ -58,4 +58,4 @@ The shared database is unaffected.
 
 If the app fails before showing a window, verify native libraries and the X11/XWayland
 environment. If it opens but sign-in fails, use **Conexiune la baza de date** at login
-and check Tailscale connectivity, server address/port, certificate settings, and credentials.
+and check network or VPN connectivity, server address/port, certificate settings, and credentials.

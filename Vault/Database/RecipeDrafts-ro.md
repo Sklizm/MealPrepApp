@@ -40,4 +40,4 @@ Drafturile sunt intentionat mai permisive decat [[Recipes-ro]]: majoritatea colo
 - Randurile draft fac cascada cand utilizatorul este sters, deoarece nu au sens fara acel utilizator.
 - Drafturile nu fac cascada de la retete, pentru ca inca nu sunt retete finale.
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

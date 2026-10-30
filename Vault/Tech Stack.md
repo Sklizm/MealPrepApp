@@ -1,25 +1,7 @@
----
-tags: [tech, stack]
----
-
 # Tech Stack
 
-## Database Side (current focus)
-- **SQL Server** running in a **Docker container** (already set up by Codrin)
-- **DataGrip** as the GUI client (already connected)
-- T-SQL dialect; idempotent scripts so re-runs are safe
+MealPrepApp provides cross-platform recipe browsing, cooking, meal planning, pantry tracking, shopping lists, and nutrition reports.
 
-## App Side (future)
-- **.NET** (Visual Studio)
-- Will connect to the same SQL Server instance
-- Auth, business logic, and UI all live here — not Codrin's part
+The maintained client uses Avalonia on .NET 10 with a platform-independent Core library and SQL Server repositories. A legacy WPF client remains available from source.
 
-## Conventions
-- All `CREATE TABLE` wrapped in `IF OBJECT_ID(...) IS NULL`
-- All seeds use `MERGE` so they're rerunnable
-- Strings: `NVARCHAR` (Unicode)
-- Timestamps: `DATETIME2(0)` defaulting to `SYSUTCDATETIME()` (UTC, not local)
-- PK columns named `<TableName>ID`, `INT IDENTITY(1,1)`
-- Constraints prefixed: `PK_`, `FK_`, `UQ_`, `CK_`, `DF_`, `IX_`
-
-See [[Decisions Log]] for the reasoning behind these.
+See the [current app overview](../README.md), [project layout](../CONTRIBUTING.md#project-layout), [database reference](README.md), and [platform guides](../docs/platforms/).

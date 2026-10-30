@@ -522,7 +522,7 @@ public sealed partial class RegressionTests
         RefinementPantry? pantry = null, RefinementDashboard? dashboard = null, RefinementMealPlan? mealPlan = null, IDialogService? dialogs = null) =>
         RedesignSamples.Services(dialogs: dialogs, configure: s =>
         {
-            s.AddSingleton<ISessionService>(_ => { var session = new SessionService(); session.SignIn(1, "Codrin"); return session; });
+            s.AddSingleton<ISessionService>(_ => { var session = new SessionService(); session.SignIn(1, "Demo"); return session; });
             s.AddSingleton<LookupRepository>(lookups ?? new RefinementLookups()); s.AddSingleton<RecipeRepository>(recipes ?? new RefinementRecipes());
             s.AddSingleton<IngredientRepository>(ingredients ?? new RefinementIngredients()); s.AddSingleton<ShoppingListRepository>(shopping ?? new RefinementShopping());
             s.AddSingleton<DraftRepository>(drafts ?? new RefinementDrafts()); s.AddSingleton<PantryRepository>(pantry ?? new RefinementPantry());

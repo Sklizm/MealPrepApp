@@ -38,4 +38,4 @@ Fisier: `Database/05_recipes.sql`
 ## Folosit de
 - [[RecipeIngredients-ro]] (FK cu `ON DELETE CASCADE`)
 
-Vezi [[Schema Overview-ro]], [[Decisions Log-ro]]
+Vezi [[Schema Overview-ro]]

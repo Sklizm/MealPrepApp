@@ -26,7 +26,7 @@ One row per planned meal: a recipe assigned to a date + meal slot for a user.
 - `IX_MealPlanEntries_CategoryID` — FK column index
 
 ## Why CategoryID = meal slot
-Reusing the existing [[Categories]] table for meal slots avoids a parallel taxonomy. The DB accepts any of the 6 categories; the UI's weekly view chooses to render only 4 columns. See [[Decisions Log]] entry "Meal-slot is a FK to Categories".
+Reusing the existing [[Categories]] table for meal slots avoids a parallel taxonomy. The DB accepts any of the 6 categories; the UI's weekly view chooses to render only 4 columns. See [[Schema Overview]] entry "Meal-slot is a FK to Categories".
 
 ## Why RecipeID cascades but UserID doesn't
 A meal plan entry has no meaning without its recipe — orphan rows would just be noise on the calendar. Deleting a user with planned meals is the same explicit operation as deleting a user with recipes (consistent with the rest of the schema).
@@ -40,4 +40,4 @@ A meal plan entry has no meaning without its recipe — orphan rows would just b
 
 Read procs join recipe Title and category Name for direct UI consumption.
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

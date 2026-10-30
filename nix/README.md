@@ -1,8 +1,8 @@
-# NixOS development and packaging
+# NixOS development
 
-The flake targets `x86_64-linux` with the .NET 10 SDK and the native libraries used by Avalonia/Skia. The Linux client uses X11, or XWayland in a Hyprland session. Native Wayland is not enabled.
+MealPrepApp's Nix environment targets `x86_64-linux` and provides the .NET 10 SDK plus the native libraries required by Avalonia and Skia. The app uses X11 or XWayland; native Wayland is not enabled.
 
-## Run from source
+## Run the app
 
 From the repository root:
 
@@ -11,17 +11,29 @@ nix develop
 dotnet run --project App/MealPrepApp.Desktop
 ```
 
-The classic shell is also available:
+An X11 display or XWayland session must be available. The classic shell is also supported:
 
 ```bash
 nix-shell --run "dotnet run --project App/MealPrepApp.Desktop"
 ```
 
-An X11 display or XWayland session must be available. Connection settings and presentation preferences follow the [main README](../README.md#connection-settings); never add deployment credentials to the Nix source.
+Configure the database through the app's [connection screen](../README.md#connection-settings). Keep deployment credentials outside Nix source and build outputs.
 
-## Bootstrap the package
+## Build a standalone folder
 
-`nix/deps.json` is an empty bootstrap, and `flake.lock` has not been generated. Packaging is not yet validated or reproducible. On a networked Nix host:
+Inside the development shell:
+
+```bash
+bash scripts/build-linux.sh -m:1
+./dist/linux/MealPrepApp.Desktop
+bash scripts/install-linux.sh
+```
+
+The installer creates a per-user launcher pointing to the built folder. A generic self-contained .NET build still needs NixOS native-library integration; use the development shell or a validated Nix package.
+
+## Bootstrap the Nix package
+
+The checked-in dependency metadata is an empty bootstrap and no `flake.lock` is supplied. A reproducible Nix package is not yet validated. On a networked Nix host:
 
 ```bash
 bash scripts/update-nix-deps.sh
@@ -31,28 +43,10 @@ nix build
 ./result/bin/MealPrepApp.Desktop
 ```
 
-Review and commit the generated `flake.lock` and populated `nix/deps.json` after a successful build. Regenerate dependency metadata when package references change. The generator uses `buildDotnetModule.fetch-deps`; it requires Nix, network access and a working .NET dependency restore.
+Review and commit the generated lock file and dependency metadata after a successful build. Regenerate them when package references change. The generator uses `buildDotnetModule.fetch-deps` and requires a working network restore.
 
-The flake excludes `appsettings.Local.json`, `.env` and generated build folders from its source. Set connection credentials on each client separately.
+## Checks and distribution
 
-## Linux folder build
+Run the [contributor checks](../CONTRIBUTING.md#checks), then test focus, keyboard navigation, file pickers, menus, drag-to-move, themes, resizing, and actual display scaling on NixOS. Headless captures establish rendering evidence rather than native acceptance.
 
-Inside the development shell, a self-contained folder can also be generated:
-
-```bash
-bash scripts/build-linux.sh -m:1
-./dist/linux/MealPrepApp.Desktop
-bash scripts/install-linux.sh
-```
-
-The installer creates a per-user launcher pointing to that folder. NixOS still needs the development shell's native-library environment or the completed Nix package; self-contained .NET output alone does not provide NixOS library integration.
-
-## Verification
-
-Run the [shared regression commands](../README.md#verification). Native NixOS/Hyprland checks remain required for focus, keyboard shortcuts, file pickers, menus, drag-to-move, theme changes, resizing and actual 100/150/200% display scaling. The [headless screenshot matrix](../docs/redesign/README.md#screenshots-and-validation) is rendering evidence, not a native smoke test.
-
-## Release downloads
-
-The [release candidate workflow](../docs/releases/README.md) creates a generic Linux x64
-archive. It does not complete the Nix dependency bootstrap or replace the required native
-library environment described above.
+[Release packages](../docs/releases/README.md) include a generic Linux x64 archive. They do not replace the Nix dependency bootstrap or native-library environment. The flake excludes local settings, `.env`, and build outputs; configure each client separately.

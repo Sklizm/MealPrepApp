@@ -1,11 +1,11 @@
 > Historical implementation guide for the October 2026 redesign. Use the [current README](../../README.md) and [platform guides](../platforms/) for installation and configuration.
 
-# Cooking-centred Desktop redesign
+# Application design reference
 
 The Avalonia client redesign builds on the compatibility repairs and preserves the WPF
 client and its procedure interfaces. The three stages below organize the implementation
 for review. For build, transfer and connection commands, start with the [main README](../../README.md).
-The agent has not changed the production database; rollout remains a separate operation.
+Database rollout is a separate administrative operation.
 
 ## Stage 1 — visual system, shell, recipes
 
@@ -74,7 +74,7 @@ Desktop cooking/weekly/shopping views, `Database/19_shopping_snapshots.sql`,
 ## Screenshots and validation
 
 [Validation evidence and outstanding checks](validation.md).
-[Contrast report](contrast.txt). Rebuild packages with the [macOS and Linux commands](../../README.md#build-and-run).
+[Contrast report](contrast.txt). Rebuild packages with the [macOS and Linux commands](../../README.md#build-from-source).
 
 To reproduce direct checks and all 72 shell screenshots from the repository root:
 
@@ -122,8 +122,8 @@ bash scripts/update-database.sh mealprep-db 20261028_cooking_redesign.sql
 Each invocation makes a COPY_ONLY CHECKSUM backup, verifies it, and securely copies it to
 `backups/` before applying its migration. A failed backup/copy stops the update. The
 redesign migration is additive, runs transactionally, and does not rerun seeds or change
-login credentials. Codrin reports both migrations and the isolated SQL suite passed from normal SSH;
-the agent has not independently inspected the deployed schema.
+login credentials. Manual validation reports indicate both migrations and the isolated SQL suite passed from normal SSH;
+these recorded checks do not independently verify the deployed schema.
 
 ## Native acceptance flow
 
@@ -138,3 +138,5 @@ Verify the timer-complete banner and the documented stop-on-close behavior.
 Existing and new database APIs trust the application's user ID as before; this change does
 not introduce a new authentication boundary. Shared household, expiry-batch, nutrition-goal,
 URL import, AI planning and web frontend work remain outside this redesign.
+
+Recipe-detail screenshots and their recorded hashes were refreshed with a neutral demo account. Other dated validation results retain their original scope.

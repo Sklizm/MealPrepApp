@@ -40,4 +40,4 @@ Drafts are intentionally looser than [[Recipes]]: most content columns are nulla
 - Draft rows cascade when the user is deleted because they have no meaning without that user.
 - Drafts do not cascade from recipes because they are not recipes yet.
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

@@ -23,4 +23,4 @@ File: `Database/01_users.sql`
 ## Used by
 - [[Recipes]] (FK → UserID)
 
-See [[Schema Overview]], [[Decisions Log]]
+See [[Schema Overview]]

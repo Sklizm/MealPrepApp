@@ -4,13 +4,13 @@ Read [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) first. `main`
 
 ## Repository Overview & Architecture
 
-MealPrepApp is a cross-platform .NET 10 desktop solution backed by a 24/7 SQL Server database.
+MealPrepApp is a cross-platform .NET 10 desktop solution backed by a separately deployed SQL Server database.
 
 - `App/MealPrepApp.Core/` — Pure .NET 10 library. Contains all Models, Dapper repositories, Services (`IFilePickerService`, `IDialogService`), and platform-neutral ViewModels. Zero UI or platform dependencies.
 - `App/MealPrepApp.Desktop/` — Avalonia UI 11.3 desktop application. Targets Windows x64, macOS (Apple Silicon `osx-arm64`), and Linux (`linux-x64` / NixOS XWayland). Uses native window chrome, macOS top `NativeMenu`, and Skia rendering. Linux uses X11/XWayland.
-- `App/MealPrepApp/` — Original Windows WPF desktop application targeting `net10.0-windows`. Preserved for university practica grading.
+- `App/MealPrepApp/` — Original Windows WPF desktop application targeting `net10.0-windows`. Preserved for legacy Windows compatibility.
 - `Database/` — SQL Server 2022 database scripts: schema, stored procedures, seeds, and the idempotent `run_all.sql`.
-- `docker-compose.db.yml` — Docker Compose configuration for the 24/7 Home Server SQL Server container.
+- `docker-compose.db.yml` — Docker Compose configuration for the SQL Server database container.
 - `flake.nix` & `shell.nix` — Nix flake and environment for building/running on NixOS workstations.
 - `scripts/` — Cross-compilation packaging scripts:
   - `build-mac.sh`: Produces self-contained `MealPrepApp.app` bundle for macOS.
@@ -18,7 +18,7 @@ MealPrepApp is a cross-platform .NET 10 desktop solution backed by a 24/7 SQL Se
   - `build-windows.ps1`: Produces a self-contained Avalonia Windows installer using pinned Inno Setup 6.4.3.
   - `install-mac.sh`: Copies the built app into Applications.
   - `consolidate-main.sh`: Audits merged branches and successful main CI before deleting superseded branches.
-- `Vault/` — Obsidian project memory and decisions log.
+- `Vault/` — archived database and design references.
 
 ## Building, validation and database updates
 

@@ -1,7 +1,7 @@
 # Windows
 
 The standard Windows download runs the same Avalonia application as macOS and Linux.
-The original WPF client remains available from source for university grading.
+The original WPF client remains available from source for legacy Windows compatibility.
 
 ## Install and update
 
@@ -53,7 +53,7 @@ For development without installation:
 dotnet run --project App/MealPrepApp.Desktop
 ```
 
-## WPF grading client
+## Legacy WPF client
 
 The WPF interface is retained with its original project path:
 
@@ -64,11 +64,11 @@ dotnet run --project App/MealPrepApp
 
 It uses its own `App/MealPrepApp/appsettings.Local.template.json` and local configuration;
 the Avalonia first-launch screen and installer do not configure WPF. WPF is compiled
-in CI but does not have a separate installer. See the [academic report](../../Raport/README.md).
+in CI but does not have a separate installer.
 
 ## Troubleshooting
 
 - If the installer asks you to close the app, close every running instance and retry.
-- If sign-in cannot reach SQL Server, select **Conexiune la baza de date** on the login screen. Check Tailscale, the server address and port, certificate settings, and database credentials.
+- If sign-in cannot reach SQL Server, select **Conexiune la baza de date** on the login screen. Check network or VPN connectivity, the server address and port, certificate settings, and database credentials.
 - Diagnostics are stored under `%LOCALAPPDATA%\MealPrepApp\logs`; credentials are excluded from diagnostic messages.
 - Installer testing belongs on a disposable Windows worker: `pwsh -File scripts/test-windows-install.ps1`. It creates and removes test user settings and refuses an existing installation/profile.

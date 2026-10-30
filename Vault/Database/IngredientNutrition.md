@@ -37,4 +37,4 @@ Nutrition is intentionally not stored as calculated totals on `Recipes`, because
 - `UnitConversions` provides only direct compatible conversions; missing or incompatible rows are counted and displayed as incomplete.
 - Future daily/weekly nutrition reports should build on this ingredient-sourced model.
 
-See [[UnitConversions]], [[Ingredients]], [[Recipes]], [[Schema Overview]], [[Decisions Log]]
+See [[UnitConversions]], [[Ingredients]], [[Recipes]], [[Schema Overview]]
