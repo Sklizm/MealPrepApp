@@ -48,3 +48,21 @@ Docker socket permissions. No SQL/schema changes or live database writes were ma
 Compatibility CI and native hover/DPI testing on Windows, macOS and Linux remain separate
 acceptance steps. The headless matrix does not establish native scaling or hover acceptance.
 Rebuild the Mac app after pulling this commit before testing the changes.
+
+## CI clock regression repair (2026-10-30)
+
+Codrin supplied Compatibility logs for `908fe2a`: the reset assertion in
+`NavigationActualClockCompletionNeverExposesTheOldPose` failed on all three desktop
+runners (49/50 passed on each). The same failure was reproduced locally by switching
+the direct runner from a shared application to Avalonia's per-test headless sessions,
+matching xUnit's dispatcher isolation.
+
+The real-clock test now asynchronously yields between render ticks and awaits animation
+completion with a five-second timeout. It retains the final progress, released animation,
+and monotonic completion/reset assertions. The direct runner keeps per-test isolation
+and accepts `--filter=NavigationActualClock` for targeted reproduction.
+
+The Release build passed without warnings/errors; all 50 tests passed using the isolated
+runner (see [updated results](ci-regression-results.txt)). Standard VSTest remains blocked
+locally by sandbox socket permissions. The follow-up Compatibility run on Windows, macOS
+and Linux must still pass; no native acceptance is inferred from this repair.

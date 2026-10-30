@@ -176,7 +176,7 @@ public sealed partial class RegressionTests
     }
 
     [AvaloniaFact]
-    public void NavigationActualClockCompletionNeverExposesTheOldPose()
+    public async Task NavigationActualClockCompletionNeverExposesTheOldPose()
     {
         var icon = new AnimatedNavigationIcon();
         var window = new Window { Width=100, Height=100, Content=icon }; window.Show();
@@ -184,15 +184,25 @@ public sealed partial class RegressionTests
         {
             var changes = new List<double>();
             icon.PropertyChanged += (_, e) => { if(e.Property==AnimatedNavigationIcon.ProgressProperty) changes.Add(icon.Progress); };
-            void RunFor(int milliseconds)
+            async Task CompleteAnimationAsync()
             {
-                var watch=System.Diagnostics.Stopwatch.StartNew();
-                while(watch.ElapsedMilliseconds < milliseconds) { AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); Thread.Sleep(5); }
+                var completion = icon.AnimationTask;
+                var timeout = System.Diagnostics.Stopwatch.StartNew();
+                // Yield to the real headless dispatcher between ticks. Blocking this thread
+                // starves clock scheduling in xUnit's per-test application/session.
+                while (!completion.IsCompleted && timeout.Elapsed < TimeSpan.FromSeconds(5))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                    await Task.Delay(5);
+                }
+                Assert.True(completion.IsCompleted, "Avalonia animation did not complete within five seconds.");
+                await completion;
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             }
-            icon.SetEngagement(true, false); RunFor(950);
+            icon.SetEngagement(true, false); await CompleteAnimationAsync();
             Assert.Equal(1, icon.Progress); Assert.False(icon.HasActiveAnimation);
             Assert.All(changes.Zip(changes.Skip(1)), pair => Assert.True(pair.Second >= pair.First, "Completion rolled back"));
-            changes.Clear(); icon.SetEngagement(false, false); RunFor(300);
+            changes.Clear(); icon.SetEngagement(false, false); await CompleteAnimationAsync();
             Assert.Equal(0, icon.Progress); Assert.False(icon.HasActiveAnimation);
             Assert.All(changes.Zip(changes.Skip(1)), pair => Assert.True(pair.Second <= pair.First, "Reset rolled back"));
         }

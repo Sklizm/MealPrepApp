@@ -1,22 +1,30 @@
 // Direct invocation for environments that prohibit VSTest local TCP sockets.
-// CI continues to use the standard xUnit runner. Keep UI checks on the main thread.
+// CI uses standard xUnit discovery. UI checks use the same isolated dispatcher as AvaloniaFact.
 using System.Reflection;
 using MealPrepApp.Tests;
+using Avalonia.Headless;
 
-TestHost.BuildAvaloniaApp().SetupWithoutStarting();
+if(args.Contains("--refinement-screenshots") || args.Contains("--screenshots")) TestHost.BuildAvaloniaApp().SetupWithoutStarting();
 if(args.Contains("--refinement-screenshots")) { RedesignSamples.Render(Path.GetFullPath("dist/refinement/screenshots")); return 0; }
 if(args.Contains("--screenshots")) { RedesignSamples.Render(Path.GetFullPath("docs/redesign/screenshots")); return 0; }
+using var session = HeadlessUnitTestSession.StartNew(typeof(TestHost), AvaloniaTestIsolationLevel.PerTest);
+var filter = args.FirstOrDefault(a => a.StartsWith("--filter="))?[9..];
 var tests = new RegressionTests();
 int count = 0, failures = 0;
 foreach (var method in typeof(RegressionTests).GetMethods()
     .Where(m => m.GetCustomAttributes().Any(a => a.GetType().Name is "FactAttribute" or "AvaloniaFactAttribute"))
+    .Where(m => filter == null || m.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
     .OrderByDescending(m => m.GetCustomAttributes().Any(a => a.GetType().Name == "AvaloniaFactAttribute")))
 {
     try
     {
         if (method.GetCustomAttributes().Any(a => a.GetType().Name == "AvaloniaFactAttribute"))
         {
-            if (method.Invoke(tests, null) is Task uiTask) uiTask.GetAwaiter().GetResult();
+            session.Dispatch(async () =>
+            {
+                if (method.Invoke(tests, null) is Task uiTask) await uiTask;
+                return 0;
+            }, CancellationToken.None).GetAwaiter().GetResult();
         }
         else
         {
@@ -34,5 +42,5 @@ foreach (var method in typeof(RegressionTests).GetMethods()
     }
     count++;
 }
-Console.WriteLine($"{count - failures}/{count} regression methods passed (direct in-process execution; no VSTest discovery).");
+Console.WriteLine($"{count - failures}/{count} regression methods passed (in-process execution with per-test Avalonia sessions; no VSTest discovery).");
 return failures == 0 ? 0 : 1;
