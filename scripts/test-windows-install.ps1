@@ -48,7 +48,10 @@ try {
             if ($App.MainWindowHandle -ne 0) { $Ready = $true; break }
         }
         if (-not $Ready) { throw 'First-launch window did not appear.' }
-        if ($App.MainWindowTitle -notlike '*Conexiune*') { throw 'Fresh installation did not open connection setup.' }
+        # A clean profile must use the English default and open connection setup.
+        if ($App.MainWindowTitle -ne 'MealPrep • Connection') {
+            throw "Fresh installation did not open English connection setup. Actual window title: '$($App.MainWindowTitle)'"
+        }
     }
     finally {
         if (-not $App.HasExited) { Stop-Process -Id $App.Id -Force }
