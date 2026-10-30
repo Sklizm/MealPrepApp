@@ -17,7 +17,7 @@ Meal planning, recipe browsing, cooking and pantry tracking with a shared SQL Se
 - Scale displayed ingredients and nutrition using decimal arithmetic without changing the saved recipe. Missing nutrition data remains labelled.
 - Cook with readable instruction paragraphs, temporary ingredient checkboxes and a manual timer that continues across navigation while the app stays open. Closing the app or signing out ends the cooking session.
 - Plan weeks or months, use a narrow agenda, move or duplicate meals, and preview a week copy before saving. Copies preserve existing target meals and skip exact duplicates.
-- Search and group pantry stock and catalog ingredients, and edit pantry quantities directly.
+- Browse pantry stock through illustrated fridge categories, search and sort locally, edit quantities, and find recipes from your stock. Search and group catalog ingredients.
 - Save shopping-list snapshots and purchase state per user across clients. Generate a new list without losing the old one, filter purchases, export Excel or copy plain text.
 - Explicitly import a shopping item into the pantry once per snapshot item. Checking a purchase or cooking ingredient does not change stock. Only supported compatible units are normalized; incompatible units remain separate.
 - View nutrition estimates, category distributions and recipe/ingredient rankings with readable tables.
@@ -147,6 +147,8 @@ unset MEALPREP_APP_PASSWORD
 ```
 
 Use a SQL-policy-compliant password without single quotes or newlines: the initialization script interpolates it into the login-creation SQL. `run_all.sql` includes schema, seeds and procedures; repeatability is covered by the disposable test suite. Existing login passwords are not rotated by initialization. Credential rotation is a separate deployment operation.
+
+See the [illustrated Frigider update and validation](docs/fridge/README.md) for the latest pantry layout and animation completion fix.
 
 ## Verification
 

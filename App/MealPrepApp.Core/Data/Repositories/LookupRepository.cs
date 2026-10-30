@@ -8,7 +8,7 @@ public class LookupRepository : RepositoryBase
 {
     public LookupRepository(IDbConnectionFactory factory) : base(factory) { }
 
-    public Task<IReadOnlyList<Unit>> GetUnitsAsync(CancellationToken cancellationToken = default) =>
+    public virtual Task<IReadOnlyList<Unit>> GetUnitsAsync(CancellationToken cancellationToken = default) =>
         QueryProcAsync<Unit>("sp_GetUnits", cancellationToken: cancellationToken);
 
     public virtual Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken cancellationToken = default) =>

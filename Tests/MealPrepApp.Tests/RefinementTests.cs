@@ -126,6 +126,121 @@ public sealed partial class RegressionTests
     }
 
     [Fact]
+    public async Task FridgeCategoriesSearchAndSortingAreLocalAndKeepSelectionAfterRefresh()
+    {
+        var pantry = new RefinementPantry { Stock = new[] {
+            new PantryItem { IngredientID=1, IngredientName="Salată", CategoryName="Produse", Quantity=2 },
+            new PantryItem { IngredientID=2, IngredientName="Roșii", CategoryName="Produse", Quantity=5 },
+            new PantryItem { IngredientID=3, IngredientName="Vită", CategoryName="Carne si peste", Quantity=1 },
+            new PantryItem { IngredientID=4, IngredientName="Special", CategoryName="Custom", Quantity=1 } } };
+        using var provider = RefinementServices(pantry: pantry); using var scope = provider.CreateScope();
+        var vm = scope.ServiceProvider.GetRequiredService<FrigiderViewModel>(); await vm.LoadAsync();
+        Assert.Equal(9, vm.Categories.Count); Assert.Equal(2, vm.Categories.Single(c => c.Name=="Produse").Count);
+        Assert.Equal("Other", vm.Categories.Single(c => c.Name=="Custom").Illustration);
+        Assert.Equal(3, vm.DisplayRows.Count(r => r.StartsCategory));
+        vm.SelectCategoryCommand.Execute("Produse"); Assert.Equal(2, vm.VisibleItems.Count);
+        vm.SearchTerm="roș"; Assert.Equal("Roșii", Assert.Single(vm.VisibleItems).IngredientName);
+        vm.SearchTerm=""; vm.SortOrder="Cantitate"; Assert.Equal(2, vm.VisibleItems[0].Quantity);
+        Assert.Equal(1, pantry.Calls);
+        await vm.LoadAsync(); Assert.Equal("Produse", vm.SelectedCategory);
+        vm.SelectCategoryCommand.Execute("Conserve"); Assert.True(vm.IsEmpty);
+        vm.SelectCategoryCommand.Execute(null); Assert.Equal(4, vm.VisibleItems.Count);
+    }
+
+    [Fact]
+    public async Task FridgeRefreshRejectsStaleResponsesAndRecoversAfterLookupFailure()
+    {
+        var pantry = new RefinementPantry(); var lookups = new RefinementLookups { FailIngredients=true };
+        using var provider = RefinementServices(pantry: pantry, lookups: lookups); using var scope = provider.CreateScope();
+        var vm = scope.ServiceProvider.GetRequiredService<FrigiderViewModel>();
+        await vm.LoadAsync(); Assert.True(vm.HasError); Assert.Empty(vm.Items);
+        lookups.FailIngredients=false; await vm.RetryCommand.ExecuteAsync(null); Assert.Equal(100, vm.Items.Count);
+        pantry.Pending=new(); var oldResponse=pantry.Pending; var old=vm.LoadAsync(); var token=pantry.LastToken;
+        pantry.Pending=new(); var latestResponse=pantry.Pending; var latest=vm.LoadAsync(); Assert.True(token.IsCancellationRequested);
+        oldResponse.SetResult(Array.Empty<PantryItem>()); await old; Assert.True(vm.IsBusy); Assert.Equal(100, vm.Items.Count);
+        latestResponse.SetResult(new[] {new PantryItem {IngredientID=1, IngredientName="Latest"}}); await latest;
+        Assert.Equal("Latest", Assert.Single(vm.Items).IngredientName); Assert.False(vm.IsBusy);
+        pantry.Pending=new(); var disposed=vm.LoadAsync(); vm.Dispose(); Assert.True(pantry.LastToken.IsCancellationRequested);
+        pantry.Pending.SetResult(Array.Empty<PantryItem>()); await disposed; Assert.Single(vm.Items);
+    }
+
+    [Fact]
+    public async Task FridgeCookingShortcutPreparesPantryDestinationOnce()
+    {
+        var pantry = new RefinementPantry(); var recipes = new RefinementRecipes();
+        using var provider = RefinementServices(pantry: pantry, recipes: recipes); using var scope=provider.CreateScope();
+        var vm=scope.ServiceProvider.GetRequiredService<FrigiderViewModel>();
+        await vm.CookCommand.ExecuteAsync(null);
+        var destination=Assert.IsType<ReteteListViewModel>(scope.ServiceProvider.GetRequiredService<INavigationService>().CurrentView);
+        Assert.Equal("Frigider", destination.ActiveFilter); Assert.Equal(1, pantry.Calls);
+    }
+
+    [AvaloniaFact]
+    public void NavigationActualClockCompletionNeverExposesTheOldPose()
+    {
+        var icon = new AnimatedNavigationIcon();
+        var window = new Window { Width=100, Height=100, Content=icon }; window.Show();
+        try
+        {
+            var changes = new List<double>();
+            icon.PropertyChanged += (_, e) => { if(e.Property==AnimatedNavigationIcon.ProgressProperty) changes.Add(icon.Progress); };
+            void RunFor(int milliseconds)
+            {
+                var watch=System.Diagnostics.Stopwatch.StartNew();
+                while(watch.ElapsedMilliseconds < milliseconds) { AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); Thread.Sleep(5); }
+            }
+            icon.SetEngagement(true, false); RunFor(950);
+            Assert.Equal(1, icon.Progress); Assert.False(icon.HasActiveAnimation);
+            Assert.All(changes.Zip(changes.Skip(1)), pair => Assert.True(pair.Second >= pair.First, "Completion rolled back"));
+            changes.Clear(); icon.SetEngagement(false, false); RunFor(300);
+            Assert.Equal(0, icon.Progress); Assert.False(icon.HasActiveAnimation);
+            Assert.All(changes.Zip(changes.Skip(1)), pair => Assert.True(pair.Second <= pair.First, "Reset rolled back"));
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void FridgeCompactLayoutKeyboardAndLargeStockAreUsable()
+    {
+        var pantry=new RefinementPantry { Stock=Enumerable.Range(1,2000).Select(i => new PantryItem { IngredientID=i, IngredientName=$"Item {i:0000}", CategoryName="Produse", Quantity=1 }).ToArray() };
+        using var provider=RefinementServices(pantry:pantry); using var scope=provider.CreateScope();
+        var vm=scope.ServiceProvider.GetRequiredService<FrigiderViewModel>(); vm.LoadAsync().GetAwaiter().GetResult();
+        var view=new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView {DataContext=vm};
+        var window=new Window {Width=776,Height=600,Content=view}; window.Show();
+        try
+        {
+            window.UpdateLayout(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            var grid=view.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.UniformGrid>().Single();
+            Assert.Equal(4,grid.Columns);
+            Assert.All(view.GetVisualDescendants().OfType<FridgeFoodIllustration>(), food=>Assert.Equal(36,food.Height));
+            Assert.InRange(view.GetVisualDescendants().OfType<ListBoxItem>().Count(),1,40);
+            var category=view.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.CommandParameter,"Produse"));
+            category.Focus(); window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None); window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None); Dispatcher.UIThread.RunJobs();
+            Assert.Equal("Produse",vm.SelectedCategory);
+            window.Width=1196; window.UpdateLayout(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            Assert.Equal(2,grid.Columns);
+        }
+        finally {window.Close();}
+    }
+
+    [Fact]
+    public async Task FridgeStockActionsValidateRecoverAndDisableConflicts()
+    {
+        var pantry=new RefinementPantry {Stock=Array.Empty<PantryItem>()}; var dialogs=new PantryWorkflowDialogs();
+        using var provider=RefinementServices(pantry:pantry,dialogs:dialogs); using var scope=provider.CreateScope();
+        var vm=scope.ServiceProvider.GetRequiredService<FrigiderViewModel>(); await vm.LoadAsync();
+        await vm.AddItemCommand.ExecuteAsync(null); var item=Assert.Single(vm.Items); Assert.Equal(2,item.Quantity);
+        await vm.EditItemCommand.ExecuteAsync(item); Assert.Equal(3,Assert.Single(vm.Items).Quantity);
+        dialogs.Confirm=false; await vm.RemoveItemCommand.ExecuteAsync(item); Assert.Single(vm.Items);
+        dialogs.Confirm=true; pantry.FailRemove=true; await vm.RemoveItemCommand.ExecuteAsync(item);
+        Assert.True(vm.HasError); Assert.Single(vm.Items); Assert.False(vm.IsBusy);
+        pantry.FailRemove=false; pantry.Mutation=new(); var remove=vm.RemoveItemCommand.ExecuteAsync(item);
+        Assert.True(vm.IsMutating); Assert.True(vm.IsBusy); var calls=pantry.Calls;
+        await vm.AddItemCommand.ExecuteAsync(null); await vm.RetryCommand.ExecuteAsync(null); Assert.Equal(calls,pantry.Calls);
+        pantry.Mutation.SetResult(); await remove; Assert.Empty(vm.Items); Assert.False(vm.IsBusy); Assert.False(vm.HasError);
+    }
+
+    [Fact]
     public async Task PantryPopulationInvalidatesItsViewsOnce()
     {
         var pantry = new RefinementPantry();
@@ -374,6 +489,7 @@ public sealed partial class RegressionTests
 
     private sealed class RefinementLookups() : LookupRepository(new RedesignSamples.NoDatabase())
     {
+        public override Task<IReadOnlyList<Unit>> GetUnitsAsync(CancellationToken cancellationToken=default) => Task.FromResult<IReadOnlyList<Unit>>(new[] {new Unit {UnitID=1,Abbreviation="g"}});
         public bool FailRecipes, FailIngredients; public int RecipeCalls, IngredientCalls;
         public override Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken cancellationToken = default)
         { RecipeCalls++; if(FailRecipes) throw new InvalidOperationException("Temporary lookup failure"); return Task.FromResult<IReadOnlyList<Category>>(new[] { new Category { CategoryID = 2, Name = "Prânz" } }); }
@@ -395,9 +511,12 @@ public sealed partial class RegressionTests
     }
     private sealed class RefinementPantry() : PantryRepository(new RedesignSamples.NoDatabase())
     {
-        public TaskCompletionSource<IReadOnlyList<PantryItem>>? Pending; public CancellationToken LastToken; public PantryItem[]? Stock;
+        public TaskCompletionSource<IReadOnlyList<PantryItem>>? Pending; public CancellationToken LastToken; public PantryItem[]? Stock; public int Calls; public bool FailRemove; public TaskCompletionSource? Mutation;
+        public override Task AddPantryItemAsync(int userId,int ingredientId,int unitId,decimal quantity) { Stock=[new PantryItem { UserPantryID=1,IngredientID=ingredientId,UnitID=unitId,Quantity=quantity,IngredientName="Ingredient 1"}]; return Task.CompletedTask; }
+        public override Task UpdatePantryQuantityAsync(int id,int userId,decimal quantity) { Stock!.Single(i=>i.UserPantryID==id).Quantity=quantity; return Task.CompletedTask; }
+        public override async Task RemovePantryItemAsync(int id,int userId) { if(FailRemove) throw new InvalidOperationException("Temporary failure"); if(Mutation!=null) await Mutation.Task; Stock=Stock!.Where(i=>i.UserPantryID!=id).ToArray(); }
         public override Task<IReadOnlyList<PantryItem>> GetPantryAsync(int userId, CancellationToken cancellationToken = default)
-        { LastToken = cancellationToken; return Pending?.Task ?? Task.FromResult<IReadOnlyList<PantryItem>>(Stock ?? Enumerable.Range(1,100).Select(i => new PantryItem { IngredientID = i, IngredientName = $"Ingredient {i}" }).ToArray()); }
+        { Calls++; LastToken = cancellationToken; return Pending?.Task ?? Task.FromResult<IReadOnlyList<PantryItem>>(Stock ?? Enumerable.Range(1,100).Select(i => new PantryItem { IngredientID = i, IngredientName = $"Ingredient {i}" }).ToArray()); }
     }
     private sealed class RefinementDrafts() : DraftRepository(new RedesignSamples.NoDatabase())
     {
@@ -433,6 +552,21 @@ public sealed partial class RegressionTests
         public override Task<int> PlanMealAsync(int userId, int recipeId, int categoryId, DateTime plannedDate, int? servings, string? notes)
         { Entries.Add(new MealPlanEntry {RecipeID=recipeId,CategoryID=categoryId,PlannedDate=plannedDate,Servings=servings,RecipeTitle="Salată"}); return Task.FromResult(1); }
         public override Task<IReadOnlyList<MealPlanEntry>> GetWeeklyPlanAsync(int userId, DateTime startDate, CancellationToken cancellationToken = default) { Calls++; UserId=userId; Token=cancellationToken; return Immediate ? Task.FromResult<IReadOnlyList<MealPlanEntry>>(Entries) : Pending.Task; }
+    }
+    private sealed class PantryWorkflowDialogs : IDialogService
+    {
+        public bool Confirm=true;
+        public Task<bool> ConfirmAsync(string title,string message)=>Task.FromResult(Confirm);
+        public Task ShowErrorAsync(string message)=>Task.CompletedTask;
+        public Task ShowInfoAsync(string title,string message)=>Task.CompletedTask;
+        public async Task<bool> ShowDialogAsync(object viewModel)
+        {
+            var editor=Assert.IsType<PantryItemDialogViewModel>(viewModel);
+            editor.SelectedIngredient=editor.Ingredients[0]; editor.SelectedUnit=editor.Units[0];
+            editor.Quantity=0; await editor.SaveCommand.ExecuteAsync(null); Assert.True(editor.HasError);
+            editor.Quantity=editor.IsEdit ? 3 : 2; await editor.SaveCommand.ExecuteAsync(null);
+            return !editor.HasError;
+        }
     }
     private sealed class ImportDialogs : IDialogService
     {

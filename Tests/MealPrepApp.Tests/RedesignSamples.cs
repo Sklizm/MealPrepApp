@@ -54,9 +54,11 @@ public static class RedesignSamples
         var ingredients=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.IngredienteListViewModel>(); ingredients.UseGrouping=true;
         foreach(var name in new[]{"Roșii","Busuioc","Morcovi","Ardei","Năut","Orez"})
         {
-            pantry.Items.Add(new PantryItem {IngredientName=name,Quantity=250,UnitAbbreviation="g",CategoryName="Legume"});
+            pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=name,Quantity=250,UnitAbbreviation="g",CategoryName=name=="Orez" ? "Cereale si paste" : name=="Busuioc" ? "Condimente si ierburi" : name=="Năut" ? "Conserve" : "Produse"});
             ingredients.Ingredients.Add(new Ingredient {Name=name,IngredientCategoryName="Legume",DefaultUnitAbbreviation="g"});
         }
+        foreach(var stock in new[] { ("Lapte", "Lactate si oua", "ml"), ("Vită", "Carne si peste", "g"), ("Suc de mere", "Bauturi", "ml") })
+            pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=stock.Item1,CategoryName=stock.Item2,UnitAbbreviation=stock.Item3,Quantity=500});
         ingredients.Categories.Add(new IngredientCategory {Name="Toate categoriile"}); ingredients.SelectedCategory=ingredients.Categories[0];
         var shopping=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.ShoppingListViewModel>();
         shopping.LoadAsync().GetAwaiter().GetResult();
@@ -75,6 +77,8 @@ public static class RedesignSamples
             foreach(var sample in new (string Name,Control View)[]{("home",new AcasaView{DataContext=home}),("recipe",new MealPrepApp.Desktop.Views.Retete.ReteteDetailView{DataContext=detail}),("planner",new MealPrepApp.Desktop.Views.Planificare.PlanificareRootView{DataContext=plannerRoot}),("components",new ComponentGallery()),
                 ("recipes",new MealPrepApp.Desktop.Views.Retete.ReteteListView{DataContext=recipes}),
                 ("pantry",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
+                ("pantry-selected",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
+                ("pantry-empty",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
                 ("shopping",new MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView{DataContext=shopping}),
                 ("ingredients",new MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView{DataContext=ingredients}),
                 ("reports",new MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView{DataContext=reportRoot}),
@@ -84,10 +88,11 @@ public static class RedesignSamples
                 foreach(var scale in new[]{1d,1.5d,2d})
                 {
                     var vm=provider.GetRequiredService<MealPrepApp.ViewModels.Shell.ShellViewModel>();
+                    if(sample.Name.StartsWith("pantry")) pantry.SelectedCategory=sample.Name=="pantry-selected" ? "Produse" : sample.Name=="pantry-empty" ? "Altele" : null;
                     var window=new ShellWindow {Width=size.Width,Height=size.Height};
                     // Assign the fixture after Opened so production initialization cannot query or replace it.
                     window.Show();window.DataContext=vm;Dispatcher.UIThread.RunJobs();vm.CurrentView=sample.View;
-                    vm.ActiveTab=sample.Name switch {"recipe" or "recipes" or "cooking"=>"Retete","planner"=>"Planificare","pantry"=>"Frigider","shopping"=>"Cumparaturi","ingredients"=>"Ingrediente","reports"=>"Rapoarte",_=>"Acasa"};
+                    vm.ActiveTab=sample.Name switch {"recipe" or "recipes" or "cooking"=>"Retete","planner"=>"Planificare","pantry" or "pantry-selected" or "pantry-empty"=>"Frigider","shopping"=>"Cumparaturi","ingredients"=>"Ingrediente","reports"=>"Rapoarte",_=>"Acasa"};
                     Dispatcher.UIThread.RunJobs();window.UpdateLayout();
                     using var bitmap=new RenderTargetBitmap(new PixelSize((int)(size.Width*scale),(int)(size.Height*scale)),new Vector(96*scale,96*scale));
                     bitmap.Render(window);bitmap.Save(Path.Combine(output,$"{sample.Name}-{theme}-{size.Width}-{scale*100:0}.png"));

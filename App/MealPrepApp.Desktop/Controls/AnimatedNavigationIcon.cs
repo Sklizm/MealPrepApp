@@ -79,6 +79,7 @@ public sealed class AnimatedNavigationIcon : Control
         var source = _animationCts = new CancellationTokenSource();
         var animation = new Animation
         {
+            FillMode = FillMode.Forward,
             Duration = TimeSpan.FromMilliseconds(milliseconds), Easing = new CubicEaseInOut(),
             Children =
             {
@@ -169,8 +170,6 @@ public sealed class AnimatedNavigationIcon : Control
                     for(var i=0;i<3;i++) Fruit(Ink,20+i*4,11, .65);
                     Line(21,22,28,22,Brown,1.3); Line(20,27,29,27,Brown,1.3);
                 }
-                if(p>0 && p<1) for(var i=0;i<4;i++)
-                {var fall=(p*3+i*.23)%1; context.DrawEllipse(visibleInk,null,new Point(10+i*2,22+fall*21),.9,.9);}
                 break;
             case NavigationIconKind.Reports:
                 Line(8,8,8,41,visibleInk); Line(8,41,42,41,visibleInk);
