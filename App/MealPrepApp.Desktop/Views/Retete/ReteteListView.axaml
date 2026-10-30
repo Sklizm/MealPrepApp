@@ -58,17 +58,17 @@
                                             </Grid>
                                         </Border>
                                         <!-- Title & actions -->
-                                        <StackPanel Grid.Row="1">
-                                            <Button Grid.Column="0"  Classes="Link" HorizontalAlignment="Left" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenRecipeCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontSize="20" FontWeight="SemiBold"/></Button>
-                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" HorizontalAlignment="Right" AutomationProperties.Name="Acțiuni rețetă" ToolTip.Tip="Acțiuni rețetă">
+                                        <Grid Grid.Row="1" ColumnDefinitions="*,36" MinHeight="56">
+                                            <Button Grid.Column="0"  Classes="Link" Padding="0,6,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalAlignment="Top" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenRecipeCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" LineHeight="24" FontSize="20" FontWeight="SemiBold"/></Button>
+                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" Width="36" Height="36" Padding="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Right" AutomationProperties.Name="Acțiuni rețetă" ToolTip.Tip="Acțiuni rețetă">
                                                 <Button.ContextMenu>
                                                     <ContextMenu>
                                                         <MenuItem Header="Șterge" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteRecipeCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                     </ContextMenu>
                                                 </Button.ContextMenu>
-                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" Width="20" Height="20" Stretch="Uniform"/>
+                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" StrokeLineCap="Round" Width="18" Height="4" Stretch="Uniform"/>
                                             </Button>
-                                        </StackPanel>
+                                        </Grid>
                                         <!-- Category -->
                                         <Border Grid.Row="2" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" CornerRadius="8" Padding="6,2" HorizontalAlignment="Left" Margin="0,6,0,0" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}">
                                             <TextBlock Text="{Binding CategoryName}" Foreground="{DynamicResource OnMeal}" FontSize="11"/>
@@ -115,17 +115,17 @@
                             <DataTemplate x:DataType="models:RecipeDraftListItem">
                                 <Border Classes="Card" Margin="0" Padding="14">
                                     <Grid RowDefinitions="Auto,Auto,Auto">
-                                        <StackPanel Grid.Row="0">
-                                            <Button Grid.Column="0"  Classes="Link" HorizontalAlignment="Left" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenDraftCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title, TargetNullValue='Ciornă fără titlu'}" TextWrapping="Wrap" FontSize="20" FontWeight="SemiBold"/></Button>
-                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" HorizontalAlignment="Right" AutomationProperties.Name="Acțiuni rețetă" ToolTip.Tip="Acțiuni rețetă">
+                                        <Grid Grid.Row="0" ColumnDefinitions="*,36" MinHeight="56">
+                                            <Button Grid.Column="0"  Classes="Link" Padding="0,6,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalAlignment="Top" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenDraftCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title, TargetNullValue='Ciornă fără titlu'}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" LineHeight="24" FontSize="20" FontWeight="SemiBold"/></Button>
+                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" Width="36" Height="36" Padding="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Right" AutomationProperties.Name="Acțiuni rețetă" ToolTip.Tip="Acțiuni rețetă">
                                                 <Button.ContextMenu>
                                                     <ContextMenu>
                                                         <MenuItem Header="Șterge" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteDraftCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                     </ContextMenu>
                                                 </Button.ContextMenu>
-                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" Width="20" Height="20" Stretch="Uniform"/>
+                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" StrokeLineCap="Round" Width="18" Height="4" Stretch="Uniform"/>
                                             </Button>
-                                        </StackPanel>
+                                        </Grid>
                                         <Border Grid.Row="1" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" CornerRadius="8" Padding="6,2" HorizontalAlignment="Left" Margin="0,6,0,0" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}">
                                             <TextBlock Text="{Binding CategoryName}" Foreground="{DynamicResource OnMeal}" FontSize="11"/>
                                         </Border>

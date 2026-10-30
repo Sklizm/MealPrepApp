@@ -148,7 +148,7 @@ unset MEALPREP_APP_PASSWORD
 
 Use a SQL-policy-compliant password without single quotes or newlines: the initialization script interpolates it into the login-creation SQL. `run_all.sql` includes schema, seeds and procedures; repeatability is covered by the disposable test suite. Existing login passwords are not rotated by initialization. Credential rotation is a separate deployment operation.
 
-See the [illustrated Frigider update and validation](docs/fridge/README.md) for the latest pantry layout and animation completion fix.
+See the [illustrated Frigider update and validation](docs/fridge/README.md) and [alignment before/after captures](docs/alignment/README.md) for the pantry layout, animation completion fix and latest alignment cleanup.
 
 ## Verification
 

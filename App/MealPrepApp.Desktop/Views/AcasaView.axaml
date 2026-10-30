@@ -29,7 +29,7 @@
             <Border Classes="Card">
                 <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="Mesele de azi" Classes="Header"/>
+                        <TextBlock Text="Mesele de azi" Classes="Header" VerticalAlignment="Center"/>
                         <Button Grid.Column="1" Classes="Link" Content="Deschide planul" Command="{Binding OpenSectionCommand}" CommandParameter="Planificare"/>
                     </Grid>
                     <ItemsControl ItemsSource="{Binding TodayMeals}">
@@ -47,7 +47,7 @@
                 </StackPanel>
             </Border>
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="Înapoi la ceva bun" Classes="Header"/>
+                <TextBlock Text="Înapoi la ceva bun" Classes="Header" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="Toate rețetele" Classes="Link" Command="{Binding OpenSectionCommand}" CommandParameter="Retete"/>
             </Grid>
             <ItemsControl ItemsSource="{Binding RecentRecipes}">
@@ -63,8 +63,8 @@
                                 <Border Background="{DynamicResource SurfaceSecondary}" CornerRadius="8" Height="72">
                                     <TextBlock Text="Din colecția ta" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <Button Classes="Link" Command="{Binding DataContext.OpenRecipeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Stretch">
-                                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <Button Classes="Link" Command="{Binding DataContext.OpenRecipeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Stretch" Height="56" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+                                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" LineHeight="24" MaxLines="2" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}"/>
                                 </Button>
                                 <TextBlock Text="{Binding CategoryName}" Classes="Muted"/>
                                 <TextBlock Text="{Binding Servings, StringFormat='{}{0} porții'}" Classes="Muted"/>

@@ -224,11 +224,43 @@ public sealed partial class RegressionTests
             Assert.Equal(4,grid.Columns);
             Assert.All(view.GetVisualDescendants().OfType<FridgeFoodIllustration>(), food=>Assert.Equal(36,food.Height));
             Assert.InRange(view.GetVisualDescendants().OfType<ListBoxItem>().Count(),1,40);
+            void AssertTileAlignment()
+            {
+                var tiles = view.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("food")).ToArray();
+                double CenterX(Control control) => control.TranslatePoint(new Point(control.Bounds.Width/2,0), window)!.Value.X;
+                foreach(var tile in tiles)
+                {
+                    var illustration = tile.GetVisualDescendants().OfType<FridgeFoodIllustration>().Single();
+                    var name = tile.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Classes.Contains("FoodName"));
+                    var count = tile.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Classes.Contains("FoodCount"));
+                    Assert.InRange(Math.Abs(CenterX(tile)-CenterX(illustration)),0,1);
+                    Assert.InRange(Math.Abs(CenterX(name)-CenterX(illustration)),0,1);
+                    Assert.InRange(Math.Abs(CenterX(count)-CenterX(illustration)),0,1);
+                }
+                foreach(var row in tiles.GroupBy(t => Math.Round(t.TranslatePoint(default,window)!.Value.Y)))
+                {
+                    foreach(var labelClass in new[] {"FoodName","FoodCount"})
+                    {
+                        var positions = row.Select(t => t.GetVisualDescendants().OfType<TextBlock>().Single(l => l.Classes.Contains(labelClass)).TranslatePoint(default,window)!.Value.Y).ToArray();
+                        Assert.InRange(positions.Max()-positions.Min(),0,1);
+                    }
+                }
+            }
+            AssertTileAlignment();
+            foreach(var count in view.GetVisualDescendants().OfType<TextBlock>().Where(t => t.Classes.Contains("FoodCount")))
+            {
+                var shelf = count.FindAncestorOfType<ScrollViewer>()!;
+                Assert.InRange(count.TranslatePoint(new Point(0,count.Bounds.Height),shelf)!.Value.Y,0,shelf.Bounds.Height+1);
+            }
             var category=view.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.CommandParameter,"Produse"));
+            var food = category.GetVisualDescendants().OfType<FridgeFoodIllustration>().Single();
+            var beforeSelection = food.TranslatePoint(default, window);
             category.Focus(); window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None); window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None); Dispatcher.UIThread.RunJobs();
             Assert.Equal("Produse",vm.SelectedCategory);
+            window.UpdateLayout(); Assert.Equal(beforeSelection, food.TranslatePoint(default,window));
+            AssertTileAlignment();
             window.Width=1196; window.UpdateLayout(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
-            Assert.Equal(2,grid.Columns);
+            Assert.Equal(2,grid.Columns); AssertTileAlignment();
         }
         finally {window.Close();}
     }

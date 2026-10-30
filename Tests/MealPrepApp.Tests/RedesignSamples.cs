@@ -25,7 +25,7 @@ public static class RedesignSamples
         configure?.Invoke(services);
         return services.BuildServiceProvider();
     }
-    public static void Render(string output)
+    public static void Render(string output, bool alignmentOnly = false)
     {
         Directory.CreateDirectory(output);
         Application.Current!.Resources["MotionDuration"]=TimeSpan.Zero; // deterministic settled-state captures
@@ -82,7 +82,7 @@ public static class RedesignSamples
                 ("shopping",new MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView{DataContext=shopping}),
                 ("ingredients",new MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView{DataContext=ingredients}),
                 ("reports",new MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView{DataContext=reportRoot}),
-                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})})
+                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
             foreach(var size in new[]{new PixelSize(860,600),new PixelSize(1280,800),new PixelSize(1440,900)})
             {
                 foreach(var scale in new[]{1d,1.5d,2d})
@@ -100,8 +100,7 @@ public static class RedesignSamples
                 }
             }
         }
-        RenderIconFrames(output);
-        RenderAuxiliary(provider,output);
+        if (!alignmentOnly) { RenderIconFrames(output); RenderAuxiliary(provider,output); }
         var manifest=Directory.GetFiles(output,"*.png").Order().Select(path => new {File=Path.GetFileName(path),Bytes=new FileInfo(path).Length,SHA256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()});
         File.WriteAllText(Path.Combine(output,"manifest.json"),System.Text.Json.JsonSerializer.Serialize(manifest,new System.Text.Json.JsonSerializerOptions {WriteIndented=true}));
     }

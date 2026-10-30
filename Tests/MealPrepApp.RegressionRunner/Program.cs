@@ -4,7 +4,8 @@ using System.Reflection;
 using MealPrepApp.Tests;
 using Avalonia.Headless;
 
-if(args.Contains("--refinement-screenshots") || args.Contains("--screenshots")) TestHost.BuildAvaloniaApp().SetupWithoutStarting();
+if(args.Contains("--refinement-screenshots") || args.Contains("--screenshots") || args.Contains("--alignment-screenshots")) TestHost.BuildAvaloniaApp().SetupWithoutStarting();
+if(args.Contains("--alignment-screenshots")) { RedesignSamples.Render(Path.GetFullPath("dist/alignment/after"), alignmentOnly: true); return 0; }
 if(args.Contains("--refinement-screenshots")) { RedesignSamples.Render(Path.GetFullPath("dist/refinement/screenshots")); return 0; }
 if(args.Contains("--screenshots")) { RedesignSamples.Render(Path.GetFullPath("docs/redesign/screenshots")); return 0; }
 using var session = HeadlessUnitTestSession.StartNew(typeof(TestHost), AvaloniaTestIsolationLevel.PerTest);

@@ -10,7 +10,7 @@ public sealed class FridgeFoodIllustration : Control
     public static readonly StyledProperty<string> KindProperty = AvaloniaProperty.Register<FridgeFoodIllustration, string>(nameof(Kind), "Other");
     public string Kind { get => GetValue(KindProperty); set => SetValue(KindProperty, value); }
     static FridgeFoodIllustration() => AffectsRender<FridgeFoodIllustration>(KindProperty);
-    private static readonly IBrush Cream = Brush.Parse("#F7EAD4"), Green = Brush.Parse("#9BB77B"), LightGreen = Brush.Parse("#C5D79C"), Red = Brush.Parse("#C17C70"), Gold = Brush.Parse("#E9B969"), Brown = Brush.Parse("#78513B");
+    private static readonly IBrush Cream = Brush.Parse("#F7EAD4"), Green = Brush.Parse("#9BB77B"), LightGreen = Brush.Parse("#C5D79C"), Red = Brush.Parse("#C17C70"), Gold = Brush.Parse("#E9B969");
     private static readonly Pen Outline = new(Brush.Parse("#49392E"), 1.7, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
     private static readonly Dictionary<string, Geometry> Shapes = new()
     {
@@ -23,8 +23,18 @@ public sealed class FridgeFoodIllustration : Control
     };
     public override void Render(DrawingContext context)
     {
-        var scale = Math.Min(Bounds.Width / 80, Bounds.Height / 68);
-        using var transform = context.PushTransform(Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation((Bounds.Width - 80 * scale) / 2, (Bounds.Height - 68 * scale) / 2));
+        // Normalize the painted bounds, not the original artboard: jars and short
+        // containers otherwise appear lower/smaller than lettuce in the same tile.
+        var art = Kind switch
+        {
+            "Produce" => new Rect(9,10,61,49), "Meat" => new Rect(10,13,62,45),
+            "Dairy" => new Rect(24,15,45,48), "Jar" => new Rect(21,12,38,47),
+            "Herbs" => new Rect(16,17,49,43), "Pasta" => new Rect(19,13,40,46),
+            "Drink" => new Rect(24,7,32,55), _ => new Rect(13,23,55,35)
+        };
+        var scale = Math.Max(0, Math.Min((Bounds.Width - 8) / art.Width, (Bounds.Height - 4) / art.Height));
+        using var transform = context.PushTransform(Matrix.CreateTranslation(-art.Center.X, -art.Center.Y)
+            * Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation(Bounds.Width / 2, Bounds.Height / 2));
         void Ellipse(IBrush fill, double x, double y, double rx, double ry) => context.DrawEllipse(fill, Outline, new Point(x,y), rx,ry);
         void Box(IBrush fill, double x, double y, double w, double h, double r = 3) => context.DrawRectangle(fill, Outline, new Rect(x,y,w,h),r,r);
         void Line(double x, double y, double xx, double yy) => context.DrawLine(Outline,new Point(x,y),new Point(xx,yy));
