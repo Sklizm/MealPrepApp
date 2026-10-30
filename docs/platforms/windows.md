@@ -69,6 +69,6 @@ in CI but does not have a separate installer.
 ## Troubleshooting
 
 - If the installer asks you to close the app, close every running instance and retry.
-- If sign-in cannot reach SQL Server, select **Conexiune la baza de date** on the login screen. Check network or VPN connectivity, the server address and port, certificate settings, and database credentials.
+- If sign-in cannot reach SQL Server, select **Database connection** on the login screen. Check network or VPN connectivity, the server address and port, certificate settings, and database credentials.
 - Diagnostics are stored under `%LOCALAPPDATA%\MealPrepApp\logs`; credentials are excluded from diagnostic messages.
 - Installer testing belongs on a disposable Windows worker: `pwsh -File scripts/test-windows-install.ps1`. It creates and removes test user settings and refuses an existing installation/profile.

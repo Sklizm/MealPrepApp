@@ -39,7 +39,7 @@ public sealed partial class RegisterViewModel : ViewModelBase
         var validationError = Validate(password, confirmPassword);
         if (validationError is not null)
         {
-            ErrorMessage = validationError;
+            ErrorContent = validationError;
             return;
         }
 
@@ -53,15 +53,15 @@ public sealed partial class RegisterViewModel : ViewModelBase
         catch (AppDbException ex)
         {
             // 2627 / 2601 = unique-constraint violation on Username or Email.
-            ErrorMessage = ex.ErrorNumber is 2627 or 2601
-                ? "Numele de utilizator sau emailul este deja folosit."
-                : ex.FriendlyMessage;
+            ErrorContent = ex.ErrorNumber is 2627 or 2601
+                ? L.Message("Text.TheUsernameOrEmailIsAlreadyInUse")
+                : ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -69,20 +69,20 @@ public sealed partial class RegisterViewModel : ViewModelBase
         }
     }
 
-    private string? Validate(string password, string confirmPassword)
+    private LocalizedMessage? Validate(string password, string confirmPassword)
     {
         if (string.IsNullOrWhiteSpace(Username))
-            return "Introdu un nume de utilizator.";
+            return L.Message("Text.EnterAUsername");
         if (Username.Trim().Length > 50)
-            return "Numele de utilizator este prea lung (maxim 50 de caractere).";
+            return L.Message("Text.TheUsernameIsTooLongMaximum50Characters");
         if (string.IsNullOrWhiteSpace(Email) || !Email.Contains('@'))
-            return "Introdu o adresa de email valida.";
+            return L.Message("Text.EnterAValidEmailAddress");
         if (Email.Trim().Length > 255)
-            return "Emailul este prea lung (maxim 255 de caractere).";
+            return L.Message("Text.TheEmailIsTooLongMaximum255Characters");
         if (password.Length < 6)
-            return "Parola trebuie sa aiba cel putin 6 caractere.";
+            return L.Message("Text.ThePasswordMustContainAtLeast6Characters");
         if (password != confirmPassword)
-            return "Parolele nu coincid.";
+            return L.Message("Text.ThePasswordsDoNotMatch");
         return null;
     }
 }

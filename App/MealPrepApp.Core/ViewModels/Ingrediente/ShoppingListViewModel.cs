@@ -22,10 +22,11 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     public ObservableCollection<ShoppingSnapshot> Snapshots { get; }=new();
     public ObservableCollection<ShoppingGroup> Groups { get; }=new();
     [ObservableProperty] private ShoppingSnapshot? _selectedSnapshot;
-    [ObservableProperty] private string _purchaseFilter="Toate";
-    public IReadOnlyList<string> PurchaseFilters { get; }=new[]{"Toate","De cumpărat","Cumpărate"};
-    public string ProgressText => $"{Rows.Count(r=>r.IsPurchased)} din {Rows.Count} cumpărate";
-    public string PlainText => string.Join(Environment.NewLine,Rows.Select(r=>$"[{(r.IsPurchased ? "x" : " ")}] {r.IngredientName}: {r.ToBuyQty:0.##} {r.UnitAbbreviation}"));
+    [ObservableProperty] private string _purchaseFilter=PurchaseFilterIds.All;
+    public IReadOnlyList<string> PurchaseFilters { get; }=new[]{PurchaseFilterIds.All,PurchaseFilterIds.ToBuy,PurchaseFilterIds.Purchased};
+    [LocalizedProperty]
+    public string ProgressText => L.Text("Shopping.Progress", Rows.Count(r=>r.IsPurchased), Rows.Count);
+    public string PlainText => L.Text("Text.ShoppingList") + $" ({StartDate:d} – {EndDate:d})" + Environment.NewLine + ProgressText + Environment.NewLine + string.Join(Environment.NewLine,Rows.Select(r=>$"[{(r.IsPurchased ? "x" : " ")}] {r.IngredientName}: {r.ToBuyQty:0.##} {r.UnitAbbreviation}"));
     partial void OnPurchaseFilterChanged(string value)=>Regroup();
     partial void OnSelectedSnapshotChanged(ShoppingSnapshot? value)
     {
@@ -44,15 +45,16 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
         GenerateCommand.NotifyCanExecuteChanged(); TogglePurchasedCommand.NotifyCanExecuteChanged();
         ImportItemCommand.NotifyCanExecuteChanged(); ExportExcelCommand.NotifyCanExecuteChanged();
     }
-    public void Dispose()
+    public override void Dispose()
     {
+        ReleaseLocalization();
         if (_disposed) return;
         _disposed = true; ++_readVersion; _readCts?.Cancel(); _readCts?.Dispose();
     }
     private void Regroup()
     {
         Groups.Clear();
-        foreach(var group in Rows.Where(r=>PurchaseFilter=="Toate" || (PurchaseFilter=="Cumpărate" ? r.IsPurchased : !r.IsPurchased)).GroupBy(r=>r.CategoryName)) Groups.Add(new ShoppingGroup(group.Key,group));
+        foreach(var group in Rows.Where(r=>PurchaseFilter==PurchaseFilterIds.All || (PurchaseFilter==PurchaseFilterIds.Purchased ? r.IsPurchased : !r.IsPurchased)).GroupBy(r=>r.CategoryName)) Groups.Add(new ShoppingGroup(group.Key,group));
         OnPropertyChanged(nameof(ProgressText)); OnPropertyChanged(nameof(PlainText));
     }
     private async Task ReadAsync(bool refreshSnapshots, int? selectId = null)
@@ -91,7 +93,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
             if (version == _readVersion && !_disposed)
             {
                 AppDiagnostics.Record(ex);
-                ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Lista nu a putut fi încărcată. Încearcă din nou.";
+                ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheListCouldNotBeLoadedTryAgain");
             }
         }
         finally { if (version == _readVersion && !_disposed) { _isLoading = false; UpdateBusy(); } }
@@ -104,7 +106,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            if (!_disposed) { AppDiagnostics.Record(ex); ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Lista nu a putut fi actualizată. Încearcă din nou."; }
+            if (!_disposed) { AppDiagnostics.Record(ex); ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheListCouldNotBeUpdatedTryAgain"); }
         }
         finally { if (!_disposed) { IsMutating = false; UpdateBusy(); } }
     }
@@ -119,10 +121,10 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     private Task ImportItem(ShoppingListRow? row) => row is null || !row.CanImport || !Rows.Contains(row) ? Task.CompletedTask : MutateAsync(async () =>
     {
         var userId = _session.CurrentUserId;
-        if (!await _dialog.ConfirmAsync("Adaugă în frigider", $"Adaugi {row.ToBuyQty:0.##} {row.UnitAbbreviation} {row.IngredientName} în frigider? Acest articol poate fi importat o singură dată.")) return;
+        if (!await _dialog.ConfirmAsync(L.Message("Text.AddToPantry"), L.Message("Shopping.ImportPrompt", row.ToBuyQty, row.UnitAbbreviation, row.IngredientName))) return;
         await _shopping.ImportItemAsync(userId, row.ItemID);
         await ReadAsync(false);
-        if (!_disposed) Notification = "Cantitatea a fost adăugată în frigider.";
+        if (!_disposed) NotificationContent = L.Message("Text.QuantityAddedToPantry");
     });
     [RelayCommand] private Task Retry()=>LoadAsync();
     public ObservableCollection<ShoppingListRow> Rows { get; } = new();
@@ -156,7 +158,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
         ClearError();
         if (EndDate < StartDate)
         {
-            ErrorMessage = "Data de sfârșit trebuie să fie după data de început.";
+            ErrorContent = L.Message("Text.TheEndDateMustBeAfterTheStartDate");
             return Task.CompletedTask;
         }
         var userId = _session.CurrentUserId; var start = StartDate; var end = EndDate;
@@ -172,24 +174,24 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     {
         if (Rows.Count == 0)
         {
-            await _dialog.ShowInfoAsync("Nimic de exportat", "Genereaza intai lista de cumparaturi.");
+            await _dialog.ShowInfoAsync(L.Message("Text.NothingToExport"), L.Message("Text.GenerateAShoppingListFirst"));
             return;
         }
 
-        var defaultFileName = $"lista-cumparaturi-{StartDate:yyyyMMdd}-{EndDate:yyyyMMdd}.xlsx";
-        var savePath = await _filePicker.SaveFileDialogAsync("Exporta lista de cumparaturi", defaultFileName, "Excel|*.xlsx");
+        var defaultFileName = $"shopping-list-{StartDate:yyyyMMdd}-{EndDate:yyyyMMdd}.xlsx";
+        var savePath = await _filePicker.SaveFileDialogAsync(L.Text("Text.ExportShoppingList"), defaultFileName, "Excel|*.xlsx");
         if (string.IsNullOrEmpty(savePath)) return;
 
         try
         {
             using var wb = new XLWorkbook();
-            var ws = wb.AddWorksheet("Lista cumparaturi");
+            var ws = wb.AddWorksheet(L.Text("Text.ShoppingList351"));
 
-            ws.Cell(1, 1).Value = "Ingredient";
-            ws.Cell(1, 2).Value = "Necesar";
-            ws.Cell(1, 3).Value = "In frigider";
-            ws.Cell(1, 4).Value = "De cumparat";
-            ws.Cell(1, 5).Value = "Unitate";
+            ws.Cell(1, 1).Value = L.Text("Text.Ingredient165");
+            ws.Cell(1, 2).Value = L.Text("Text.Required");
+            ws.Cell(1, 3).Value = L.Text("Text.InPantry");
+            ws.Cell(1, 4).Value = L.Text("Text.ToBuy");
+            ws.Cell(1, 5).Value = L.Text("Text.Unit169");
             ws.Range(1, 1, 1, 5).Style.Font.Bold = true;
 
             var row = 2;
@@ -205,11 +207,12 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
             ws.Columns().AdjustToContents();
             wb.SaveAs(savePath);
 
-            Notification="Lista a fost exportată.";
+            NotificationContent = L.Message("Text.ListExported");
         }
         catch (IOException ex)
         {
-            await _dialog.ShowErrorAsync($"Nu am putut salva fisierul: {ex.Message}");
+            AppDiagnostics.Record(ex);
+            await _dialog.ShowErrorAsync(L.Message("Error.SaveFile"));
         }
     }
 

@@ -31,7 +31,7 @@ public sealed class NavigationService : INavigationService, IDisposable
             if (viewModel is IAsyncLoadable loadable) await loadable.LoadAsync();
         }
         catch(OperationCanceledException) { }
-        catch(Exception ex) { AppDiagnostics.Record(ex); await _services.GetRequiredService<IDialogService>().ShowErrorAsync("Secțiunea nu a putut fi încărcată. Încearcă din nou."); }
+        catch(Exception ex) { AppDiagnostics.Record(ex); await _services.GetRequiredService<IDialogService>().ShowErrorAsync(L.Message("Text.ThisSectionCouldNotBeLoadedTryAgain")); }
         finally { _gate.Release(); }
     }
 }

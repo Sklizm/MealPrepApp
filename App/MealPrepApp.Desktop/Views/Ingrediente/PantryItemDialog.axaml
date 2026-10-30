@@ -1,10 +1,10 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
         <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
             <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
         </Border>
         <StackPanel Grid.Row="1" Margin="20" Spacing="8">
-            <TextBlock Text="Ingredient *" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.Ingredient}" Classes="Muted"/>
             <ComboBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" IsEnabled="{Binding !IsEdit}" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="models:Ingredient">
@@ -12,7 +12,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBlock Text="Unitate *" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.Unit}" Classes="Muted"/>
             <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" IsEnabled="{Binding !IsEdit}" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="models:Unit">
@@ -20,14 +20,14 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBlock Text="Cantitate *" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.Quantity}" Classes="Muted"/>
             <TextBox Text="{Binding Quantity}" Width="140" HorizontalAlignment="Left"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
         </StackPanel>
         <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Content="Renunță" Classes="Secondary" Click="OnCancelClick"/>
-                <Button Content="Salvează" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
+                <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>
+                <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
             </StackPanel>
         </Border>
     </Grid>

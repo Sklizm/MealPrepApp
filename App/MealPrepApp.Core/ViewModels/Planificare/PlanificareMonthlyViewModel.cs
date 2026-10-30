@@ -25,7 +25,8 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
     private readonly ISessionService _session;
 
     public ObservableCollection<DayCellViewModel> Days { get; } = new();
-    public string[] WeekdayHeaders { get; } = MealSlots.WeekdayHeaders();
+    [LocalizedProperty]
+    public string[] WeekdayHeaders => MealSlots.WeekdayHeaders();
 
     [ObservableProperty]
     private int _year = DateTime.Today.Year;
@@ -33,8 +34,8 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
     [ObservableProperty]
     private int _month = DateTime.Today.Month;
 
-    [ObservableProperty]
-    private string _monthLabel = MealSlots.MonthLabel(DateTime.Today.Year, DateTime.Today.Month);
+    [LocalizedProperty]
+    public string MonthLabel { get => MealSlots.MonthLabel(Year, Month); set => OnPropertyChanged(); }
 
     public PlanificareMonthlyViewModel(
         IServiceProvider services,
@@ -80,13 +81,13 @@ public sealed partial class PlanificareMonthlyViewModel : ViewModelBase, IAsyncL
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

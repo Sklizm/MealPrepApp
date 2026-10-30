@@ -1,18 +1,18 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredientNutritionDialog" x:DataType="vm:IngredientNutritionDialogViewModel" Title="Nutritie ingredient" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredientNutritionDialog" x:DataType="vm:IngredientNutritionDialogViewModel" Title="{loc:Loc Text.IngredientNutrition}" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
         <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
-            <TextBlock Text="Nutriție ingredient" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="{loc:Loc Text.IngredientNutrition104}" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
         </Border>
         <StackPanel Grid.Row="1" Margin="20" Spacing="8">
             <TextBlock Text="{Binding IngredientName}" Classes="Header"/>
-            <TextBlock Text="Completeaza valorile nutritionale pentru o cantitate standard." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.EnterNutritionValuesForAStandardQuantity}" Classes="Muted" TextWrapping="Wrap"/>
             <Grid ColumnDefinitions="*,12,*">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Cantitate baza" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.BaseQuantity}" Classes="Muted"/>
                     <TextBox Text="{Binding BasisQuantity}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Text="Unitate baza" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.BaseUnit}" Classes="Muted"/>
                     <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="models:Unit">
@@ -23,20 +23,20 @@
                 </StackPanel>
             </Grid>
             <StackPanel Spacing="4">
-                <TextBlock Text="Calorii" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.Calories}" Classes="Muted"/>
                 <TextBox Text="{Binding Calories}"/>
             </StackPanel>
             <Grid ColumnDefinitions="*,10,*,10,*">
                 <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Proteine (g)" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.ProteinG}" Classes="Muted"/>
                     <TextBox Text="{Binding ProteinGrams}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="4">
-                    <TextBlock Text="Carbohidrati (g)" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.CarbohydratesG}" Classes="Muted"/>
                     <TextBox Text="{Binding CarbsGrams}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="4" Spacing="4">
-                    <TextBlock Text="Grasimi (g)" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.FatG}" Classes="Muted"/>
                     <TextBox Text="{Binding FatGrams}"/>
                 </StackPanel>
             </Grid>
@@ -44,8 +44,8 @@
         </StackPanel>
         <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Content="Renunță" Classes="Secondary" Click="OnCancelClick"/>
-                <Button Content="Salvează" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
+                <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>
+                <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
             </StackPanel>
         </Border>
     </Grid>

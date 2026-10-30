@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:controls="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.FrigiderView" x:DataType="vm:FrigiderViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:controls="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.FrigiderView" x:DataType="vm:FrigiderViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Styles>
         <Style Selector="UniformGrid"><Setter Property="Columns" Value="2"/></Style>
         <Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/></Style>
@@ -31,10 +31,10 @@
     </UserControl.Styles>
     <Grid Margin="32" RowDefinitions="Auto,Auto,*">
         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-            <StackPanel Spacing="2"><TextBlock Text="Frigider" Classes="Title"/><TextBlock Text="{Binding StockSummary}" Classes="Muted"/></StackPanel>
+            <StackPanel Spacing="2"><TextBlock Text="{loc:Loc Text.Pantry}" Classes="Title"/><TextBlock Text="{Binding StockSummary}" Classes="Muted"/></StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
-                <Button Content="Ce pot găti?" Classes="Secondary" Command="{Binding CookCommand}" Margin="0,0,8,0" IsEnabled="{Binding !IsBusy}"/>
-                <Button Content="+ Adaugă" Classes="Primary" Command="{Binding AddItemCommand}" IsEnabled="{Binding !IsBusy}"/>
+                <Button Content="{loc:Loc Text.WhatCanICook}" Classes="Secondary" Command="{Binding CookCommand}" Margin="0,0,8,0" IsEnabled="{Binding !IsBusy}"/>
+                <Button Content="{loc:Loc Text.Add}" Classes="Primary" Command="{Binding AddItemCommand}" IsEnabled="{Binding !IsBusy}"/>
             </WrapPanel>
         </Grid>
         <StackPanel Grid.Row="1" Spacing="4" Margin="0,0,0,8">
@@ -45,7 +45,7 @@
         <Grid Grid.Row="2" x:Name="Panels" ColumnDefinitions="360,20,*" RowDefinitions="*">
             <Border x:Name="FridgePanel" Background="{DynamicResource SurfaceSecondary}" BorderBrush="{DynamicResource Divider}" BorderThickness="2" CornerRadius="24" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto">
-                    <Grid ColumnDefinitions="*,Auto" Margin="4,0,4,8"><TextBlock Text="Stocul tău" Classes="Header"/><Ellipse Grid.Column="1" Width="8" Height="8" Fill="{DynamicResource ActionPrimary}" VerticalAlignment="Center"/></Grid>
+                    <Grid ColumnDefinitions="*,Auto" Margin="4,0,4,8"><TextBlock Text="{loc:Loc Text.YourStock}" Classes="Header"/><Ellipse Grid.Column="1" Width="8" Height="8" Fill="{DynamicResource ActionPrimary}" VerticalAlignment="Center"/></Grid>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding Categories}">
                             <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -55,7 +55,7 @@
                                         <Button Classes="food" Classes.selected="{Binding IsSelected}" Command="{Binding $parent[UserControl].DataContext.SelectCategoryCommand}" CommandParameter="{Binding Name}" AutomationProperties.Name="{Binding AccessibleName}">
                                             <StackPanel Spacing="4">
                                                 <controls:FridgeFoodIllustration Kind="{Binding Illustration}" Opacity="{Binding IllustrationOpacity}"/>
-                                                <Border Classes="FoodNameSlot"><TextBlock Text="{Binding Name}" Classes="FoodName" MaxLines="2" ToolTip.Tip="{Binding Name}"/></Border>
+                                                <Border Classes="FoodNameSlot"><TextBlock Text="{loc:Display Name}" Classes="FoodName" MaxLines="2" ToolTip.Tip="{loc:Display Name}"/></Border>
                                                 <TextBlock Text="{Binding Summary}" Classes="Muted FoodCount"/>
                                             </StackPanel>
                                         </Button>
@@ -64,18 +64,18 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                    <TextBlock Grid.Row="2" Text="Alege un produs pentru a vedea categoria" Classes="Muted FridgeHint" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <TextBlock Grid.Row="2" Text="{loc:Loc Text.SelectAProductToSeeItsCategory}" Classes="Muted FridgeHint" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 </Grid>
             </Border>
             <Grid x:Name="StockPanel" Grid.Column="2" RowDefinitions="Auto,Auto,*">
                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                    <TextBlock Text="{Binding CategoryTitle}" Classes="Header" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                    <Button Grid.Column="1" Content="Toate" Classes="Secondary" Command="{Binding SelectCategoryCommand}" ToolTip.Tip="Toate ingredientele"/>
+                    <TextBlock Text="{loc:Display CategoryTitle}" Classes="Header" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <Button Grid.Column="1" Content="{loc:Loc Text.All}" Classes="Secondary" Command="{Binding SelectCategoryCommand}" ToolTip.Tip="{loc:Loc Text.AllIngredients}"/>
                 </Grid>
                 <Grid Grid.Row="1" ColumnDefinitions="*,150,Auto" Margin="0,0,0,8">
-                    <TextBox Text="{Binding SearchTerm}" Watermark="Caută ingrediente…" AutomationProperties.Name="Caută în categoria selectată" Margin="0,0,6,0"/>
-                    <ComboBox Grid.Column="1" ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" HorizontalAlignment="Stretch" AutomationProperties.Name="Sortează ingredientele" Margin="0,0,6,0"/>
-                    <Button Grid.Column="2" Classes="Secondary StockIcon" Command="{Binding RetryCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Reîncarcă / încearcă din nou" AutomationProperties.Name="Reîncarcă frigiderul">
+                    <TextBox Text="{Binding SearchTerm}" Watermark="{loc:Loc Text.SearchIngredients}" AutomationProperties.Name="{loc:Loc Text.SearchSelectedCategory}" Margin="0,0,6,0"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.SortIngredients}" Margin="0,0,6,0"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:Display}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+                    <Button Grid.Column="2" Classes="Secondary StockIcon" Command="{Binding RetryCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="{loc:Loc Text.ReloadTryAgain}" AutomationProperties.Name="{loc:Loc Text.ReloadPantry}">
                         <Path Width="18" Height="18" Stretch="Uniform" Data="M 18,8 A 7,7 0 1 0 19,14 M 18,3 L 18,8 L 13,8" Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" StrokeLineCap="Round"/>
                     </Button>
                 </Grid>
@@ -85,17 +85,17 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:FridgeStockRow">
                                 <StackPanel>
-                                <TextBlock Text="{Binding Item.CategoryName}" IsVisible="{Binding StartsCategory}" Classes="Muted" FontWeight="SemiBold" Margin="4,8,0,6"/>
+                                <TextBlock Text="{loc:Display Item.CategoryName}" IsVisible="{Binding StartsCategory}" Classes="Muted" FontWeight="SemiBold" Margin="4,8,0,6"/>
                                 <Border Classes="Card" Margin="0,0,0,6" Padding="12">
                                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                                         <TextBlock Text="{Binding Item.IngredientName}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                         <StackPanel Grid.Row="1" Spacing="2" Margin="0,4,8,0">
-                                            <TextBlock Text="{Binding Item.CategoryName}" Classes="Muted" FontSize="11"/>
+                                            <TextBlock Text="{loc:Display Item.CategoryName}" Classes="Muted" FontSize="11"/>
                                             <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{Binding Item.Quantity, StringFormat='{}{0:0.##}'}"/><TextBlock Text="{Binding Item.UnitAbbreviation}"/></StackPanel>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Grid.RowSpan="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsEnabled="{Binding !$parent[UserControl].DataContext.IsBusy}">
-                                            <Button Content="Editează" Classes="Secondary" Padding="8,4" Command="{Binding $parent[UserControl].DataContext.EditItemCommand}" CommandParameter="{Binding Item}"/>
-                                            <Button Classes="Danger StockIcon" Command="{Binding $parent[UserControl].DataContext.RemoveItemCommand}" CommandParameter="{Binding Item}" ToolTip.Tip="Șterge din frigider" AutomationProperties.Name="Șterge din frigider">
+                                            <Button Content="{loc:Loc Text.Edit}" Classes="Secondary" Padding="8,4" Command="{Binding $parent[UserControl].DataContext.EditItemCommand}" CommandParameter="{Binding Item}"/>
+                                            <Button Classes="Danger StockIcon" Command="{Binding $parent[UserControl].DataContext.RemoveItemCommand}" CommandParameter="{Binding Item}" ToolTip.Tip="{loc:Loc Text.RemoveFromPantry}" AutomationProperties.Name="{loc:Loc Text.RemoveFromPantry}">
                                                 <Path Data="{StaticResource IconClose}" Width="12" Height="12" Stretch="Uniform" Stroke="{DynamicResource OnDanger}" StrokeThickness="1.7"/>
                                             </Button>
                                         </StackPanel>

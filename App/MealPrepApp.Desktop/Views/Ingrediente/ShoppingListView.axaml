@@ -1,18 +1,18 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView" x:DataType="vm:ShoppingListViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView" x:DataType="vm:ShoppingListViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32" RowDefinitions="Auto,Auto,Auto,Auto,*">
         <StackPanel Spacing="8">
-            <TextBlock Text="Cumpărături" Classes="Title"/>
-            <TextBlock Text="O listă salvată pentru fiecare plan. Bifează, apoi adaugă explicit cumpărăturile în frigider." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.Shopping}" Classes="Title"/>
+            <TextBlock Text="{loc:Loc Text.ASavedListForEachPlanCheckPurchasesThenExplicitlyAddThemToThePantry}" Classes="Muted" TextWrapping="Wrap"/>
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0,16">
-            <CalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="De la"/>
-            <CalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="Până la"/>
-            <Button Classes="Primary" Content="Generează o listă nouă" Command="{Binding GenerateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
-            <Button Content="Export Excel" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
-            <Button Content="Copiază textul" Classes="Secondary" Click="CopyText" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
+            <loc:LocalizedCalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.From}"/>
+            <loc:LocalizedCalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.To}"/>
+            <Button Classes="Primary" Content="{loc:Loc Text.GenerateANewList}" Command="{Binding GenerateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
+            <Button Content="{loc:Loc Text.ExportExcel}" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
+            <Button Content="{loc:Loc Text.CopyText}" Classes="Secondary" Click="CopyText" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
         </WrapPanel>
         <StackPanel Grid.Row="2" Spacing="8">
-            <ComboBox IsEnabled="{Binding !IsMutating}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="Liste salvate">
+            <ComboBox IsEnabled="{Binding !IsMutating}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.SavedLists}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="models:ShoppingSnapshot">
                         <TextBlock Text="{Binding Label}"/>
@@ -20,16 +20,16 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <WrapPanel>
-                <ComboBox ItemsSource="{Binding PurchaseFilters}" SelectedItem="{Binding PurchaseFilter}" Width="160" AutomationProperties.Name="Filtrează cumpărăturile"/>
+                <ComboBox ItemsSource="{Binding PurchaseFilters}" SelectedItem="{Binding PurchaseFilter}" Width="160" AutomationProperties.Name="{loc:Loc Text.FilterPurchases}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:Display}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
                 <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="16,0"/>
             </WrapPanel>
-            <TextBlock Text="Se normalizează doar unitățile de masă și volum compatibile. Celelalte unități rămân separate; cantitățile de cumpărat se rotunjesc în sus la 0,01." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.OnlyCompatibleMassAndVolumeUnitsAreNormalizedOtherUnitsRemainSeparatePurchaseQuantitiesRou}" Classes="Muted" TextWrapping="Wrap"/>
             <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}" IsVisible="{Binding Notification, Converter={StaticResource NotNullToBool}}" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+            <Button Classes="Primary" Content="{loc:Loc Text.TryAgain}" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <ScrollViewer Grid.Row="4" Margin="0,16,0,0">
             <StackPanel>
@@ -37,7 +37,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShoppingGroup">
                             <StackPanel Margin="0,0,0,24" Spacing="8">
-                                <TextBlock Text="{Binding Name}" Classes="Header"/>
+                                <TextBlock Text="{loc:Display Name}" Classes="Header"/>
                                 <ItemsControl ItemsSource="{Binding}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:ShoppingListRow">
@@ -62,7 +62,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="Niciun articol în această vizualizare. Generează o listă sau schimbă filtrul." Classes="Muted" TextWrapping="Wrap">
+                <TextBlock Text="{loc:Loc Text.NoItemsInThisViewGenerateAListOrChangeTheFilter}" Classes="Muted" TextWrapping="Wrap">
                     <TextBlock.IsVisible>
                         <MultiBinding Converter="{StaticResource ShowEmpty}">
                             <Binding Path="Groups.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/>

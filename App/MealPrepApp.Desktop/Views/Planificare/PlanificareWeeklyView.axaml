@@ -1,24 +1,24 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareWeeklyView" x:DataType="vm:PlanificareWeeklyViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareWeeklyView" x:DataType="vm:PlanificareWeeklyViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32" RowDefinitions="Auto,Auto,*">
-        <StackPanel Spacing="12"><TextBlock Text="Planificare" Classes="Title"/>
+        <StackPanel Spacing="12"><TextBlock Text="{loc:Loc Text.Planner}" Classes="Title"/>
             <WrapPanel>
-                <Button Content="Precedentă" Classes="Secondary" Command="{Binding PrevWeekCommand}" Margin="0,0,8,8"/>
-                <Button Content="Săptămâna curentă" Classes="Secondary" Command="{Binding ThisWeekCommand}" Margin="0,0,8,8"/>
-                <Button Content="Următoare" Classes="Secondary" Command="{Binding NextWeekCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.Previous149}" Classes="Secondary" Command="{Binding PrevWeekCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.CurrentWeek}" Classes="Secondary" Command="{Binding ThisWeekCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.Next151}" Classes="Secondary" Command="{Binding NextWeekCommand}" Margin="0,0,8,8"/>
                 <TextBlock Text="{Binding WeekLabel}" Classes="Header" Margin="8"/>
-                <CheckBox Content="Agendă" IsChecked="{Binding AgendaView}" Margin="8"/>
+                <CheckBox Content="{loc:Loc Text.Agenda}" IsChecked="{Binding AgendaView}" Margin="8"/>
             </WrapPanel>
             <WrapPanel>
-                <TextBlock Text="Copiază săptămâna începând cu" VerticalAlignment="Center" Margin="0,0,8,8"/>
-                <CalendarDatePicker SelectedDate="{Binding CopyTarget}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="Săptămâna destinație"/>
-                <Button Content="Previzualizează copierea" Classes="Secondary" Command="{Binding CopyWeekCommand}" Margin="0,0,8,8"/>
+                <TextBlock Text="{loc:Loc Text.CopyWeekStartingOn}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                <loc:LocalizedCalendarDatePicker SelectedDate="{Binding CopyTarget}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.DestinationWeek}"/>
+                <Button Content="{loc:Loc Text.PreviewCopy}" Classes="Secondary" Command="{Binding CopyWeekCommand}" Margin="0,0,8,8"/>
             </WrapPanel>
-            <TextBlock Text="Mută mesele prin tragere sau prin butonul Deschide / mută. Duplicarea permite alegerea datei și a porțiilor." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.MoveMealsByDraggingOrUsingOpenMoveChooseADateAndServingsWhenDuplicating}" Classes="Muted" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="1">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
-            <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
+            <Button Classes="Primary" Content="{loc:Loc Text.TryAgain}" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
             <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}"/>
         </StackPanel>
         <ScrollViewer Grid.Row="2" Margin="0,16,0,0">
@@ -32,7 +32,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" Classes="Muted" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{loc:Display}" Classes="Muted" HorizontalAlignment="Center"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -58,15 +58,15 @@
                                                                         <Button Classes="Primary" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" Foreground="{DynamicResource OnMeal}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" PointerPressed="OnMealPointerPressed">
                                                                             <StackPanel>
                                                                                 <TextBlock Text="{Binding RecipeTitle}" TextWrapping="Wrap" Foreground="{DynamicResource OnMeal}"/>
-                                                                                <TextBlock Text="{Binding Servings, StringFormat='{}{0} porții'}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
+                                                                                <TextBlock Text="{loc:Format Count.Servings, Servings}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
                                                                             </StackPanel>
                                                                         </Button>
-                                                                        <Button Content="Duplică" Classes="Link" FontSize="12" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                                        <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" FontSize="12" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                                                     </StackPanel>
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
-                                                        <Button Content="Adaugă" Classes="Link" Command="{Binding DataContext.AddInCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                        <Button Content="{loc:Loc Text.Add158}" Classes="Link" Command="{Binding DataContext.AddInCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>
@@ -76,14 +76,14 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="Alte mese • deserturi, băuturi și categorii suplimentare" Classes="Header" TextWrapping="Wrap" Margin="0,16" IsVisible="{Binding SupplementaryEntries.Count, Converter={StaticResource NonEmptyToBool}}"/>
+                    <TextBlock Text="{loc:Loc Text.OtherMealsDessertsDrinksAndAdditionalCategories}" Classes="Header" TextWrapping="Wrap" Margin="0,16" IsVisible="{Binding SupplementaryEntries.Count, Converter={StaticResource NonEmptyToBool}}"/>
                     <ItemsControl ItemsSource="{Binding SupplementaryEntries}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:MealPlanEntry">
                                 <Button Classes="Secondary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,4">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding PlannedDate, StringFormat='{}{0:dd.MM}'}"/>
-                                        <TextBlock Text="{Binding CategoryName}" Classes="Muted"/>
+                                        <TextBlock Text="{loc:Format Date.Short, PlannedDate}"/>
+                                        <TextBlock Text="{loc:Display CategoryName}" Classes="Muted"/>
                                         <TextBlock Text="{Binding RecipeTitle}"/>
                                     </StackPanel>
                                 </Button>
@@ -96,20 +96,20 @@
                         <DataTemplate x:DataType="models:MealPlanEntry">
                             <Border Classes="Card" Margin="0,4">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="{Binding PlannedDate, StringFormat='{}{0:dddd dd.MM}'}" Classes="Muted"/>
-                                    <TextBlock Text="{Binding CategoryName}"/>
+                                    <TextBlock Text="{loc:Format Date.Long, PlannedDate}" Classes="Muted"/>
+                                    <TextBlock Text="{loc:Display CategoryName}"/>
                                     <TextBlock Text="{Binding RecipeTitle}" Classes="Header" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding Servings, StringFormat='{}{0} porții'}"/>
+                                    <TextBlock Text="{loc:Format Count.Servings, Servings}"/>
                                     <WrapPanel>
-                                        <Button Content="Deschide / mută" Classes="Secondary" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,8,0"/>
-                                        <Button Content="Duplică" Classes="Link" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <Button Content="{loc:Loc Text.OpenMove}" Classes="Secondary" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,8,0"/>
+                                        <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Classes="Primary" Content="Adaugă o masă" Command="{Binding AddInCellCommand}" CommandParameter="{Binding DefaultCell}" HorizontalAlignment="Left"/>
+                <Button Classes="Primary" Content="{loc:Loc Text.AddAMeal}" Command="{Binding AddInCellCommand}" CommandParameter="{Binding DefaultCell}" HorizontalAlignment="Left"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

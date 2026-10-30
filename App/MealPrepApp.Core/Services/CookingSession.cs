@@ -13,7 +13,7 @@ public sealed partial class CookingIngredient : ObservableObject
     [ObservableProperty] private bool _isChecked;
 }
 // Scoped to login session. Uses a monotonic clock; the shell owns UI ticking.
-public sealed partial class CookingSession : ObservableObject
+public sealed partial class CookingSession : LocalizedObservableObject
 {
     private readonly TimeProvider _clock;
     private long _started;
@@ -24,7 +24,10 @@ public sealed partial class CookingSession : ObservableObject
     [ObservableProperty] private decimal _timerMinutes=10;
     [ObservableProperty] private bool _isTimerRunning;
     [ObservableProperty] private bool _timerFinished;
-    [ObservableProperty] private string _timerText="Temporizator oprit";
+    private LocalizedMessage _timerMessage = L.Message("Text.TimerStopped");
+    [LocalizedProperty]
+    public string TimerText { get => _timerMessage.ToString(); private set { OnPropertyChanged(); } }
+    private void SetTimerMessage(LocalizedMessage message) { _timerMessage = message; OnPropertyChanged(nameof(TimerText)); }
     public bool HasTimer=>IsTimerRunning || TimerFinished;
     partial void OnIsTimerRunningChanged(bool value)=>OnPropertyChanged(nameof(HasTimer));
     partial void OnTimerFinishedChanged(bool value)=>OnPropertyChanged(nameof(HasTimer));
@@ -46,12 +49,12 @@ public sealed partial class CookingSession : ObservableObject
         if (TimerMinutes is <=0 or >1440) return;
         _duration=TimeSpan.FromMinutes((double)TimerMinutes); _started=_clock.GetTimestamp(); TimerFinished=false; IsTimerRunning=true; Tick();
     }
-    [RelayCommand] private void StopTimer() { IsTimerRunning=false; TimerFinished=false; TimerText="Temporizator oprit"; }
+    [RelayCommand] private void StopTimer() { IsTimerRunning=false; TimerFinished=false; SetTimerMessage(L.Message("Text.TimerStopped")); }
     public void Tick()
     {
         if (!IsTimerRunning) return;
         var left=_duration-_clock.GetElapsedTime(_started);
-        if (left<=TimeSpan.Zero) { IsTimerRunning=false; TimerFinished=true; TimerText="Timpul a expirat"; }
-        else TimerText=$"{(int)left.TotalMinutes:00}:{left.Seconds:00} rămase";
+        if (left<=TimeSpan.Zero) { IsTimerRunning=false; TimerFinished=true; SetTimerMessage(L.Message("Text.TimeIsUp")); }
+        else SetTimerMessage(L.Message("Timer.Remaining", (int)left.TotalMinutes, left.Seconds));
     }
 }

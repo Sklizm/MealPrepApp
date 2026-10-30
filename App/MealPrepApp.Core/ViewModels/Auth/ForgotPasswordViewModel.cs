@@ -1,3 +1,4 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Auth;
 
 public sealed class ForgotPasswordViewModel : ViewModelBase
@@ -7,7 +8,7 @@ public sealed class ForgotPasswordViewModel : ViewModelBase
 
     public Task<bool> ResetAsync(string newPassword, string confirmPassword)
     {
-        ErrorMessage = "Contacteaza administratorul pentru recuperarea contului.";
+        ErrorContent = L.Message("Text.ContactTheAdministratorToRecoverYourAccount");
         return Task.FromResult(false);
     }
 }

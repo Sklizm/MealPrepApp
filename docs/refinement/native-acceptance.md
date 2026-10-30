@@ -12,7 +12,7 @@ Do not mark a row passed from headless renders or a successful build.
 | Light, Dark and System changes across pages/popups/dialogs | Pending | Pending | Pending |
 | All seven hover/focus sequences, hold, 180 ms reset, rapid re-entry | Pending | Pending | Pending |
 | Reduced motion during animation; completed/idle icons do no animation work | Pending | Pending | Pending |
-| Tab, arrows, Enter/Space, search/save/back shortcuts and Romanian accessibility names | Pending | Pending | Pending |
+| Tab, arrows, Enter/Space, search/save/back shortcuts and English, Russian, and Romanian accessibility names | Pending | Pending | Pending |
 | Reject unsaved-editor departure; original rail destination stays selected | Pending | Pending | Pending |
 | 860×600, 1280×800, 1440×900 windows, footer access and rail scrolling | Pending | Pending | Pending |
 | Actual OS/display scaling at 100%, 150% and 200% | Pending | Pending | Pending |

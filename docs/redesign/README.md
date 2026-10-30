@@ -1,5 +1,9 @@
 > Historical implementation guide for the October 2026 redesign. Use the [current README](../../README.md) and [platform guides](../platforms/) for installation and configuration.
 
+Screenshots in this directory are historical Romanian localization evidence. See the
+[refreshed English captures and localization matrix](../localization/README.md) for the
+English-default application.
+
 # Application design reference
 
 The Avalonia client redesign builds on the compatibility repairs and preserves the WPF
@@ -90,7 +94,7 @@ python3 Tests/Scripts/check_redesign_contrast.py
 - [Narrow Home](screenshots/home-Light-860-100.png)
 - [Component gallery](screenshots/components-Light-1440-100.png)
 
-`RedesignSamples` renders the actual shell/views with database-free Romanian fixtures in
+`RedesignSamples` renders the actual shell/views with database-free synthetic fixtures (current captures use English) in
 both themes, at 860×600, 1280×800 and 1440×900, with 100/150/200% render DPI. These are
 headless render checks, not native OS display-scaling smoke tests. Initial page-only design
 samples are also retained with filenames lacking the DPI suffix.

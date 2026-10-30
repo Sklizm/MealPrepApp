@@ -9,3 +9,5 @@
 - Keep technical schema/design notes and older validation evidence as historical references. Current operational instructions belong in the README, contributor guide, and platform guides.
 
 - Public descriptions, README files, docs, examples and screenshots must address general users. Exclude personal identities, academic framing, private deployments and conversational handoffs. Use neutral synthetic accounts for fixtures.
+
+- Public documentation and developer prose are English. Avalonia defaults to English and supports Russian and Romanian live switching. Keep catalog keys and placeholders complete; preserve user data and legacy WPF Romanian behavior.

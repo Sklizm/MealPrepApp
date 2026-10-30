@@ -29,7 +29,7 @@ GO
         c.IngredientCategoryID
     FROM dbo.Ingredients i
     JOIN (VALUES
-        -- Cereale si paste
+        -- Grains and pasta
         (N'Faina',                  N'Cereale si paste'),
         (N'Faina integrala',        N'Cereale si paste'),
         (N'Orez',                   N'Cereale si paste'),
@@ -38,7 +38,7 @@ GO
         (N'Pesmet',                 N'Cereale si paste'),
         (N'Amidon de porumb',       N'Cereale si paste'),
 
-        -- Condimente si ierburi
+        -- Spices and herbs
         (N'Sare',                   N'Condimente si ierburi'),
         (N'Zahar',                  N'Condimente si ierburi'),
         (N'Zahar brun',             N'Condimente si ierburi'),
@@ -51,7 +51,7 @@ GO
         (N'Bicarbonat de sodiu',    N'Condimente si ierburi'),
         (N'Drojdie',                N'Condimente si ierburi'),
 
-        -- Conserve / sosuri / uleiuri
+        -- Canned goods / sauces / oils
         (N'Ulei de masline',        N'Conserve'),
         (N'Ulei vegetal',           N'Conserve'),
         (N'Sos de soia',            N'Conserve'),
@@ -61,7 +61,7 @@ GO
         (N'Maioneza',               N'Conserve'),
         (N'Miere',                  N'Conserve'),
 
-        -- Lactate si oua
+        -- Dairy and eggs
         (N'Ou',                     N'Lactate si oua'),
         (N'Lapte',                  N'Lactate si oua'),
         (N'Smantana',               N'Lactate si oua'),
@@ -69,7 +69,7 @@ GO
         (N'Branza',                 N'Lactate si oua'),
         (N'Unt',                    N'Lactate si oua'),
 
-        -- Produse (legume / fructe)
+        -- Produce (vegetables / fruit)
         (N'Ceapa',                  N'Produse'),
         (N'Usturoi',                N'Produse'),
         (N'Rosie',                  N'Produse'),
@@ -79,7 +79,7 @@ GO
         (N'Lamaie',                 N'Produse'),
         (N'Spanac',                 N'Produse'),
 
-        -- Carne si peste
+        -- Meat and fish
         (N'Piept de pui',           N'Carne si peste'),
         (N'Carne tocata de vita',   N'Carne si peste'),
         (N'Somon',                  N'Carne si peste'),

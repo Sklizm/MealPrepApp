@@ -1,52 +1,52 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.ComponentGallery" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.ComponentGallery" Background="{DynamicResource AppBackground}">
     <ScrollViewer>
         <StackPanel Margin="32" Spacing="24">
-            <TextBlock Text="Bucătăria componentelor" Classes="Title"/>
-            <TextBlock Text="Componente și stări • Inter • 4 / 8 / 12 / 16 / 24 / 32" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.ComponentKitchen}" Classes="Title"/>
+            <TextBlock Text="{loc:Loc Text.ComponentsAndStatesInter4812162432}" Classes="Muted"/>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Acțiuni și selecție" Classes="Header"/>
+                    <TextBlock Text="{loc:Loc Text.ActionsAndSelection}" Classes="Header"/>
                     <WrapPanel>
-                        <Button Classes="Primary" Content="Adaugă în plan" Margin="0,0,8,8"/>
-                        <Button Content="Vezi rețeta" Classes="Secondary" Margin="0,0,8,8"/>
-                        <Button Content="Șterge" Classes="Danger" Margin="0,0,8,8"/>
-                        <Button Classes="Primary" Content="Indisponibil" IsEnabled="False" Margin="0,0,8,8"/>
-                        <RadioButton Classes="Tab" Content="Favorite" IsChecked="True" Margin="0,0,8,8"/>
+                        <Button Classes="Primary" Content="{loc:Loc Text.AddToPlan}" Margin="0,0,8,8"/>
+                        <Button Content="{loc:Loc Text.ViewRecipe}" Classes="Secondary" Margin="0,0,8,8"/>
+                        <Button Content="{loc:Loc Text.Delete}" Classes="Danger" Margin="0,0,8,8"/>
+                        <Button Classes="Primary" Content="{loc:Loc Text.Unavailable}" IsEnabled="False" Margin="0,0,8,8"/>
+                        <RadioButton Classes="Tab" Content="{loc:Loc Text.Favorites}" IsChecked="True" Margin="0,0,8,8"/>
                     </WrapPanel>
                 </StackPanel>
             </Border>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Câmpuri și validare" Classes="Header"/>
-                    <TextBlock Text="Titlu rețetă" Classes="Muted"/>
-                    <TextBox Text="Paste cu roșii și busuioc" AutomationProperties.Name="Titlu rețetă"/>
-                    <TextBox Watermark="Câmp obligatoriu" BorderBrush="{DynamicResource Danger}" AutomationProperties.Name="Câmp invalid"/>
-                    <TextBlock Text="Completează titlul înainte de a salva." Foreground="{DynamicResource Danger}"/>
-                    <NumericUpDown Value="2" Minimum="1" Maximum="1000" FormatString="0" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="Porții"/>
+                    <TextBlock Text="{loc:Loc Text.FieldsAndValidation}" Classes="Header"/>
+                    <TextBlock Text="{loc:Loc Text.RecipeTitle}" Classes="Muted"/>
+                    <TextBox Text="{loc:Loc Text.TomatoAndBasilPasta}" AutomationProperties.Name="{loc:Loc Text.RecipeTitle}"/>
+                    <TextBox Watermark="{loc:Loc Text.RequiredField}" BorderBrush="{DynamicResource Danger}" AutomationProperties.Name="{loc:Loc Text.InvalidField}"/>
+                    <TextBlock Text="{loc:Loc Text.EnterATitleBeforeSaving}" Foreground="{DynamicResource Danger}"/>
+                    <NumericUpDown Value="2" Minimum="1" Maximum="1000" FormatString="0" Width="120" HorizontalAlignment="Left" AutomationProperties.Name="{loc:Loc Text.Servings}"/>
                 </StackPanel>
             </Border>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Încărcare" Classes="Header"/>
+                    <TextBlock Text="{loc:Loc Text.Loading}" Classes="Header"/>
                     <ProgressBar IsIndeterminate="{DynamicResource MotionEnabled}" Height="4"/>
-                    <TextBlock Text="Se încarcă rețetele…" Classes="Muted"/>
+                    <TextBlock Text="{loc:Loc Text.LoadingRecipes}" Classes="Muted"/>
                 </StackPanel>
             </Border>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Colecția ta începe aici" Classes="Header"/>
-                    <TextBlock Text="Adaugă prima rețetă și revino la ea oricând." Classes="Muted"/>
-                    <Button Classes="Primary" Content="Adaugă rețetă" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{loc:Loc Text.YourCollectionStartsHere}" Classes="Header"/>
+                    <TextBlock Text="{loc:Loc Text.AddYourFirstRecipeAndReturnToItAnytime}" Classes="Muted"/>
+                    <Button Classes="Primary" Content="{loc:Loc Text.AddRecipe}" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Rețetele nu au putut fi încărcate." Foreground="{DynamicResource Danger}"/>
-                    <Button Content="Încearcă din nou" Classes="Secondary" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{loc:Loc Text.RecipesCouldNotBeLoaded}" Foreground="{DynamicResource Danger}"/>
+                    <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
             <Border Background="{DynamicResource Selection}" Padding="16" CornerRadius="8">
-                <TextBlock Text="Ciorna a fost salvată."/>
+                <TextBlock Text="{loc:Loc Text.DraftSaved}"/>
             </Border>
         </StackPanel>
     </ScrollViewer>

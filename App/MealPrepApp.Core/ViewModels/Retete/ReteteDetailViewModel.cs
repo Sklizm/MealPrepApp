@@ -46,8 +46,10 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     [ObservableProperty] private decimal _selectedServings=1;
     public bool CanScale => Recipe?.Servings is > 0;
     public bool CanEdit => Recipe?.UserID == _session.CurrentUserId;
-    public string FavoriteLabel => IsFavorite ? "Elimină din favorite" : "Adaugă la favorite";
-    public string PhotoLabel => HasPhoto ? "Schimbă fotografia" : "Adaugă fotografie";
+    [LocalizedProperty]
+    public string FavoriteLabel => IsFavorite ? L.Text("Text.RemoveFromFavorites") : L.Text("Text.AddToFavorites");
+    [LocalizedProperty]
+    public string PhotoLabel => HasPhoto ? L.Text("Text.ChangePhoto") : L.Text("Text.AddPhoto");
     public RecipeNutritionSummary? ScaledNutrition => Nutrition is null ? null : ServingCalculator.Scale(Nutrition, CanScale ? ServingCalculator.Factor(Recipe!.Servings, SelectedServings) : 1);
     public IReadOnlyList<CookingIngredient> ScaledIngredients => Recipe?.Ingredients.Select(i=> new CookingIngredient { Name=i.IngredientName, Quantity=i.Quantity*(CanScale ? ServingCalculator.Factor(Recipe.Servings, SelectedServings) : 1), Unit=i.UnitAbbreviation, Notes=i.Notes }).ToArray() ?? Array.Empty<CookingIngredient>();
     partial void OnSelectedServingsChanged(decimal value) { if(value is <=0 or >1000) { SelectedServings=1; return; } OnPropertyChanged(nameof(ScaledIngredients)); OnPropertyChanged(nameof(ScaledNutrition)); }
@@ -99,7 +101,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
             Recipe = await _recipes.GetRecipeFullAsync(RecipeId);
             if (Recipe is null)
             {
-                ErrorMessage = "Reteta nu a fost gasita.";
+                ErrorContent = L.Message("Text.RecipeNotFound");
                 return;
             }
 
@@ -114,13 +116,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -138,13 +140,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -167,8 +169,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
             return;
 
         var confirmed = await _dialog.ConfirmAsync(
-            "Sterge reteta",
-            $"Sigur vrei sa stergi reteta \"{Recipe.Title}\"?\nActiunea este ireversibila si va sterge si ingredientele asociate.");
+            L.Message("Text.DeleteRecipe379"),
+            L.Message("Recipe.DeleteFullPrompt", Recipe.Title));
 
         if (!confirmed)
             return;
@@ -181,13 +183,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -199,8 +201,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     private async Task ChoosePhoto()
     {
         var filePath = await _filePicker.OpenFileDialogAsync(
-            "Alege poza retetei",
-            "Imagini|*.jpg;*.jpeg;*.png;*.bmp;*.gif|Toate fisierele|*.*");
+            L.Text("Text.ChooseARecipePhoto"),
+            L.Text("Photo.Filter"));
 
         if (string.IsNullOrEmpty(filePath))
             return;
@@ -215,17 +217,17 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (Exception ex) when (ex is IOException or NotSupportedException or InvalidOperationException or UnauthorizedAccessException)
         {
-            await _dialog.ShowErrorAsync($"Poza nu a putut fi citita. Alege o imagine valida. Detalii: {ex.Message}");
+            await _dialog.ShowErrorAsync(L.Message("Error.ReadPhoto"));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -239,7 +241,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         if (!HasPhoto)
             return;
 
-        if (!await _dialog.ConfirmAsync("Sterge poza", "Sterge poza acestei retete?"))
+        if (!await _dialog.ConfirmAsync(L.Message("Photo.Delete"), L.Message("Text.DeleteThisRecipeSPhoto")))
             return;
 
         IsBusy = true;
@@ -250,13 +252,13 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

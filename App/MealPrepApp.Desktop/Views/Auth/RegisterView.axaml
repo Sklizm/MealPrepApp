@@ -1,18 +1,18 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.RegisterView" x:DataType="authvm:RegisterViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.RegisterView" x:DataType="authvm:RegisterViewModel">
     <StackPanel Spacing="8">
-        <TextBlock Text="Cont nou" Classes="Title" Margin="0,0,0,4"/>
-        <TextBlock Text="Nume utilizator" Classes="Muted"/>
+        <TextBlock Text="{loc:Loc Text.CreateAccount}" Classes="Title" Margin="0,0,0,4"/>
+        <TextBlock Text="{loc:Loc Text.Username}" Classes="Muted"/>
         <TextBox Text="{Binding Username}"/>
-        <TextBlock Text="Email" Classes="Muted"/>
+        <TextBlock Text="{loc:Loc Text.Email}" Classes="Muted"/>
         <TextBox Text="{Binding Email}"/>
-        <TextBlock Text="Parolă" Classes="Muted"/>
+        <TextBlock Text="{loc:Loc Text.Password}" Classes="Muted"/>
         <TextBox x:Name="PasswordBox" PasswordChar="*" RevealPassword="{Binding #PasswordBoxVisible.IsChecked}"/>
-        <CheckBox Name="PasswordBoxVisible" Content="Arată parola"/>
-        <TextBlock Text="Confirma parola" Classes="Muted"/>
+        <CheckBox Name="PasswordBoxVisible" Content="{loc:Loc Text.ShowPassword}"/>
+        <TextBlock Text="{loc:Loc Text.ConfirmPassword}" Classes="Muted"/>
         <TextBox x:Name="ConfirmPasswordBox" PasswordChar="*" RevealPassword="{Binding #ConfirmPasswordBoxVisible.IsChecked}"/>
-        <CheckBox Name="ConfirmPasswordBoxVisible" Content="Arată parola"/>
+        <CheckBox Name="ConfirmPasswordBoxVisible" Content="{loc:Loc Text.ShowPassword}"/>
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-        <Button Content="Înregistrează-te" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnRegisterClick" IsEnabled="{Binding !IsBusy}" Margin="0,6,0,0"/>
-        <Button Content="Ai cont? Conecteaza-te" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToLoginCommand}"/>
+        <Button Content="{loc:Loc Text.Register}" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnRegisterClick" IsEnabled="{Binding !IsBusy}" Margin="0,6,0,0"/>
+        <Button Content="{loc:Loc Text.AlreadyRegisteredSignIn}" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToLoginCommand}"/>
     </StackPanel>
 </UserControl>

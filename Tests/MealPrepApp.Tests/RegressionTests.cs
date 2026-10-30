@@ -27,6 +27,7 @@ public sealed class TestApplication : Application
     {
         var applicationResources = new MealPrepApp.Desktop.App();
         applicationResources.Initialize();
+        L.Current.Language = "ro";
         var resources = applicationResources.Resources;
         applicationResources.Resources = new ResourceDictionary();
         Resources = resources;
@@ -45,6 +46,12 @@ public static class TestHost
 
 public sealed partial class RegressionTests
 {
+    public RegressionTests()
+    {
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("ro-RO");
+        L.Current.Language = "ro";
+    }
+
     [AvaloniaFact]
     public void NavigationSelectionDoesNotWriteBooleanIntoStringState()
     {

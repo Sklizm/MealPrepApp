@@ -16,7 +16,7 @@ GO
         v.CarbsGrams,
         v.FatGrams
     FROM (VALUES
-        -- Camara — mostly per 100 g unless a spoon unit is more practical in recipes.
+        -- Pantry staples — mostly per 100 g unless a spoon unit is more practical in recipes.
         (N'Sare',                 CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(0.00 AS DECIMAL(10,2)),   CAST(0.00 AS DECIMAL(10,2)),  CAST(0.00 AS DECIMAL(10,2)),   CAST(0.00 AS DECIMAL(10,2))),
         (N'Zahar',                CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(387.00 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),  CAST(100.00 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2))),
         (N'Zahar brun',           CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(380.00 AS DECIMAL(10,2)), CAST(0.10 AS DECIMAL(10,2)),  CAST(98.00 AS DECIMAL(10,2)),  CAST(0.00 AS DECIMAL(10,2))),
@@ -32,7 +32,7 @@ GO
         (N'Fulgi de ovaz',        CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(389.00 AS DECIMAL(10,2)), CAST(16.90 AS DECIMAL(10,2)), CAST(66.30 AS DECIMAL(10,2)),  CAST(6.90 AS DECIMAL(10,2))),
         (N'Miere',                CAST(1.00 AS DECIMAL(10,2)),   N'tbsp', CAST(64.00 AS DECIMAL(10,2)),  CAST(0.10 AS DECIMAL(10,2)),  CAST(17.30 AS DECIMAL(10,2)),  CAST(0.00 AS DECIMAL(10,2))),
 
-        -- Uleiuri si condimente.
+        -- Oils and spices.
         (N'Ulei de masline',      CAST(100.00 AS DECIMAL(10,2)), N'ml',   CAST(824.00 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),  CAST(0.00 AS DECIMAL(10,2)),   CAST(91.60 AS DECIMAL(10,2))),
         (N'Ulei vegetal',         CAST(100.00 AS DECIMAL(10,2)), N'ml',   CAST(884.00 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),  CAST(0.00 AS DECIMAL(10,2)),   CAST(100.00 AS DECIMAL(10,2))),
         (N'Unt',                  CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(717.00 AS DECIMAL(10,2)), CAST(0.90 AS DECIMAL(10,2)),  CAST(0.10 AS DECIMAL(10,2)),   CAST(81.10 AS DECIMAL(10,2))),
@@ -42,14 +42,14 @@ GO
         (N'Ketchup',              CAST(1.00 AS DECIMAL(10,2)),   N'tbsp', CAST(17.00 AS DECIMAL(10,2)),  CAST(0.20 AS DECIMAL(10,2)),  CAST(4.50 AS DECIMAL(10,2)),   CAST(0.00 AS DECIMAL(10,2))),
         (N'Maioneza',             CAST(1.00 AS DECIMAL(10,2)),   N'tbsp', CAST(94.00 AS DECIMAL(10,2)),  CAST(0.10 AS DECIMAL(10,2)),  CAST(0.10 AS DECIMAL(10,2)),   CAST(10.30 AS DECIMAL(10,2))),
 
-        -- Lactate si oua.
+        -- Dairy and eggs.
         (N'Ou',                   CAST(1.00 AS DECIMAL(10,2)),   N'pc',   CAST(72.00 AS DECIMAL(10,2)),  CAST(6.30 AS DECIMAL(10,2)),  CAST(0.40 AS DECIMAL(10,2)),   CAST(4.80 AS DECIMAL(10,2))),
         (N'Lapte',                CAST(100.00 AS DECIMAL(10,2)), N'ml',   CAST(61.00 AS DECIMAL(10,2)),  CAST(3.20 AS DECIMAL(10,2)),  CAST(4.80 AS DECIMAL(10,2)),   CAST(3.30 AS DECIMAL(10,2))),
         (N'Smantana',             CAST(100.00 AS DECIMAL(10,2)), N'ml',   CAST(193.00 AS DECIMAL(10,2)), CAST(2.10 AS DECIMAL(10,2)),  CAST(3.40 AS DECIMAL(10,2)),   CAST(19.00 AS DECIMAL(10,2))),
         (N'Iaurt',                CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(61.00 AS DECIMAL(10,2)),  CAST(3.50 AS DECIMAL(10,2)),  CAST(4.70 AS DECIMAL(10,2)),   CAST(3.30 AS DECIMAL(10,2))),
         (N'Branza',               CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(264.00 AS DECIMAL(10,2)), CAST(14.20 AS DECIMAL(10,2)), CAST(4.10 AS DECIMAL(10,2)),   CAST(21.30 AS DECIMAL(10,2))),
 
-        -- Legume si fructe. Piece values are practical approximations for common medium pieces.
+        -- Vegetables and fruit. Piece values are practical approximations for common medium pieces.
         (N'Ceapa',                CAST(1.00 AS DECIMAL(10,2)),   N'pc',   CAST(44.00 AS DECIMAL(10,2)),  CAST(1.20 AS DECIMAL(10,2)),  CAST(10.30 AS DECIMAL(10,2)),  CAST(0.10 AS DECIMAL(10,2))),
         (N'Usturoi',              CAST(1.00 AS DECIMAL(10,2)),   N'pc',   CAST(4.00 AS DECIMAL(10,2)),   CAST(0.20 AS DECIMAL(10,2)),  CAST(1.00 AS DECIMAL(10,2)),   CAST(0.00 AS DECIMAL(10,2))),
         (N'Rosie',                CAST(1.00 AS DECIMAL(10,2)),   N'pc',   CAST(22.00 AS DECIMAL(10,2)),  CAST(1.10 AS DECIMAL(10,2)),  CAST(4.80 AS DECIMAL(10,2)),   CAST(0.20 AS DECIMAL(10,2))),
@@ -59,13 +59,13 @@ GO
         (N'Lamaie',               CAST(1.00 AS DECIMAL(10,2)),   N'pc',   CAST(17.00 AS DECIMAL(10,2)),  CAST(0.60 AS DECIMAL(10,2)),  CAST(5.40 AS DECIMAL(10,2)),   CAST(0.20 AS DECIMAL(10,2))),
         (N'Spanac',               CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(23.00 AS DECIMAL(10,2)),  CAST(2.90 AS DECIMAL(10,2)),  CAST(3.60 AS DECIMAL(10,2)),   CAST(0.40 AS DECIMAL(10,2))),
 
-        -- Carne si peste.
+        -- Meat and fish.
         (N'Piept de pui',         CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(165.00 AS DECIMAL(10,2)), CAST(31.00 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),   CAST(3.60 AS DECIMAL(10,2))),
         (N'Carne tocata de vita', CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(254.00 AS DECIMAL(10,2)), CAST(17.20 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),   CAST(20.00 AS DECIMAL(10,2))),
         (N'Somon',                CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(208.00 AS DECIMAL(10,2)), CAST(20.40 AS DECIMAL(10,2)), CAST(0.00 AS DECIMAL(10,2)),   CAST(13.40 AS DECIMAL(10,2))),
         (N'Tofu',                 CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(76.00 AS DECIMAL(10,2)),  CAST(8.10 AS DECIMAL(10,2)),  CAST(1.90 AS DECIMAL(10,2)),   CAST(4.80 AS DECIMAL(10,2))),
 
-        -- Ierburi si mirodenii, per teaspoon because recipe quantities are usually tiny.
+        -- Herbs and spices, per teaspoon because recipe quantities are usually tiny.
         (N'Piper negru',          CAST(100.00 AS DECIMAL(10,2)), N'g',    CAST(251.00 AS DECIMAL(10,2)), CAST(10.40 AS DECIMAL(10,2)), CAST(64.00 AS DECIMAL(10,2)),  CAST(3.30 AS DECIMAL(10,2))),
         (N'Boia de ardei',        CAST(1.00 AS DECIMAL(10,2)),   N'tsp',  CAST(6.00 AS DECIMAL(10,2)),   CAST(0.30 AS DECIMAL(10,2)),  CAST(1.20 AS DECIMAL(10,2)),   CAST(0.30 AS DECIMAL(10,2))),
         (N'Oregano',              CAST(1.00 AS DECIMAL(10,2)),   N'tsp',  CAST(3.00 AS DECIMAL(10,2)),   CAST(0.10 AS DECIMAL(10,2)),  CAST(0.70 AS DECIMAL(10,2)),   CAST(0.00 AS DECIMAL(10,2))),

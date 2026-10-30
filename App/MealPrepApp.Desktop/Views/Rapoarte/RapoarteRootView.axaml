@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:views="using:MealPrepApp.Desktop.Views.Rapoarte" x:Class="MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView" x:DataType="vm:RapoarteRootViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:views="using:MealPrepApp.Desktop.Views.Rapoarte" x:Class="MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView" x:DataType="vm:RapoarteRootViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.DataTemplates>
         <DataTemplate DataType="{x:Type vm:StatisticiLunareViewModel}">
             <views:StatisticiLunareView/>
@@ -14,9 +14,9 @@
         <!-- Segmented toggle tabs -->
         <Border Grid.Row="0" Margin="32,16,32,8">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <RadioButton Content="Statistici lunare" Classes="Tab" GroupName="ReportView" Command="{Binding ShowStatisticiCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Statistici, Mode=OneWay}"/>
-                <RadioButton Content="Plan săptămânal" Classes="Tab" GroupName="ReportView" Command="{Binding ShowPlanPrintCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=PlanPrint, Mode=OneWay}"/>
-                <RadioButton Content="Lista cumpărături" Classes="Tab" GroupName="ReportView" Command="{Binding ShowListaPrintCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=ListaPrint, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.MonthlyStatistics}" Classes="Tab" GroupName="ReportView" Command="{Binding ShowStatisticiCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Statistici, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.WeeklyPlan}" Classes="Tab" GroupName="ReportView" Command="{Binding ShowPlanPrintCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=PlanPrint, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.ShoppingList180}" Classes="Tab" GroupName="ReportView" Command="{Binding ShowListaPrintCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=ListaPrint, Mode=OneWay}"/>
             </StackPanel>
         </Border>
         <!-- Sub-View Region -->

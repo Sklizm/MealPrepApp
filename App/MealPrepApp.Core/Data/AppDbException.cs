@@ -4,7 +4,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.Data;
 
 /// <summary>
-/// Wraps a <see cref="SqlException"/> with a Romanian, user-facing message.
+/// Wraps a <see cref="SqlException"/> with a localized, user-facing message.
 /// Repositories throw this; ViewModels catch it and hand it to the dialog service.
 /// </summary>
 public sealed class AppDbException : Exception
@@ -15,8 +15,9 @@ public sealed class AppDbException : Exception
     /// <summary>True when <see cref="ErrorNumber"/> is one of the known 50001-50004 business errors.</summary>
     public bool IsKnown { get; }
 
-    /// <summary>Romanian message safe to show directly to the user.</summary>
-    public string FriendlyMessage { get; }
+    /// <summary>Localized message safe to show directly to the user.</summary>
+    public LocalizedMessage LocalizedMessage => DbExceptionMapper.ToMessage(ErrorNumber);
+    public string FriendlyMessage => LocalizedMessage.ToString();
 
     public AppDbException(SqlException inner)
         : base(inner.Message, inner)
@@ -25,10 +26,5 @@ public sealed class AppDbException : Exception
         ErrorNumber = inner.Number;
         IsKnown = DbExceptionMapper.IsKnown(inner.Number);
 
-        // Mapped errors get their clean Romanian message. Anything we did NOT anticipate
-        // still hits the generic fallback, so append the raw SQL code there — that way an
-        // unexpected failure tells us exactly which error it was instead of being opaque.
-        var friendly = DbExceptionMapper.ToFriendlyMessage(inner.Number);
-        FriendlyMessage = IsKnown ? friendly : $"{friendly} (cod {inner.Number})";
     }
 }

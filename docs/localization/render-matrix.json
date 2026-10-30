@@ -1,0 +1,62 @@
+{
+  "refreshedOn": "2026-10-30",
+  "kind": "Avalonia headless layout evidence",
+  "renderer": "Tests/MealPrepApp.Tests/RedesignSamples.cs",
+  "publicLanguage": "en",
+  "localizationValidationLanguages": [
+    "ru",
+    "ro"
+  ],
+  "themes": [
+    "Light",
+    "Dark"
+  ],
+  "sizes": [
+    [
+      860,
+      600
+    ],
+    [
+      1280,
+      800
+    ],
+    [
+      1440,
+      900
+    ]
+  ],
+  "defaultSizeExportScales": [
+    100,
+    150,
+    200
+  ],
+  "sections": [
+    "home",
+    "recipes",
+    "planner",
+    "pantry",
+    "shopping",
+    "ingredients",
+    "reports"
+  ],
+  "additionalPages": [
+    "recipe",
+    "cooking"
+  ],
+  "auxiliary": [
+    "login",
+    "register",
+    "settings",
+    "connection",
+    "ingredient-dialog",
+    "plan-dialog",
+    "error-dialog"
+  ],
+  "expectedCapturesPerLanguage": 132,
+  "manifests": {
+    "en": "screenshots/en/manifest.json",
+    "ru": "screenshots/ru/manifest.json",
+    "ro": "screenshots/ro/manifest.json"
+  },
+  "nativeAcceptance": "Pending; bitmap export scaling is not native operating-system DPI evidence."
+}

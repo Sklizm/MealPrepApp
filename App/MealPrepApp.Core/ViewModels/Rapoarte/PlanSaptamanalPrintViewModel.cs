@@ -13,7 +13,7 @@ using MealPrepApp.ViewModels.Planificare;
 namespace MealPrepApp.ViewModels.Rapoarte;
 
 /// <summary>
-/// "Plan saptamanal pentru tiparire" sub-tab. Pick a week, see a print-friendly 7-day ×
+/// "Printable weekly plan" sub-tab. Pick a week, see a print-friendly 7-day ×
 /// 4-slot grid (Mic dejun / Pranz / Cina / Gustare), then Tipareste or Export Excel. Reads
 /// <c>sp_GetWeeklyPlan</c> via <see cref="MealPlanRepository"/>. Dessert/Drink entries are not
 /// shown here — they have no weekly column (see <see cref="MealSlots.WeeklyColumnIds"/>).
@@ -30,8 +30,8 @@ public sealed partial class PlanSaptamanalPrintViewModel : ViewModelBase, IAsync
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
 
-    [ObservableProperty]
-    private string _weekLabel = "";
+    [LocalizedProperty]
+    public string WeekLabel { get => MealSlots.WeekLabel(MealSlots.MondayOf(SelectedDate)); private set => OnPropertyChanged(); }
 
     [ObservableProperty]
     private bool _hasGenerated;
@@ -70,19 +70,19 @@ public sealed partial class PlanSaptamanalPrintViewModel : ViewModelBase, IAsync
                     SlotText(forDay, 1),
                     SlotText(forDay, 2),
                     SlotText(forDay, 3),
-                    SlotText(forDay, 4)));
+                    SlotText(forDay, 4)) { Date = day });
             }
             HasGenerated = true;
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -111,20 +111,20 @@ public sealed partial class PlanSaptamanalPrintViewModel : ViewModelBase, IAsync
             return;
 
         var weekStart = MealSlots.MondayOf(SelectedDate);
-        var defaultFileName = $"plan-saptamanal-{weekStart:yyyyMMdd}.xlsx";
-        var savePath = await _filePicker.SaveFileDialogAsync("Exporta plan saptamanal", defaultFileName, "Excel|*.xlsx");
+        var defaultFileName = $"weekly-plan-{weekStart:yyyyMMdd}.xlsx";
+        var savePath = await _filePicker.SaveFileDialogAsync(L.Text("Text.ExportWeeklyPlan"), defaultFileName, "Excel|*.xlsx");
         if (string.IsNullOrEmpty(savePath)) return;
 
         try
         {
             using var wb = new XLWorkbook();
-            var ws = wb.AddWorksheet("Plan saptamanal");
+            var ws = wb.AddWorksheet(L.Text("Text.WeeklyPlan370"));
 
-            ws.Cell(1, 1).Value = "Zi";
-            ws.Cell(1, 2).Value = "Mic dejun";
-            ws.Cell(1, 3).Value = "Pranz";
-            ws.Cell(1, 4).Value = "Cina";
-            ws.Cell(1, 5).Value = "Gustare";
+            ws.Cell(1, 1).Value = L.Text("Text.Day");
+            ws.Cell(1, 2).Value = L.Text("Text.Breakfast");
+            ws.Cell(1, 3).Value = L.Text("Text.Lunch");
+            ws.Cell(1, 4).Value = L.Text("Text.Dinner");
+            ws.Cell(1, 5).Value = L.Text("Text.Snack");
             ws.Range(1, 1, 1, 5).Style.Font.Bold = true;
 
             var row = 2;
@@ -143,7 +143,8 @@ public sealed partial class PlanSaptamanalPrintViewModel : ViewModelBase, IAsync
         }
         catch (IOException ex)
         {
-            ErrorMessage = $"Nu am putut salva fisierul: {ex.Message}";
+            AppDiagnostics.Record(ex);
+            ErrorContent = L.Message("Error.SaveFile");
         }
     }
 
@@ -154,4 +155,13 @@ public sealed partial class PlanSaptamanalPrintViewModel : ViewModelBase, IAsync
 }
 
 /// <summary>One day's row in the printable weekly grid: a label plus the four meal-slot cells.</summary>
-public sealed record WeeklyPrintRow(string Day, string Breakfast, string Lunch, string Dinner, string Snack);
+public sealed class WeeklyPrintRow(string day, string breakfast, string lunch, string dinner, string snack) : LocalizedObservableObject
+{
+    public DateTime? Date { get; init; }
+    [LocalizedProperty]
+    public string Day => Date is {} date ? MealSlots.DayRowLabel(date) : day;
+    public string Breakfast { get; } = breakfast;
+    public string Lunch { get; } = lunch;
+    public string Dinner { get; } = dinner;
+    public string Snack { get; } = snack;
+}

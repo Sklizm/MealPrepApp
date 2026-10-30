@@ -36,7 +36,7 @@ Use the app's connection setup or copy the relevant `appsettings.Local.template.
 - Keep Core free of Avalonia and WPF dependencies. Retain legacy client compatibility and its Windows CI build.
 - Keep data access behind parameterized stored procedures. Database mutations must retain UTC timestamps, auditing, ownership checks, and concurrency handling.
 - Keep connection settings separate from appearance preferences. Credentials, diagnostics containing secrets, generated packages, and backups must stay out of Git.
-- Preserve Romanian UI labels, keyboard access, theme selection, and reduced-motion support. Distinguish loading, empty, error, and retry states.
+- Maintain complete English, Russian, and Romanian catalogs, stable presentation identifiers, keyboard access, theme selection, and reduced-motion support. Distinguish loading, empty, error, and retry states.
 
 ## Checks
 
@@ -50,6 +50,7 @@ python3 Tests/Scripts/test_windows_packaging.py
 python3 Tests/Scripts/check_repository_paths.py
 python3 Tests/Scripts/test_branch_consolidation.py
 python3 Tests/Scripts/check_redesign_contrast.py
+python3 Tests/Scripts/check_localization.py
 bash scripts/test-database.sh
 ```
 
@@ -83,4 +84,12 @@ It fetches remote heads, rejects unmerged work, sets the default branch, and del
 
 ## Documentation
 
-Write for general users and contributors. Keep personal identities, device inventories, private deployment details, academic framing, and conversational handoff logs out of public documentation. Preserve the distinction between recorded reports, independently verified results, and outstanding acceptance checks.
+Write public documentation and developer prose in English for general users and contributors. Translation catalogs and preserved application data are intentionally multilingual. Keep personal identities, device inventories, private deployment details, academic framing, and conversational handoff logs out of public documentation. Preserve the distinction between recorded reports, independently verified results, and outstanding acceptance checks.
+
+## Localization
+
+See the [localization guide](docs/localization/README.md) for resource conventions,
+regional formatting, compatibility boundaries, screenshot generation, and acceptance.
+Add each resource key to all three embedded catalogs. Retain typed formatting arguments
+until presentation; use `LocalizedMessage` for visible asynchronous results and dialogs.
+Do not translate database values or compare behavior against translated labels.

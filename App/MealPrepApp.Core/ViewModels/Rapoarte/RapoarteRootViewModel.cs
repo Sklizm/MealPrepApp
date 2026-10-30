@@ -7,7 +7,7 @@ namespace MealPrepApp.ViewModels.Rapoarte;
 
 /// <summary>
 /// Container for the Rapoarte tab. A top toggle swaps <see cref="CurrentSubView"/> between the
-/// three report views: Statistici lunare / Plan saptamanal pentru tiparire / Lista cumparaturi
+/// three report views: Monthly statistics / Printable weekly plan / Shopping list
 /// pentru tiparire. Child VMs are resolved lazily on first use, mirroring
 /// <c>PlanificareRootViewModel</c> / <c>IngredienteRootViewModel</c>.
 /// </summary>

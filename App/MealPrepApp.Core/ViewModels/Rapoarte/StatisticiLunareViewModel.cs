@@ -11,7 +11,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Rapoarte;
 
 /// <summary>
-/// "Statistici lunare" sub-tab of Rapoarte. Pick a month, hit Afiseaza, and see headline
+/// "Monthly statistics" sub-tab of Rapoarte. Pick a month, hit Afiseaza, and see headline
 /// counts (total meals, distinct recipes/ingredients), a per-slot breakdown, the top 5
 /// most-planned recipes and the top 10 most-used ingredients. Backed by
 /// <c>sp_GetMonthlyStats</c> / <c>sp_GetTopRecipes</c> / <c>sp_GetTopIngredients</c> via
@@ -101,14 +101,14 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
             ShowEmptyState = false;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -118,14 +118,26 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
 
     private static string MonthName(int month)
     {
-        var ro = CultureInfo.GetCultureInfo("ro-RO");
+        var ro = L.Current.UICulture;
         var name = new DateTime(2000, month, 1).ToString("MMMM", ro);
         return char.ToUpper(name[0], ro) + name[1..];
     }
 }
 
-/// <summary>A selectable month: its number (1–12) and Romanian display name.</summary>
-public sealed record MonthOption(int Number, string Name);
+/// <summary>A selectable month: its number (1–12) and localized display name.</summary>
+public sealed class MonthOption(int number, string name) : LocalizedObservableObject
+{
+    private readonly string _fallbackName = name;
+    public int Number { get; } = number;
+    [LocalizedProperty]
+    public string Name => Number is >= 1 and <= 12 ? L.Current.UICulture.DateTimeFormat.GetMonthName(Number) : _fallbackName;
+}
 
 /// <summary>One row of the per-slot breakdown (e.g. "Pranz" → 7).</summary>
-public sealed record SlotCount(string Label, int Count) { public int CategoryID=>Label switch {"Mic dejun"=>1,"Prânz"=>2,"Cină"=>3,"Gustare"=>4,"Desert"=>5,"Băutură"=>6,_=>0}; }
+public sealed class SlotCount(string label, int count) : LocalizedObservableObject
+{
+    public int CategoryID { get; } = label switch {"Mic dejun"=>1,"Prânz"=>2,"Cină"=>3,"Gustare"=>4,"Desert"=>5,"Băutură"=>6,_=>0};
+    public int Count { get; } = count;
+    [LocalizedProperty]
+    public string Label => BuiltInLabels.Display(label);
+}

@@ -1,10 +1,11 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.Models;
 
 /// <summary>
 /// List row from <c>sp_GetRecipes</c>, <c>sp_SearchRecipesByTitle</c> and <c>sp_GetFavoriteRecipes</c>.
 /// Search results omit the time/serving columns (left null); favorites set <see cref="FavoritedAt"/>.
 /// </summary>
-public sealed class RecipeListItem
+public sealed class RecipeListItem : LocalizedObservableObject
 {
     public int RecipeID { get; set; }
     public string Title { get; set; } = "";
@@ -18,7 +19,10 @@ public sealed class RecipeListItem
     public byte[]? PhotoData { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? FavoritedAt { get; set; }
-    public string? MatchLabel { get; set; }
+    public LocalizedMessage? MatchMessage { get; set; }
+    private string? _matchLabel;
+    [LocalizedProperty]
+    public string? MatchLabel { get => MatchMessage?.ToString() ?? _matchLabel; set => _matchLabel = value; }
     public int TotalCount { get; set; }
 }
 
@@ -78,7 +82,7 @@ public sealed class RecipeFindResult
     public int TotalIngredients { get; set; }
 }
 
-/// <summary>Row from <c>sp_GetRecentRecipes</c> — the Acasa "Retete Recente" grid.</summary>
+/// <summary>Row from <c>sp_GetRecentRecipes</c> — the Acasa "Recent recipes" grid.</summary>
 public sealed class RecentRecipe
 {
     public int RecipeID { get; set; }

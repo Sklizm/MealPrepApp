@@ -1,0 +1,662 @@
+[
+  {
+    "File": "connection-Dark-100.png",
+    "Bytes": 59164,
+    "SHA256": "0961f31cb8842794c787375d27ac95ebded4df0aaac3b3d80e7b3ee59ce2e6e8"
+  },
+  {
+    "File": "connection-Dark-150.png",
+    "Bytes": 100267,
+    "SHA256": "4b0547a6249f1f3394b709e6ce93ebb7907326ba93bdf90d900119a41cf2c032"
+  },
+  {
+    "File": "connection-Dark-200.png",
+    "Bytes": 141351,
+    "SHA256": "d701aebf0d7bc5b8c1dacf4864090d5834101887a8b44442170249a4a16d33b4"
+  },
+  {
+    "File": "connection-Light-100.png",
+    "Bytes": 58854,
+    "SHA256": "b928ba0d113ef5580f2f4982cde2c8295dfb50b69dcc48366ddff8b604a4d1b3"
+  },
+  {
+    "File": "connection-Light-150.png",
+    "Bytes": 100594,
+    "SHA256": "6db2f88ce7e86ff92cacecf5ec333be1a0bf6bef1e241058bd232c2cda51b8b1"
+  },
+  {
+    "File": "connection-Light-200.png",
+    "Bytes": 140983,
+    "SHA256": "b6aaf99d37963bebbb5138d58dc9b83b32ef4a50ccf656d3499ccf08a8ba97e8"
+  },
+  {
+    "File": "cooking-Dark-1280-100.png",
+    "Bytes": 90608,
+    "SHA256": "a2574efac2f51e4d341ab34b214d3733f6ef66ddeeee7b4b0297b1ae46b502f9"
+  },
+  {
+    "File": "cooking-Dark-1280-150.png",
+    "Bytes": 144640,
+    "SHA256": "970bc97b82abdd73e6d5d71682473693d538c0a82a6f7d0625387fe29d432a1a"
+  },
+  {
+    "File": "cooking-Dark-1280-200.png",
+    "Bytes": 201448,
+    "SHA256": "82f18ef5c51137a9692b23941ef2cbd1303047e25d0841aae49aeee10c7f3ec0"
+  },
+  {
+    "File": "cooking-Dark-1440-100.png",
+    "Bytes": 92942,
+    "SHA256": "4817092bfe5e8589ded737005d5c7ba6d40077951c774d94bfb5557dc8aed8eb"
+  },
+  {
+    "File": "cooking-Dark-860-100.png",
+    "Bytes": 57880,
+    "SHA256": "460b30568408917070d1fbff3e4aceb135d260ecf97a0aedffd522dc88db0ba1"
+  },
+  {
+    "File": "cooking-Light-1280-100.png",
+    "Bytes": 91483,
+    "SHA256": "c75570352d0917ee7e3005187506483682c7f63c10b101ed8da5826a167cf5aa"
+  },
+  {
+    "File": "cooking-Light-1280-150.png",
+    "Bytes": 146209,
+    "SHA256": "528b21bff9b9bd8fb5ca6524af4e51853f1ab8181db1aa6ecd7f7168828922ea"
+  },
+  {
+    "File": "cooking-Light-1280-200.png",
+    "Bytes": 203578,
+    "SHA256": "ac2353458e4089905317130e3e600ee430cf4fffdf744c77ecf6212dd91187df"
+  },
+  {
+    "File": "cooking-Light-1440-100.png",
+    "Bytes": 93937,
+    "SHA256": "53f30a008d3286ff02cbc70520173b7e1757a7107ec3c634f469be52839e1032"
+  },
+  {
+    "File": "cooking-Light-860-100.png",
+    "Bytes": 58278,
+    "SHA256": "b7b3066674dc47148d5b163a9f6bcb0f1f586467c99f3b45e5bd3873a344095d"
+  },
+  {
+    "File": "error-dialog-Dark-100.png",
+    "Bytes": 7646,
+    "SHA256": "029c8e790b6a15442bb40942e39062038d66441dee32634127c0178631c48c9f"
+  },
+  {
+    "File": "error-dialog-Dark-150.png",
+    "Bytes": 12156,
+    "SHA256": "5d67200419a1a3d44f2fe9f1305fee5c1e8b275dbbb2a1fc3508a37886c5ab62"
+  },
+  {
+    "File": "error-dialog-Dark-200.png",
+    "Bytes": 16946,
+    "SHA256": "0ee2e5261b04c5e0b9ea387b3d579ba4745e863a35d52674f63fd8f7bd584063"
+  },
+  {
+    "File": "error-dialog-Light-100.png",
+    "Bytes": 7425,
+    "SHA256": "c4e3f0d3c6f29373ce5a8f830f09582db3d3245a137cb2fb84abe51436ba678c"
+  },
+  {
+    "File": "error-dialog-Light-150.png",
+    "Bytes": 12200,
+    "SHA256": "fb670d32d79718fb12ac3e263717396e948d9a7120609f787bbfc6a95332b70e"
+  },
+  {
+    "File": "error-dialog-Light-200.png",
+    "Bytes": 16956,
+    "SHA256": "352fe61d362970ea0c71d3035c9222b59801cbd403c9ec2dc6f88345b731fae8"
+  },
+  {
+    "File": "home-Dark-1280-100.png",
+    "Bytes": 75377,
+    "SHA256": "9ed77933a7b47022516042f4082f05a06385e02083d3e6f1c10071d1e154c976"
+  },
+  {
+    "File": "home-Dark-1280-150.png",
+    "Bytes": 124066,
+    "SHA256": "68260d0bfe6a2d782db221fd14395be28ddb710c27f838644314a3291b3f5247"
+  },
+  {
+    "File": "home-Dark-1280-200.png",
+    "Bytes": 171202,
+    "SHA256": "b51c3319b1f80dbdf3e91da41bdf4128494aa98c4f17c04ff7e87143bc212fb2"
+  },
+  {
+    "File": "home-Dark-1440-100.png",
+    "Bytes": 77565,
+    "SHA256": "7f17e867cda5b8f73b726cce637d1286c92281c340cc45f12c18e2ae517bfa8f"
+  },
+  {
+    "File": "home-Dark-860-100.png",
+    "Bytes": 60092,
+    "SHA256": "52c4e6f269909a7374498d04a555d811147075abff4e4301bb5e10ee8a1a8f20"
+  },
+  {
+    "File": "home-Light-1280-100.png",
+    "Bytes": 75849,
+    "SHA256": "bd432dde127f27375ef174eb57e1c3458c9da970a08ce28ac6fbdae5ec7ad5f7"
+  },
+  {
+    "File": "home-Light-1280-150.png",
+    "Bytes": 126456,
+    "SHA256": "b449ee8be6b24056088f6bdfe3e73226072e2421d32681fad591a406bdf19b36"
+  },
+  {
+    "File": "home-Light-1280-200.png",
+    "Bytes": 173714,
+    "SHA256": "836acc59661797252c441d7e4335ef7049f947f72d3e45a01521d7db959a5777"
+  },
+  {
+    "File": "home-Light-1440-100.png",
+    "Bytes": 78028,
+    "SHA256": "ca0c00873b7a60c15cace88dd10d62c50f6a04b4e83418ede330343fcb832c5e"
+  },
+  {
+    "File": "home-Light-860-100.png",
+    "Bytes": 60334,
+    "SHA256": "4849090c72853da80c8d6a64150b33d988ae1bd8c59a74cbbbcc469d84673804"
+  },
+  {
+    "File": "ingredient-dialog-Dark-100.png",
+    "Bytes": 13973,
+    "SHA256": "862411c040523d7769530fd56735a9b9ca5f6084ae77128b33c78a9b3c1a7a93"
+  },
+  {
+    "File": "ingredient-dialog-Dark-150.png",
+    "Bytes": 21907,
+    "SHA256": "eda37d65c94c729d13d196b5daa7c768e85ff13a53f1e2a1427c9bbf5c0b8bc7"
+  },
+  {
+    "File": "ingredient-dialog-Dark-200.png",
+    "Bytes": 31749,
+    "SHA256": "6bb7fc66e86c6ef322f2822b4922b0fe7913d9fd46ff087142c3d15e7b6456ca"
+  },
+  {
+    "File": "ingredient-dialog-Light-100.png",
+    "Bytes": 14241,
+    "SHA256": "49dde6114411d8d7ef8c7955edf9775b863abebb26103aa666f30243eb9d7c8f"
+  },
+  {
+    "File": "ingredient-dialog-Light-150.png",
+    "Bytes": 22130,
+    "SHA256": "9a1c9761c79dce446c5552737423e7c280999e4264b93c042461960e9e8819f5"
+  },
+  {
+    "File": "ingredient-dialog-Light-200.png",
+    "Bytes": 31871,
+    "SHA256": "13512d0d329b1b3d991c44bd91e30406437492555b1416c3280e0becc01d4c53"
+  },
+  {
+    "File": "ingredients-Dark-1280-100.png",
+    "Bytes": 75541,
+    "SHA256": "d267d7c99deebbe568310226654fbcdab0cae2733f17571ee6e27151d6d03120"
+  },
+  {
+    "File": "ingredients-Dark-1280-150.png",
+    "Bytes": 119891,
+    "SHA256": "9eeb101ff447921dd231e575e132b9bd566be2646a6bf45860e57dc8bfaee8f0"
+  },
+  {
+    "File": "ingredients-Dark-1280-200.png",
+    "Bytes": 173501,
+    "SHA256": "7bac58d26b011607af611abb1d8808857797cdcd2d1256657186786b9e8e851c"
+  },
+  {
+    "File": "ingredients-Dark-1440-100.png",
+    "Bytes": 77359,
+    "SHA256": "5bdfd395d7bf4641b4cff20c9ddc3b099f655624b8dcc1c0704619cfcc6de600"
+  },
+  {
+    "File": "ingredients-Dark-860-100.png",
+    "Bytes": 71034,
+    "SHA256": "62e17a11cda664e5ac8481ffcf73ba8a7715aba50d8ba0b4df93acfa1f0564f0"
+  },
+  {
+    "File": "ingredients-Light-1280-100.png",
+    "Bytes": 75549,
+    "SHA256": "e3adce36847fa8e9a0ba20931afe7cbd37d15210c52edb74ef008f81bcc4212a"
+  },
+  {
+    "File": "ingredients-Light-1280-150.png",
+    "Bytes": 121974,
+    "SHA256": "0797e1471a0cdd4f8320bb0b575a9147247e4fbde92d337aad04ab3304830f72"
+  },
+  {
+    "File": "ingredients-Light-1280-200.png",
+    "Bytes": 176047,
+    "SHA256": "01fcdb883c2e176b0fa4726ad28d9a06b36e22fb01578d4468613c01eed49c1f"
+  },
+  {
+    "File": "ingredients-Light-1440-100.png",
+    "Bytes": 77350,
+    "SHA256": "abab9c71c99c53b50ee1524fc3271a5fd11648a9abd254fa4c6548a9cca0b709"
+  },
+  {
+    "File": "ingredients-Light-860-100.png",
+    "Bytes": 71301,
+    "SHA256": "ada9c2dca9db2fed4caaabe0c8629312bb8cac96d36e6abd993256485602ba29"
+  },
+  {
+    "File": "login-Dark-100.png",
+    "Bytes": 31132,
+    "SHA256": "f2db3576a17768e5238d3d951fa4a90efdf8d30ad55bef822ce35ced0323669d"
+  },
+  {
+    "File": "login-Dark-150.png",
+    "Bytes": 49582,
+    "SHA256": "6977f4430118e6d91db958b3d1f0418eb3fb2225c1797a7f1b711538726009ab"
+  },
+  {
+    "File": "login-Dark-200.png",
+    "Bytes": 69679,
+    "SHA256": "99b858a46d4a02865b1c682e3cf2f79182ff499643c78968dd7e990f0d624be7"
+  },
+  {
+    "File": "login-Light-100.png",
+    "Bytes": 30965,
+    "SHA256": "6008037c76197defac2532129a6a5cc1f433d4bd643dd50f3cc74969ea66d57f"
+  },
+  {
+    "File": "login-Light-150.png",
+    "Bytes": 49195,
+    "SHA256": "4636c3f33971197e318e586833b4619fc676ea2b4273cb5e7228c889977e27c1"
+  },
+  {
+    "File": "login-Light-200.png",
+    "Bytes": 69273,
+    "SHA256": "c3b0deccdc294e1fec41c876edf2cc0c5f04b6e8d1980dbd774daac435b66bdf"
+  },
+  {
+    "File": "pantry-Dark-1280-100.png",
+    "Bytes": 120810,
+    "SHA256": "748509e99317bc583533f8b848e2150519fc85d0aad023e3f9318a0b353f687e"
+  },
+  {
+    "File": "pantry-Dark-1280-150.png",
+    "Bytes": 200289,
+    "SHA256": "4a8e315a14a8cd2dc2324e12ae795d6b94b377efcd449b4e8b1bc8008fa4d419"
+  },
+  {
+    "File": "pantry-Dark-1280-200.png",
+    "Bytes": 278170,
+    "SHA256": "eb1cc728a51cb509bfe9cc4536b5cad136576c3287e63876416e8b4ae5dccf04"
+  },
+  {
+    "File": "pantry-Dark-1440-100.png",
+    "Bytes": 130771,
+    "SHA256": "6ba1ecc129661848fd959a649f1b9b06244265ebb0592b491cf3cf35095865f1"
+  },
+  {
+    "File": "pantry-Dark-860-100.png",
+    "Bytes": 65551,
+    "SHA256": "0898214eacbec979f6a341ec4d845a7073cbfec77c8f5311bb34c6d06764be0e"
+  },
+  {
+    "File": "pantry-Light-1280-100.png",
+    "Bytes": 121733,
+    "SHA256": "6b04ec0301eb713854995d2dfb2df7306c27017159dff26c176004bf2e1f0f05"
+  },
+  {
+    "File": "pantry-Light-1280-150.png",
+    "Bytes": 203078,
+    "SHA256": "d51aadc0b042c6752acbf57ea589755dcc25405e52bef3618a3c2c2fed038c7b"
+  },
+  {
+    "File": "pantry-Light-1280-200.png",
+    "Bytes": 283082,
+    "SHA256": "6dde6d45bb1c746c36349711d63a4c8b5d7f8b36d67eab32c5d40f66dd66b8fe"
+  },
+  {
+    "File": "pantry-Light-1440-100.png",
+    "Bytes": 131842,
+    "SHA256": "8f12f71dafe8d92911e6b866bb1e15cf31cdcb2c424580f7ca9e071f9b4cab48"
+  },
+  {
+    "File": "pantry-Light-860-100.png",
+    "Bytes": 66451,
+    "SHA256": "1f0010032ee5bacf8a1f2406194885bb4f03aebdd0eeb1d537309c136b0a0688"
+  },
+  {
+    "File": "plan-dialog-Dark-100.png",
+    "Bytes": 19245,
+    "SHA256": "e6f5b6eae64df9e19e61b1ac016a162cd6e38c57171aad4ea6368a12e13e9031"
+  },
+  {
+    "File": "plan-dialog-Dark-150.png",
+    "Bytes": 31251,
+    "SHA256": "44e35ecf0f986b3df28816fcab25892aa3552e02d6c00ae6936f4cadf5dab59a"
+  },
+  {
+    "File": "plan-dialog-Dark-200.png",
+    "Bytes": 46308,
+    "SHA256": "9eb6a776142b58fd40f60b9daae8ee437a78b4b36a5b04d5420a20a67419d1ac"
+  },
+  {
+    "File": "plan-dialog-Light-100.png",
+    "Bytes": 18794,
+    "SHA256": "6df51a7a49817afa6c0100319c02f809b56c70a142b3805dd6a0a6e0fe4f673c"
+  },
+  {
+    "File": "plan-dialog-Light-150.png",
+    "Bytes": 30563,
+    "SHA256": "2e5b35188f6764939f4bb18aa43f5f1599b62040892432aee89c411dff62cd7b"
+  },
+  {
+    "File": "plan-dialog-Light-200.png",
+    "Bytes": 45044,
+    "SHA256": "a10f4b693a7f0b889ecdf34f3e62829f4d23b00e84c7a890bf92fea1c270a812"
+  },
+  {
+    "File": "planner-Dark-1280-100.png",
+    "Bytes": 76209,
+    "SHA256": "780e5f44b30e3bf8b3609c042e4da9c0fa27b0d36eeba64cd4a91073a6b03927"
+  },
+  {
+    "File": "planner-Dark-1280-150.png",
+    "Bytes": 126241,
+    "SHA256": "6106f3d094b2c9714e9cb3758326dac90a9297ef7c829cdd6d2efa1edbcd1f26"
+  },
+  {
+    "File": "planner-Dark-1280-200.png",
+    "Bytes": 179999,
+    "SHA256": "29b3c8c101b4386e3f20320ffaa249a9882b63b963d595b5a3847441fbcf26a3"
+  },
+  {
+    "File": "planner-Dark-1440-100.png",
+    "Bytes": 85379,
+    "SHA256": "f66892ea3cb61e0bcb21ea6d8552dc362855d00360ce4c0dcded87ec5fd7159b"
+  },
+  {
+    "File": "planner-Dark-860-100.png",
+    "Bytes": 60367,
+    "SHA256": "d983f7a804a3937ac9d57dc7b9960b474d2f69c061ec299cb90670353cc2e6af"
+  },
+  {
+    "File": "planner-Light-1280-100.png",
+    "Bytes": 77810,
+    "SHA256": "1a466935f3782451e733c33dfc40d455c75d5a6b72c25ebc622673982ff7a74e"
+  },
+  {
+    "File": "planner-Light-1280-150.png",
+    "Bytes": 130107,
+    "SHA256": "01a92d1d38c586d8052c22ad31d805d0143233ecc5e524b32d0dca0a3b11dee8"
+  },
+  {
+    "File": "planner-Light-1280-200.png",
+    "Bytes": 184658,
+    "SHA256": "01137f554baf1e5b367ec02da8d758db7c88fcecfbb3292c5564dbd220d1a3e2"
+  },
+  {
+    "File": "planner-Light-1440-100.png",
+    "Bytes": 87559,
+    "SHA256": "c4861ac81fb33984f1143ab164f41293a07c498fdbcf564678fc8a333acc680e"
+  },
+  {
+    "File": "planner-Light-860-100.png",
+    "Bytes": 60662,
+    "SHA256": "fc6be13d345af246003aac106405273b8d827f373da017f6262498a89aa55497"
+  },
+  {
+    "File": "recipe-Dark-1280-100.png",
+    "Bytes": 92127,
+    "SHA256": "32da50a0fb96ef5732e2cdbbfa9c39bd37ead4c967d29a8cad4607ea2006bdf1"
+  },
+  {
+    "File": "recipe-Dark-1280-150.png",
+    "Bytes": 149829,
+    "SHA256": "ea3b7d48f46e22726172f6eccb78f47d748d143d6ba9adc6f242a51763c7ad99"
+  },
+  {
+    "File": "recipe-Dark-1280-200.png",
+    "Bytes": 207656,
+    "SHA256": "f02016e4c038214b1e05d2990682460ed53fa9ffe8a4752c9b1b02943ca59e28"
+  },
+  {
+    "File": "recipe-Dark-1440-100.png",
+    "Bytes": 103614,
+    "SHA256": "1c18237eebe5f244b06882a5a49afacb50ec8c3d46fd82cf1cb6a420be3d5471"
+  },
+  {
+    "File": "recipe-Dark-860-100.png",
+    "Bytes": 60727,
+    "SHA256": "11eaf0b5e892c22ae7b290bc3cdd219a36f8934165ea39e11641096b53b0124b"
+  },
+  {
+    "File": "recipe-Light-1280-100.png",
+    "Bytes": 92962,
+    "SHA256": "c7876a7a2818cead5591fddac33ab4fd799bdf6b659788ab1d079207a47ff75e"
+  },
+  {
+    "File": "recipe-Light-1280-150.png",
+    "Bytes": 151723,
+    "SHA256": "7cfb0308705c43dbfb2a98ab85107b60415d048dfadc49ab1a048b752a1d7aef"
+  },
+  {
+    "File": "recipe-Light-1280-200.png",
+    "Bytes": 210198,
+    "SHA256": "74569ff48e9f7251b96a443fd2d221a47b8bec76871e62819f8b52a0e01f0ce8"
+  },
+  {
+    "File": "recipe-Light-1440-100.png",
+    "Bytes": 104862,
+    "SHA256": "7c501b8f2b874a2be1b89d24fa8c924fd9d716cdbfab4c04640c62ff08077aae"
+  },
+  {
+    "File": "recipe-Light-860-100.png",
+    "Bytes": 60923,
+    "SHA256": "0c42b62d9b6b95e07ef9c30b0949c112294c656b23fc7c6b5c2683cfddb35bed"
+  },
+  {
+    "File": "recipes-Dark-1280-100.png",
+    "Bytes": 72428,
+    "SHA256": "793e0501891f549889cb855f3a69228a7ecac23258e7685b13a1930b282969eb"
+  },
+  {
+    "File": "recipes-Dark-1280-150.png",
+    "Bytes": 133373,
+    "SHA256": "8cfce6ed77b79303f8c17afcc416d683e122249777a0875d46ff44f08a436069"
+  },
+  {
+    "File": "recipes-Dark-1280-200.png",
+    "Bytes": 165130,
+    "SHA256": "50d16c0cbe8bbfa8041fcc393147c325aa54a73e30fa41fbab9455e2041e9d70"
+  },
+  {
+    "File": "recipes-Dark-1440-100.png",
+    "Bytes": 78611,
+    "SHA256": "c3929e4b0d88931fd872f6df21dbbaf945313cb9afcd0f547db53bd3d686ac74"
+  },
+  {
+    "File": "recipes-Dark-860-100.png",
+    "Bytes": 52645,
+    "SHA256": "603d27f71fb229dda2e15c31d1c82ac204ffe178056139d1933116842df8722e"
+  },
+  {
+    "File": "recipes-Light-1280-100.png",
+    "Bytes": 72945,
+    "SHA256": "bf80bb8db0c3df0cf4f4401cb81419171dc75e9e47c9cab8b008c50f247ffe54"
+  },
+  {
+    "File": "recipes-Light-1280-150.png",
+    "Bytes": 135773,
+    "SHA256": "f969222c60a92be19ffd9c41f1a47a307c8e377140181393dee99e155ff714c8"
+  },
+  {
+    "File": "recipes-Light-1280-200.png",
+    "Bytes": 166325,
+    "SHA256": "bad3a55d80aa5c5adda1f8780cfb8148966c4577f14f80e3f0634b6c83befb62"
+  },
+  {
+    "File": "recipes-Light-1440-100.png",
+    "Bytes": 79059,
+    "SHA256": "7edee9a7b5231abd3c7db496346303d3c4281534389b52a4082489023f054441"
+  },
+  {
+    "File": "recipes-Light-860-100.png",
+    "Bytes": 52832,
+    "SHA256": "ba1ba6200fa1a30faf6eb9fa8bb9121e2c89ee4ca52bf54283a127004ec01a75"
+  },
+  {
+    "File": "register-Dark-100.png",
+    "Bytes": 22411,
+    "SHA256": "7fea88ddd6f0de076c6dc09451ea0fbe11af21f4db036495e012b2f0f4471126"
+  },
+  {
+    "File": "register-Dark-150.png",
+    "Bytes": 37010,
+    "SHA256": "c03b31172a8da57c4a1f76e86efa4e0fda379580f06acbe60967919aa501753a"
+  },
+  {
+    "File": "register-Dark-200.png",
+    "Bytes": 50821,
+    "SHA256": "7bdcc033096ec772461448831fd16f86798ff6bc66002ecd754598bd8e5622f0"
+  },
+  {
+    "File": "register-Light-100.png",
+    "Bytes": 22455,
+    "SHA256": "394b8e9f61743a14a3fc97785f03c022689f46e840eb723c87f1f5b85c048f23"
+  },
+  {
+    "File": "register-Light-150.png",
+    "Bytes": 36958,
+    "SHA256": "137ac08346b3de004e7964c162bf2cc5d7fd2bc32185df02d80c9a1dd81686a3"
+  },
+  {
+    "File": "register-Light-200.png",
+    "Bytes": 50553,
+    "SHA256": "35937893bba523ffb7f25b8f0230cfbd2c38bcc77dc7b38d4423faf19a72ede5"
+  },
+  {
+    "File": "reports-Dark-1280-100.png",
+    "Bytes": 65057,
+    "SHA256": "4c04c62937f7400b70aac39029fbf0251f26a79f4b8733fe9300aca0754b218a"
+  },
+  {
+    "File": "reports-Dark-1280-150.png",
+    "Bytes": 101547,
+    "SHA256": "8faa04efc0b28fa11e4d9c99f40732ba3c4d43f5553eb0053aaf9588c44ee43e"
+  },
+  {
+    "File": "reports-Dark-1280-200.png",
+    "Bytes": 144078,
+    "SHA256": "e1869f4b1049f1fbb78e3be6b605f2ec94ae0008e4ec08b99f5e79ce1e5109f0"
+  },
+  {
+    "File": "reports-Dark-1440-100.png",
+    "Bytes": 69115,
+    "SHA256": "61d518bc6ef5bc5cc61cfde4c33746bfed14436ac4a98dc87d5af4cbda43d363"
+  },
+  {
+    "File": "reports-Dark-860-100.png",
+    "Bytes": 52782,
+    "SHA256": "e92025d9a4bce42fb5fd90636d33aa35b1a3443edc9ac9aae0cc9d17dde1db95"
+  },
+  {
+    "File": "reports-Light-1280-100.png",
+    "Bytes": 65687,
+    "SHA256": "a2aeda828d78c5d36528261ac25008f6b60a992de9cb0083d56119cafa9515a6"
+  },
+  {
+    "File": "reports-Light-1280-150.png",
+    "Bytes": 103614,
+    "SHA256": "485ac66bb816a7684287b27e23d609c3d6222667ba69b4b3210520dfcaafaf88"
+  },
+  {
+    "File": "reports-Light-1280-200.png",
+    "Bytes": 145953,
+    "SHA256": "b1b53eb895ad8f973e67f0b7d53f795afa06fc8e52fa265b461deb9c4f640659"
+  },
+  {
+    "File": "reports-Light-1440-100.png",
+    "Bytes": 69766,
+    "SHA256": "654379e54729d8524d03f8070807224f2ae97b7c61d1d8ef8344c96018d2eb02"
+  },
+  {
+    "File": "reports-Light-860-100.png",
+    "Bytes": 53325,
+    "SHA256": "c8b036c9eea73d9ab5e52567771a4c93152ef209384ab2e8b52795dfa1e265e2"
+  },
+  {
+    "File": "settings-Dark-100.png",
+    "Bytes": 32750,
+    "SHA256": "507657fb983199087970d688312e1ce1499cf9d3a53fab6f3c24ec5a1721be7e"
+  },
+  {
+    "File": "settings-Dark-150.png",
+    "Bytes": 53553,
+    "SHA256": "cf38840ab6491a2d740f712b1fcb32ca7d6d820e7d23c4ca9c2619171dc39be8"
+  },
+  {
+    "File": "settings-Dark-200.png",
+    "Bytes": 73245,
+    "SHA256": "eefbda35507c038750f60870756779b9c37a913f7036cc8636b8dcf983f265fa"
+  },
+  {
+    "File": "settings-Light-100.png",
+    "Bytes": 32738,
+    "SHA256": "cb05a5b5c33c91a205dfdc1cafd9469d356c55acb704f0476a5dec77d4cd526f"
+  },
+  {
+    "File": "settings-Light-150.png",
+    "Bytes": 53976,
+    "SHA256": "5205f2026aaf96180a2724772962cd389079bf51806a047348d9b66fef20676d"
+  },
+  {
+    "File": "settings-Light-200.png",
+    "Bytes": 73211,
+    "SHA256": "62f26bb39e317d21b94f28fbc9aa1075939549389c43d19deef3f5d5f139be15"
+  },
+  {
+    "File": "shopping-Dark-1280-100.png",
+    "Bytes": 76591,
+    "SHA256": "545a53f967068d356a6dd4936b5d5f466a2d482de08e15c6c55d55d70367e9b2"
+  },
+  {
+    "File": "shopping-Dark-1280-150.png",
+    "Bytes": 119267,
+    "SHA256": "0fcbc66c77eaaaa7d77ee4a3eeed48dbad9a02cab05b23a79df1cf651e8eacb1"
+  },
+  {
+    "File": "shopping-Dark-1280-200.png",
+    "Bytes": 175470,
+    "SHA256": "7e8f633e2889a0b0697f0291f654d526487d06844e79f8fb834bfb4f4f18d695"
+  },
+  {
+    "File": "shopping-Dark-1440-100.png",
+    "Bytes": 78367,
+    "SHA256": "7106e2de30d3c5995792c28521f9ab5e60beded1fa3bbf1711291db95a5741df"
+  },
+  {
+    "File": "shopping-Dark-860-100.png",
+    "Bytes": 69724,
+    "SHA256": "185110af54371a175e8ba594c9a7c46b02dcc178bdbe07735d4dcacf8912da11"
+  },
+  {
+    "File": "shopping-Light-1280-100.png",
+    "Bytes": 75949,
+    "SHA256": "a60ec1b9df837e86456057eb93402a83eef5971b8505b0dca6a84850b474f737"
+  },
+  {
+    "File": "shopping-Light-1280-150.png",
+    "Bytes": 120083,
+    "SHA256": "883b9eb4262523076826112489f6559f019528be17b56315fb82045431715e76"
+  },
+  {
+    "File": "shopping-Light-1280-200.png",
+    "Bytes": 177109,
+    "SHA256": "6c5018b9e069a7f59d8c8a2f0595a6729341a3c696b74c934a0ff25f0003ba5d"
+  },
+  {
+    "File": "shopping-Light-1440-100.png",
+    "Bytes": 77645,
+    "SHA256": "eaafa458558158bae72567638bcd12c15a3a39aa18f05e090094d83b6675f80b"
+  },
+  {
+    "File": "shopping-Light-860-100.png",
+    "Bytes": 69069,
+    "SHA256": "cfb8c2c8cba343a8e0eb09bf3b24f9e238b413df729161ab0872b62f2d541079"
+  }
+]

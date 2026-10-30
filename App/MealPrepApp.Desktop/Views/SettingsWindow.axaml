@@ -1,15 +1,17 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.SettingsWindow" Title="Setări" Width="520" Height="640" MinWidth="440" MinHeight="540" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.SettingsWindow" Title="{loc:Loc Text.Settings}" Width="520" Height="640" MinWidth="440" MinHeight="540" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
     <ScrollViewer>
         <StackPanel Margin="32" Spacing="16">
-            <TextBlock Text="Setări" Classes="Title"/>
+            <TextBlock Text="{loc:Loc Text.Settings}" Classes="Title"/>
             <TextBlock Name="AppVersion" Classes="Muted"/>
-            <TextBlock Text="Aspect" Classes="Header"/>
-            <ComboBox Name="ThemePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="Temă"/>
-            <CheckBox Name="ListViewCheck" Content="Afișează rețetele ca listă"/>
-            <CheckBox Name="MotionCheck" Content="Mișcare redusă"/>
-            <TextBlock Text="Conexiune la baza de date" Classes="Header"/>
-            <TextBlock Text="Schimbările conexiunii se aplică la repornire." Classes="Muted"/>
-            <Button Content="Configurează conexiunea" Classes="Secondary" Click="EditConnection"/>
+            <TextBlock Text="{loc:Loc Settings.Language}" Classes="Header"/>
+            <ComboBox Name="LanguagePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Settings.Language}"/>
+            <TextBlock Text="{loc:Loc Text.Appearance}" Classes="Header"/>
+            <ComboBox Name="ThemePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.Theme}"/>
+            <CheckBox Name="ListViewCheck" Content="{loc:Loc Text.ShowRecipesAsAList}"/>
+            <CheckBox Name="MotionCheck" Content="{loc:Loc Text.ReducedMotion}"/>
+            <TextBlock Text="{loc:Loc Text.DatabaseConnection}" Classes="Header"/>
+            <TextBlock Text="{loc:Loc Text.ConnectionChangesApplyAfterRestarting}" Classes="Muted"/>
+            <Button Content="{loc:Loc Text.ConfigureConnection}" Classes="Secondary" Click="EditConnection"/>
             <TextBlock Name="Status" TextWrapping="Wrap"/>
         </StackPanel>
     </ScrollViewer>

@@ -1,17 +1,17 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView" x:DataType="vm:IngredienteListViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView" x:DataType="vm:IngredienteListViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Resources>
         <DataTemplate x:Key="IngredientRowTemplate" x:DataType="models:Ingredient">
             <Border Classes="Card" Padding="12,8" Margin="0,2">
                 <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                     <StackPanel>
                         <TextBlock Text="{Binding Name}" Classes="Body"/>
-                        <TextBlock Text="Date nutritive lipsă" Classes="Muted" IsVisible="{Binding HasNutrition, Converter={StaticResource InverseBool}}"/>
+                        <TextBlock Text="{loc:Loc Text.NutritionDataMissing}" Classes="Muted" IsVisible="{Binding HasNutrition, Converter={StaticResource InverseBool}}"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource SurfaceSecondary}" CornerRadius="3" Padding="6,2" Margin="0,0,8,0" IsVisible="{Binding DefaultUnitAbbreviation, Converter={StaticResource NotNullToBool}}">
                         <TextBlock Text="{Binding DefaultUnitAbbreviation}" Foreground="{DynamicResource TextPrimary}" FontSize="11"/>
                     </Border>
-                    <Button Grid.Column="2" Content="Nutriție" Classes="Secondary" Margin="0,0,8,0" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
-                    <Button Grid.Column="3" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" Command="{Binding DataContext.DeleteIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                    <Button Grid.Column="2" Content="{loc:Loc Text.Nutrition}" Classes="Secondary" Margin="0,0,8,0" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                    <Button Grid.Column="3" AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" Command="{Binding DataContext.DeleteIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
                         <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
                     </Button>
                 </Grid>
@@ -21,26 +21,26 @@
     <Grid Margin="32" RowDefinitions="Auto,Auto,*">
         <!-- Toolbar -->
         <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
-            <TextBlock Text="Catalog de ingrediente" Classes="Title"/>
+            <TextBlock Text="{loc:Loc Text.IngredientCatalog}" Classes="Title"/>
             <WrapPanel>
-                <TextBox Watermark="Caută ingrediente…" Text="{Binding SearchTerm}" Width="208" Margin="0,0,8,8" AutomationProperties.Name="Caută ingrediente"/>
-                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="176" Margin="0,0,8,8" AutomationProperties.Name="Categorie ingredient">
+                <TextBox Watermark="{loc:Loc Text.SearchIngredients}" Text="{Binding SearchTerm}" Width="208" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.SearchIngredients115}"/>
+                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="176" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.IngredientCategory}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="models:IngredientCategory">
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{loc:Display Name}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <CheckBox Content="Grupează pe categorii" IsChecked="{Binding UseGrouping}" Margin="0,0,8,8"/>
-                <Button Classes="Primary" Content="Adaugă ingredient" Command="{Binding AddIngredientCommand}" Margin="0,0,8,8"/>
-                <Button Content="Reîncarcă" Classes="Secondary" Command="{Binding RetryCommand}" Margin="0,0,8,8"/>
+                <CheckBox Content="{loc:Loc Text.GroupByCategory}" IsChecked="{Binding UseGrouping}" Margin="0,0,8,8"/>
+                <Button Classes="Primary" Content="{loc:Loc Text.AddIngredient99}" Command="{Binding AddIngredientCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.Reload}" Classes="Secondary" Command="{Binding RetryCommand}" Margin="0,0,8,8"/>
             </WrapPanel>
         </StackPanel>
         <!-- Error slot -->
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,8">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+            <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <!-- List / empty -->
         <Grid Grid.Row="2">
@@ -51,7 +51,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:IngredientGroup">
                                 <StackPanel Margin="0,0,0,24">
-                                    <TextBlock Text="{Binding Name}" Classes="Header" Margin="0,0,0,8"/>
+                                    <TextBlock Text="{loc:Display Name}" Classes="Header" Margin="0,0,0,8"/>
                                     <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource IngredientRowTemplate}"/>
                                 </StackPanel>
                             </DataTemplate>
@@ -69,9 +69,9 @@
                     </MultiBinding>
                 </Border.IsVisible>
                 <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                    <TextBlock Text="Niciun ingredient" Classes="Header" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Adaugă primul ingredient pentru a incepe." Classes="Muted" HorizontalAlignment="Center"/>
-                    <Button Content="+ Adaugă ingredient" Classes="Primary" HorizontalAlignment="Center" Margin="0,10,0,0" Command="{Binding AddIngredientCommand}"/>
+                    <TextBlock Text="{loc:Loc Text.NoIngredients}" Classes="Header" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{loc:Loc Text.AddYourFirstIngredientToGetStarted}" Classes="Muted" HorizontalAlignment="Center"/>
+                    <Button Content="{loc:Loc Text.AddIngredient121}" Classes="Primary" HorizontalAlignment="Center" Margin="0,10,0,0" Command="{Binding AddIngredientCommand}"/>
                 </StackPanel>
             </Border>
         </Grid>

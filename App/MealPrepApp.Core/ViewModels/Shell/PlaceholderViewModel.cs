@@ -1,3 +1,4 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Shell;
 
 /// <summary>Stand-in shown for shell sections that are not built yet. Each later phase
@@ -11,5 +12,6 @@ public sealed class PlaceholderViewModel
 
     public string SectionName { get; }
 
-    public string Message => $"Sectiunea \"{SectionName}\" va fi disponibila in curand.";
+    [LocalizedProperty]
+    public string Message => L.Text("Section.Unavailable", SectionName);
 }

@@ -10,7 +10,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Planificare;
 
 /// <summary>
-/// Backs the shared "Planifica masa" modal. Two flows:
+/// Backs the shared "Plan meal" modal. Two flows:
 /// <list type="bullet">
 /// <item><b>Add</b> — pick a recipe (debounced autocomplete), a meal slot, a date; optional
 /// servings + notes. Persists via <c>sp_PlanMeal</c>.</item>
@@ -35,8 +35,8 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<RecipeListItem> RecipeResults { get; } = new();
 
-    [ObservableProperty]
-    private string _title = "Planifica masa";
+    [LocalizedProperty]
+    public string Title { get => L.Text(IsEdit ? "Text.EditPlannedMeal" : "Text.PlanMeal"); private set => OnPropertyChanged(); }
 
     [ObservableProperty]
     private bool _isEdit;
@@ -89,7 +89,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
     {
         IsEdit = false;
         OnPropertyChanged(nameof(CanPickRecipe));
-        Title = "Planifica masa";
+        Title = L.Text("Text.PlanMeal");
         _editingEntryId = null;
         PlannedDate = date.Date;
         Servings = null;
@@ -120,7 +120,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
     {
         IsEdit = true;
         OnPropertyChanged(nameof(CanPickRecipe));
-        Title = "Editeaza masa planificata";
+        Title = L.Text("Text.EditPlannedMeal");
         _editingEntryId = entry.MealPlanEntryID;
         PlannedDate = entry.PlannedDate.Date;
         Servings = entry.Servings;
@@ -144,13 +144,13 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -171,8 +171,9 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         _ = DebouncedSearchAsync(value, _searchCts.Token);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
+        ReleaseLocalization();
         _searchCts?.Cancel();
         _searchCts?.Dispose();
         _searchCts = null;
@@ -201,7 +202,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         catch (OperationCanceledException) { }
         catch (AppDbException ex)
         {
-            if (!token.IsCancellationRequested) ErrorMessage = ex.FriendlyMessage;
+            if (!token.IsCancellationRequested) ErrorContent = ex.LocalizedMessage;
         }
     }
 
@@ -221,17 +222,17 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
 
         if (SelectedCategory is null)
         {
-            ErrorMessage = "Alege o masa (slot).";
+            ErrorContent = L.Message("Text.ChooseAMealSlot");
             return;
         }
         if (!IsEdit && SelectedRecipe is null)
         {
-            ErrorMessage = "Alege o reteta.";
+            ErrorContent = L.Message("Text.ChooseARecipe");
             return;
         }
         if (Servings is { } s && s <= 0)
         {
-            ErrorMessage = "Numarul de portii trebuie sa fie mai mare decat 0.";
+            ErrorContent = L.Message("Text.TheServingCountMustBeGreaterThan0");
             return;
         }
 
@@ -254,13 +255,13 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -273,8 +274,8 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
     {
         if (!IsEdit || !_editingEntryId.HasValue) return;
 
-        if (!await _dialog.ConfirmAsync("Sterge masa planificata",
-                "Sigur vrei sa stergi aceasta masa din plan?"))
+        if (!await _dialog.ConfirmAsync(L.Message("Text.DeletePlannedMeal"),
+                L.Message("Text.AreYouSureYouWantToDeleteThisMealFromThePlan")))
             return;
 
         IsBusy = true;
@@ -285,13 +286,13 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

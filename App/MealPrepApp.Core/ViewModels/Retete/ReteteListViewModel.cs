@@ -13,7 +13,7 @@ namespace MealPrepApp.ViewModels.Retete;
 /// <summary>
 /// The Retete list screen: sidebar (Toate / Favorite / Recente), title search, category
 /// filter, and a card grid. Cards have per-card actions — open detail, delete — there is
-/// no select-then-act. "+ Adauga reteta" and a card click navigate into the shell content region.
+/// no select-then-act. "+ Add recipe" and a card click navigate into the shell content region.
 /// </summary>
 public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
@@ -33,7 +33,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private readonly IServiceProvider _services;
 
     private readonly PantryRepository? _pantry;
-    [RelayCommand] private Task ShowPantry() {ActiveFilter="Frigider";PageNumber=1;return RefreshAsync();}
+    [RelayCommand] private Task ShowPantry() {ActiveFilter=RecipeFilterIds.Pantry;PageNumber=1;return RefreshAsync();}
     [RelayCommand] private Task Retry()=>RefreshAsync();
     private bool _loaded;
     private int _requestVersion;
@@ -56,8 +56,9 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     }
 
     private bool _disposed;
-    public void Dispose()
+    public override void Dispose()
     {
+        ReleaseLocalization();
         if (_disposed) return;
         _disposed = true;
         Preferences.PropertyChanged-=OnPreferencesChanged;
@@ -75,22 +76,22 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     public ObservableCollection<RecipeDraftListItem> Drafts { get; } = new();
     public ObservableCollection<Category> Categories { get; } = new();
 
-    /// <summary>Active sidebar entry: "Toate", "Favorite", "Recente" or "Drafts".</summary>
+    /// <summary>Active sidebar entry: RecipeFilterIds.All, RecipeFilterIds.Favorites, RecipeFilterIds.Recent or RecipeFilterIds.Drafts.</summary>
     [ObservableProperty]
-    private string _activeFilter = "Toate";
+    private string _activeFilter = RecipeFilterIds.All;
 
     public PresentationPreferences Preferences { get; }
     [ObservableProperty] private bool _listView;
-    [ObservableProperty] private string _sortOrder="Titlu";
-    public IReadOnlyList<string> SortOrders { get; } = new[] { "Titlu", "Cele mai noi", "Timp de preparare" };
+    [ObservableProperty] private string _sortOrder=RecipeSortIds.Title;
+    public IReadOnlyList<string> SortOrders { get; } = new[] { RecipeSortIds.Title, RecipeSortIds.Newest, RecipeSortIds.PreparationTime };
     partial void OnListViewChanged(bool value) { Preferences.RecipeListView=value; }
     partial void OnSortOrderChanged(string value) { if(_loaded && !_preparing && !_disposed) {PageNumber=1;_ = RefreshAsync();} }
     private void SortRows()
     {
-        var sorted=SortOrder switch { "Cele mai noi" => Recipes.OrderByDescending(r=>r.CreatedAt), "Timp de preparare" => Recipes.OrderBy(r=>(r.PrepTimeMinutes ?? 0)+(r.CookTimeMinutes ?? 0)), _ => Recipes.OrderBy(r=>r.Title) };
+        var sorted=SortOrder switch { RecipeSortIds.Newest => Recipes.OrderByDescending(r=>r.CreatedAt), RecipeSortIds.PreparationTime => Recipes.OrderBy(r=>(r.PrepTimeMinutes ?? 0)+(r.CookTimeMinutes ?? 0)), _ => Recipes.OrderBy(r=>r.Title) };
         var rows=sorted.ToArray(); Recipes.Clear(); foreach(var row in rows) Recipes.Add(row);
     }
-    public bool IsShowingDrafts => ActiveFilter == "Drafts";
+    public bool IsShowingDrafts => ActiveFilter == RecipeFilterIds.Drafts;
     public bool IsShowingRecipes => !IsShowingDrafts;
 
     partial void OnActiveFilterChanged(string value)
@@ -175,7 +176,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             var categoryId = SelectedCategory is { CategoryID: > 0 } category ? category.CategoryID : (int?)null;
             var page = PageNumber;
             var sort = SortOrder;
-            if (filter == "Drafts")
+            if (filter == RecipeFilterIds.Drafts)
             {
                 var drafts = await _drafts.GetDraftsAsync(userId, token);
                 if (version != _requestVersion || _disposed) return;
@@ -190,12 +191,12 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
 
             Drafts.Clear();
             IReadOnlyList<RecipeListItem> rows;
-            if(filter=="Frigider" && _pantry != null)
+            if(filter==RecipeFilterIds.Pantry && _pantry != null)
             {
                 var stock=await _pantry.GetPantryAsync(userId, token);
                 var matches=await _recipes.FindRecipesByIngredientsAsync(stock.Select(p=>p.IngredientID).Distinct().ToArray(),1, token);
                 var filtered=matches.OrderBy(r=>r.Title).Where(r=>(!categoryId.HasValue || r.CategoryID==categoryId) && r.Title.Contains(term,StringComparison.CurrentCultureIgnoreCase)).ToArray();
-                rows=filtered.Skip((page-1)*PageSize).Take(PageSize).Select(r=>new RecipeListItem{RecipeID=r.RecipeID,Title=r.Title,CategoryName=r.CategoryName,CategoryID=r.CategoryID,TotalCount=filtered.Length,MatchLabel=$"{r.MatchedIngredients}/{r.TotalIngredients} ingrediente potrivite • cantități neverificate"}).ToArray();
+                rows=filtered.Skip((page-1)*PageSize).Take(PageSize).Select(r=>new RecipeListItem{RecipeID=r.RecipeID,Title=r.Title,CategoryName=r.CategoryName,CategoryID=r.CategoryID,TotalCount=filtered.Length,MatchMessage=L.Message("Recipe.Matches", r.MatchedIngredients, r.TotalIngredients)}).ToArray();
             }
             else rows = await _recipes.BrowseAsync(userId, filter, term, categoryId, page, PageSize, token, sort);
             if (version != _requestVersion || _disposed) return;
@@ -204,18 +205,18 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             Recipes.Clear();
             foreach (var row in rows)
                 Recipes.Add(row);
-            if(filter=="Frigider")SortRows();
+            if(filter==RecipeFilterIds.Pantry)SortRows();
             _loaded = true;
         }
         catch (AppDbException ex)
         {
-            if (version == _requestVersion) ErrorMessage = ex.FriendlyMessage;
+            if (version == _requestVersion) ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            if (version == _requestVersion) ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            if (version == _requestVersion) ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -227,7 +228,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private Task ShowToate()
     {
         PageNumber = 1;
-        ActiveFilter = "Toate";
+        ActiveFilter = RecipeFilterIds.All;
         return RefreshAsync();
     }
 
@@ -235,7 +236,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private Task ShowFavorite()
     {
         PageNumber = 1;
-        ActiveFilter = "Favorite";
+        ActiveFilter = RecipeFilterIds.Favorites;
         return RefreshAsync();
     }
 
@@ -243,7 +244,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private Task ShowRecente()
     {
         PageNumber = 1;
-        ActiveFilter = "Recente";
+        ActiveFilter = RecipeFilterIds.Recent;
         return RefreshAsync();
     }
 
@@ -251,7 +252,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private Task ShowDrafts()
     {
         PageNumber = 1;
-        ActiveFilter = "Drafts";
+        ActiveFilter = RecipeFilterIds.Drafts;
         return RefreshAsync();
     }
 
@@ -320,7 +321,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         if (item is null)
             return;
 
-        if (!await _dialog.ConfirmAsync("Sterge reteta", $"Sterge reteta \"{item.Title}\"?"))
+        if (!await _dialog.ConfirmAsync(L.Message("Text.DeleteRecipe379"), L.Message("Recipe.DeletePrompt", item.Title)))
             return;
 
         IsBusy = true;
@@ -331,13 +332,13 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -363,8 +364,8 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         if (item is null)
             return;
 
-        var title = string.IsNullOrWhiteSpace(item.Title) ? "fara titlu" : item.Title;
-        if (!await _dialog.ConfirmAsync("Sterge draft", $"Sterge draftul \"{title}\"?"))
+        object title = string.IsNullOrWhiteSpace(item.Title) ? L.Message("Recipe.Untitled") : item.Title;
+        if (!await _dialog.ConfirmAsync(L.Message("Draft.Delete"), L.Message("Draft.DeletePrompt", title)))
             return;
 
         IsBusy = true;
@@ -375,13 +376,13 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

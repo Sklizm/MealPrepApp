@@ -1,7 +1,7 @@
 namespace MealPrepApp.Models;
 
 /// <summary>The single row from <c>sp_GetMonthlyStats</c> — headline numbers for the
-/// "Statistici lunare" sub-tab of Rapoarte.</summary>
+/// "Monthly statistics" sub-tab of Rapoarte.</summary>
 public sealed class MonthlyStats
 {
     public int TotalMealsPlanned { get; set; }

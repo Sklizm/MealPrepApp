@@ -1,3 +1,4 @@
+using MealPrepApp.Desktop.Localization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using MealPrepApp.Desktop.Services;
@@ -15,12 +16,19 @@ public partial class ConnectionSetupWindow : Window
     private readonly Func<string, CancellationToken, Task> _testConnection;
     private readonly CancellationTokenSource _closing = new();
 
+    private IDisposable? _statusBinding;
+    private void SetStatus(LocalizedMessage message)
+    {
+        _statusBinding?.Dispose();
+        _statusBinding = MessageBinding.Set(Status, TextBlock.TextProperty, message);
+    }
     public ConnectionSetupWindow() : this(new ConnectionSettingsStore()) { }
 
     public ConnectionSetupWindow(ConnectionSettingsStore store, Func<string, Task>? saved = null,
         Func<string, CancellationToken, Task>? testConnection = null)
     {
         InitializeComponent();
+        Closed += (_, _) => _statusBinding?.Dispose();
         _store = store;
         _saved = saved;
         _testConnection = testConnection ?? TestSqlConnection;
@@ -67,17 +75,17 @@ public partial class ConnectionSetupWindow : Window
     private async void TestConnection(object? sender, RoutedEventArgs e)
     {
         SetBusy(true);
-        Status.Text = "Se verifică conexiunea…";
+        SetStatus(L.Message("Text.CheckingConnection"));
         try
         {
             await _testConnection(BuildConnection(), _closing.Token);
-            Status.Text = "Conexiune disponibilă.";
+            SetStatus(L.Message("Text.ConnectionAvailable"));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            Status.Text = "Conexiunea nu este disponibilă. Verifică adresa, Tailscale, certificatul și datele de acces.";
+            SetStatus(L.Message("Text.ConnectionUnavailableCheckTheAddressVpnCertificateAndCredentials"));
         }
         finally { SetBusy(false); }
     }
@@ -97,7 +105,7 @@ public partial class ConnectionSetupWindow : Window
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            Status.Text = "Setările nu au putut fi salvate. Verifică toate câmpurile și accesul la fișier.";
+            SetStatus(L.Message("Text.SettingsCouldNotBeSavedCheckAllFieldsAndFileAccess"));
         }
         finally { SetBusy(false); }
     }

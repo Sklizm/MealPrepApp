@@ -1,5 +1,9 @@
 # Pantry browsing
 
+Screenshots in this directory are historical Romanian localization evidence. See the
+[refreshed English captures and localization matrix](../localization/README.md) for the
+English-default application.
+
 Open **Frigider** to browse stock by illustrated category. Select a food to see its ingredients, use **Toate** to return to grouped stock, or search within the selected category. Add ingredients, edit quantities, and confirm removals from the stock list. **Ce pot găti?** opens recipes matched against your pantry.
 
 Empty categories remain visible with a zero-stock label. Search and sorting work locally. On smaller windows, the shelves appear above a scrollable stock list; wider windows show them side by side.

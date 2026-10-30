@@ -8,7 +8,7 @@ using MealPrepApp.Models;
 
 namespace MealPrepApp.ViewModels.Ingrediente;
 
-/// <summary>Backs the small "Adauga ingredient" modal: name + default unit + category.</summary>
+/// <summary>Backs the small "Add ingredient" modal: name + default unit + category.</summary>
 public sealed partial class IngredientAddDialogViewModel : ViewModelBase
 {
     private readonly IngredientRepository _ingredients;
@@ -51,13 +51,13 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -73,7 +73,7 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
         var name = (Name ?? "").Trim();
         if (name.Length == 0)
         {
-            ErrorMessage = "Numele este obligatoriu.";
+            ErrorContent = L.Message("Text.ANameIsRequired");
             return;
         }
 
@@ -88,13 +88,13 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

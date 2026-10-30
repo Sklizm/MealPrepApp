@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MealPrepApp.Models;
+using MealPrepApp.Services;
 
 namespace MealPrepApp.ViewModels.Planificare;
 
@@ -31,10 +32,11 @@ public sealed class WeekCellViewModel
 
 /// <summary>One day row in the weekly grid: a day label and its four slot cells
 /// (Breakfast / Lunch / Dinner / Snack).</summary>
-public sealed class WeekRowViewModel
+public sealed class WeekRowViewModel : LocalizedObservableObject
 {
     public DateTime Date { get; init; }
-    public string DayLabel { get; init; } = "";
+    [LocalizedProperty]
+    public string DayLabel { get => MealSlots.DayRowLabel(Date); init { } }
     public bool IsToday => Date.Date == DateTime.Today;
 
     /// <summary>The four slot cells, in column order.</summary>

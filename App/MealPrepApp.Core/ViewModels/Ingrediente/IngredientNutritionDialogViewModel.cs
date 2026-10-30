@@ -84,13 +84,13 @@ public sealed partial class IngredientNutritionDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -104,17 +104,17 @@ public sealed partial class IngredientNutritionDialogViewModel : ViewModelBase
         ClearError();
         if (BasisQuantity <= 0)
         {
-            ErrorMessage = "Cantitatea de baza trebuie sa fie mai mare decat 0.";
+            ErrorContent = L.Message("Text.TheBaseQuantityMustBeGreaterThan0");
             return;
         }
         if (SelectedUnit is null)
         {
-            ErrorMessage = "Alege unitatea de baza.";
+            ErrorContent = L.Message("Text.ChooseABaseUnit");
             return;
         }
         if (Calories < 0 || ProteinGrams < 0 || CarbsGrams < 0 || FatGrams < 0)
         {
-            ErrorMessage = "Valorile nutritionale nu pot fi negative.";
+            ErrorContent = L.Message("Text.NutritionValuesCannotBeNegative");
             return;
         }
 
@@ -133,13 +133,13 @@ public sealed partial class IngredientNutritionDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

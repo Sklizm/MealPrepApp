@@ -1,34 +1,34 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" x:Class="MealPrepApp.Desktop.Views.Rapoarte.PlanSaptamanalPrintView" x:DataType="vm:PlanSaptamanalPrintViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" x:Class="MealPrepApp.Desktop.Views.Rapoarte.PlanSaptamanalPrintView" x:DataType="vm:PlanSaptamanalPrintViewModel" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32">
         <!-- Title -->
-        <TextBlock Grid.Row="0" Text="Plan săptămânal" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
+        <TextBlock Grid.Row="0" Text="{loc:Loc Text.WeeklyPlan}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Toolbar -->
         <DockPanel Grid.Row="1" Margin="0,0,0,16" LastChildFill="False">
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="8">
                 <Button Content="‹" Classes="Secondary" Command="{Binding PreviousWeekCommand}"/>
-                <DatePicker SelectedDate="{Binding SelectedDate, Converter={StaticResource DateTimeToDateTimeOffset}}" VerticalAlignment="Center"/>
+                <loc:LocalizedCalendarDatePicker Width="152" SelectedDate="{Binding SelectedDate}" VerticalAlignment="Center" AutomationProperties.Name="{loc:Loc Text.Date}"/>
                 <Button Content="›" Classes="Secondary" Command="{Binding NextWeekCommand}"/>
-                <Button Content="Afișează" Classes="Primary" Command="{Binding GenereazaCommand}"/>
+                <Button Content="{loc:Loc Text.Show}" Classes="Primary" Command="{Binding GenereazaCommand}"/>
                 <TextBlock Text="{Binding WeekLabel}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
-                <Button Content="Export Excel" Classes="Secondary" Command="{Binding ExportExcelCommand}" IsEnabled="{Binding Days.Count, Converter={StaticResource NonEmptyToBool}}"/>
+                <Button Content="{loc:Loc Text.ExportExcel}" Classes="Secondary" Command="{Binding ExportExcelCommand}" IsEnabled="{Binding Days.Count, Converter={StaticResource NonEmptyToBool}}"/>
             </StackPanel>
         </DockPanel>
         <!-- Error message -->
         <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding GenereazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+            <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" Command="{Binding GenereazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <!-- Weekly Plan DataGrid -->
         <DataGrid Grid.Row="3" ItemsSource="{Binding Days}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="All">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Zi" Binding="{Binding Day}" Width="130"/>
-                <DataGridTextColumn Header="Mic dejun" Binding="{Binding Breakfast}" Width="*"/>
-                <DataGridTextColumn Header="Pranz" Binding="{Binding Lunch}" Width="*"/>
-                <DataGridTextColumn Header="Cina" Binding="{Binding Dinner}" Width="*"/>
-                <DataGridTextColumn Header="Gustare" Binding="{Binding Snack}" Width="*"/>
+                <DataGridTextColumn Header="{loc:Loc Text.Day}" Binding="{Binding Day}" Width="130"/>
+                <DataGridTextColumn Header="{loc:Loc Text.Breakfast}" Binding="{Binding Breakfast}" Width="*"/>
+                <DataGridTextColumn Header="{loc:Loc Text.Lunch}" Binding="{Binding Lunch}" Width="*"/>
+                <DataGridTextColumn Header="{loc:Loc Text.Dinner}" Binding="{Binding Dinner}" Width="*"/>
+                <DataGridTextColumn Header="{loc:Loc Text.Snack}" Binding="{Binding Snack}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

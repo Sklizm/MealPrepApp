@@ -12,7 +12,7 @@ using MealPrepApp.Services;
 namespace MealPrepApp.ViewModels.Rapoarte;
 
 /// <summary>
-/// "Lista cumparaturi pentru tiparire" sub-tab. Same computed list as the Ingrediente shopping
+/// "Printable shopping list" sub-tab. Same computed list as the Ingrediente shopping
 /// list (<c>sp_GetShoppingList</c> via <see cref="ShoppingListRepository"/>), presented in a
 /// print-first layout with Tipareste + Export Excel.
 /// </summary>
@@ -52,7 +52,7 @@ public sealed partial class ListaCumparaturiPrintViewModel : ViewModelBase, IAsy
 
         if (EndDate < StartDate)
         {
-            ErrorMessage = "Data de sfarsit trebuie sa fie dupa data de inceput.";
+            ErrorContent = L.Message("Text.TheEndDateMustBeAfterTheStartDate368");
             return;
         }
 
@@ -67,13 +67,13 @@ public sealed partial class ListaCumparaturiPrintViewModel : ViewModelBase, IAsy
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -87,20 +87,20 @@ public sealed partial class ListaCumparaturiPrintViewModel : ViewModelBase, IAsy
         if (Rows.Count == 0)
             return;
 
-        var defaultFileName = $"lista-cumparaturi-{StartDate:yyyyMMdd}-{EndDate:yyyyMMdd}.xlsx";
-        var savePath = await _filePicker.SaveFileDialogAsync("Exporta lista de cumparaturi", defaultFileName, "Excel|*.xlsx");
+        var defaultFileName = $"shopping-list-{StartDate:yyyyMMdd}-{EndDate:yyyyMMdd}.xlsx";
+        var savePath = await _filePicker.SaveFileDialogAsync(L.Text("Text.ExportShoppingList"), defaultFileName, "Excel|*.xlsx");
         if (string.IsNullOrEmpty(savePath)) return;
 
         try
         {
             using var wb = new XLWorkbook();
-            var ws = wb.AddWorksheet("Lista cumparaturi");
+            var ws = wb.AddWorksheet(L.Text("Text.ShoppingList351"));
 
-            ws.Cell(1, 1).Value = "Ingredient";
-            ws.Cell(1, 2).Value = "Necesar";
-            ws.Cell(1, 3).Value = "In frigider";
-            ws.Cell(1, 4).Value = "De cumparat";
-            ws.Cell(1, 5).Value = "Unitate";
+            ws.Cell(1, 1).Value = L.Text("Text.Ingredient165");
+            ws.Cell(1, 2).Value = L.Text("Text.Required");
+            ws.Cell(1, 3).Value = L.Text("Text.InPantry");
+            ws.Cell(1, 4).Value = L.Text("Text.ToBuy");
+            ws.Cell(1, 5).Value = L.Text("Text.Unit169");
             ws.Range(1, 1, 1, 5).Style.Font.Bold = true;
 
             var row = 2;
@@ -118,7 +118,8 @@ public sealed partial class ListaCumparaturiPrintViewModel : ViewModelBase, IAsy
         }
         catch (IOException ex)
         {
-            ErrorMessage = $"Nu am putut salva fisierul: {ex.Message}";
+            AppDiagnostics.Record(ex);
+            ErrorContent = L.Message("Error.SaveFile");
         }
     }
 }

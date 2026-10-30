@@ -16,7 +16,7 @@ MERGE dbo.Ingredients AS target
 USING (
     SELECT s.Name, u.UnitID AS DefaultUnitID
     FROM (VALUES
-        -- Camara
+        -- Pantry staples
         (N'Sare',                   N'g'),
         (N'Zahar',                  N'g'),
         (N'Zahar brun',             N'g'),
@@ -32,7 +32,7 @@ USING (
         (N'Fulgi de ovaz',          N'g'),
         (N'Miere',                  N'tbsp'),
 
-        -- Uleiuri si condimente
+        -- Oils and spices
         (N'Ulei de masline',        N'ml'),
         (N'Ulei vegetal',           N'ml'),
         (N'Unt',                    N'g'),
@@ -42,14 +42,14 @@ USING (
         (N'Ketchup',                N'tbsp'),
         (N'Maioneza',               N'tbsp'),
 
-        -- Lactate si oua
+        -- Dairy and eggs
         (N'Ou',                     N'pc'),
         (N'Lapte',                  N'ml'),
         (N'Smantana',               N'ml'),
         (N'Iaurt',                  N'g'),
         (N'Branza',                 N'g'),
 
-        -- Legume si fructe
+        -- Vegetables and fruit
         (N'Ceapa',                  N'pc'),
         (N'Usturoi',                N'pc'),
         (N'Rosie',                  N'pc'),
@@ -59,13 +59,13 @@ USING (
         (N'Lamaie',                 N'pc'),
         (N'Spanac',                 N'g'),
 
-        -- Carne si peste
+        -- Meat and fish
         (N'Piept de pui',           N'g'),
         (N'Carne tocata de vita',   N'g'),
         (N'Somon',                  N'g'),
         (N'Tofu',                   N'g'),
 
-        -- Ierburi si mirodenii
+        -- Herbs and spices
         (N'Piper negru',            N'g'),
         (N'Boia de ardei',          N'tsp'),
         (N'Oregano',                N'tsp'),

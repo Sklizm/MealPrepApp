@@ -37,13 +37,13 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
             await vm.InitForAddAsync(entry.PlannedDate.AddDays(1),entry.CategoryID,new RecipeListItem{RecipeID=entry.RecipeID,Title=entry.RecipeTitle,Servings=entry.Servings,CategoryID=entry.CategoryID});
             vm.Servings=entry.Servings;vm.Notes=entry.Notes;
             if(await _dialog.ShowDialogAsync(vm)) await RefreshAsync();
-        } catch(Exception ex) {AppDiagnostics.Record(ex);ErrorMessage="Masa nu a putut fi duplicată.";}
+        } catch(Exception ex) {AppDiagnostics.Record(ex);ErrorContent = L.Message("Text.TheMealCouldNotBeDuplicated");}
     }
     public async Task MoveEntryAsync(MealPlanEntry entry,DateTime date,int categoryId)
     {
         try {await _mealPlan.UpdatePlannedMealAsync(entry.MealPlanEntryID,_session.CurrentUserId,categoryId,date,entry.Servings,entry.Notes);await RefreshAsync();}
-        catch(AppDbException ex) {ErrorMessage=ex.FriendlyMessage;}
-        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Masa nu a putut fi mutată. Încearcă din nou.";}
+        catch(AppDbException ex) {ErrorContent = ex.LocalizedMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent = L.Message("Text.TheMealCouldNotBeMovedTryAgain");}
     }
     [RelayCommand] private async Task CopyWeek()
     {
@@ -53,14 +53,13 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         {
             var target=MealSlots.MondayOf(CopyTarget);
             var preview=await _mealPlan.PreviewWeekCopyAsync(_session.CurrentUserId,WeekStart,target);
-            if(preview.Count==0){Notification="Săptămâna sursă nu conține mese.";return;}
-            var details=string.Join("\n",preview.Select(p=>$"{p.PlannedDate:dd.MM} • {p.CategoryName} • {p.RecipeTitle} ({p.Servings?.ToString() ?? "porții implicite"}){(p.IsDuplicate ? " — există deja, se omite" : "")}"));
-            if(!await _dialog.ConfirmAsync("Previzualizare copiere săptămână",details+"\n\nMesele existente se păstrează. Copiezi aceste mese?")) return;
+            if(preview.Count==0){NotificationContent = L.Message("Text.TheSourceWeekHasNoMeals");return;}
+            if(!await _dialog.ConfirmAsync(L.Message("Text.WeekCopyPreview"), L.Message("Planner.CopyPrompt", new WeekCopyText(preview)))) return;
             var count=await _mealPlan.CopyWeekAsync(_session.CurrentUserId,WeekStart,target,preview[0].PreviewToken);
-            Notification=$"{count} mese copiate. Mesele existente au fost păstrate.";
+            NotificationContent=L.Count("Count.Copied", count);
         }
-        catch(AppDbException ex){ErrorMessage=ex.FriendlyMessage;}
-        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Săptămâna nu a putut fi copiată. Reîncearcă previzualizarea.";}
+        catch(AppDbException ex){ErrorContent = ex.LocalizedMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent = L.Message("Text.TheWeekCouldNotBeCopiedPreviewAgain");}
         finally {IsBusy=false;}
     }
     public ObservableCollection<WeekRowViewModel> Rows { get; } = new();
@@ -71,8 +70,8 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
     [ObservableProperty]
     private DateTime _weekStart = MealSlots.MondayOf(DateTime.Today);
 
-    [ObservableProperty]
-    private string _weekLabel = MealSlots.WeekLabel(MealSlots.MondayOf(DateTime.Today));
+    [LocalizedProperty]
+    public string WeekLabel { get => MealSlots.WeekLabel(WeekStart); set => OnPropertyChanged(); }
 
     public PlanificareWeeklyViewModel(
         IServiceProvider services,
@@ -106,7 +105,7 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
     }
 
@@ -148,13 +147,13 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -200,4 +199,10 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         if (await _dialog.ShowDialogAsync(vm))
             await RefreshAsync();
     }
+}
+
+internal sealed class WeekCopyText(IEnumerable<MealPrepApp.Models.WeekCopyPreview> rows)
+{
+    public override string ToString() => string.Join("\n", rows.Select(p =>
+        $"{p.PlannedDate:d} • {BuiltInLabels.Display(p.CategoryName)} • {p.RecipeTitle} ({p.Servings?.ToString() ?? L.Text("Text.DefaultServings")}){(p.IsDuplicate ? L.Text("Text.AlreadyExistsSkipped") : "")}"));
 }

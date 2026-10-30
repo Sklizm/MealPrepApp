@@ -26,6 +26,7 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        L.Current.Language = "ro";
         base.OnStartup(e);
 
         var config = new ConfigurationBuilder()

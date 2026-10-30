@@ -1,22 +1,22 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:vm="using:MealPrepApp.ViewModels.Shell" x:Class="MealPrepApp.Desktop.Views.ShellWindow" x:DataType="vm:ShellViewModel" Title="MealPrep • Gătește cu plăcere" Width="1240" Height="820" MinWidth="860" MinHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:vm="using:MealPrepApp.ViewModels.Shell" x:Class="MealPrepApp.Desktop.Views.ShellWindow" x:DataType="vm:ShellViewModel" Title="{loc:Loc Text.MealprepEnjoyCooking}" Width="1240" Height="820" MinWidth="860" MinHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="MealPrep">
+            <NativeMenuItem Header="{loc:Loc Text.Mealprep}">
                 <NativeMenu>
-                    <NativeMenuItem Header="Setări" Command="{Binding ShowSettingsCommand}"/>
-                    <NativeMenuItem Header="Profil" Command="{Binding ShowProfileCommand}"/>
-                    <NativeMenuItem Header="Ieși din cont" Command="{Binding SignOutCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Settings}" Command="{Binding ShowSettingsCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Profile}" Command="{Binding ShowProfileCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.SignOut253}" Command="{Binding SignOutCommand}"/>
                 </NativeMenu>
             </NativeMenuItem>
-            <NativeMenuItem Header="Navigare">
+            <NativeMenuItem Header="{loc:Loc Text.Navigation}">
                 <NativeMenu>
-                    <NativeMenuItem Header="Acasă" Command="{Binding ShowAcasaCommand}"/>
-                    <NativeMenuItem Header="Rețete" Command="{Binding ShowReteteCommand}"/>
-                    <NativeMenuItem Header="Planificare" Command="{Binding ShowPlanificareCommand}"/>
-                    <NativeMenuItem Header="Frigider" Command="{Binding ShowFrigiderCommand}"/>
-                    <NativeMenuItem Header="Cumpărături" Command="{Binding ShowCumparaturiCommand}"/>
-                    <NativeMenuItem Header="Ingrediente" Command="{Binding ShowIngredienteCommand}"/>
-                    <NativeMenuItem Header="Rapoarte" Command="{Binding ShowRapoarteCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Home}" Command="{Binding ShowAcasaCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Recipes}" Command="{Binding ShowReteteCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Planner}" Command="{Binding ShowPlanificareCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Pantry}" Command="{Binding ShowFrigiderCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Shopping}" Command="{Binding ShowCumparaturiCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Ingredients}" Command="{Binding ShowIngredienteCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Text.Reports}" Command="{Binding ShowRapoarteCommand}"/>
                 </NativeMenu>
             </NativeMenuItem>
         </NativeMenu>
@@ -26,34 +26,34 @@
             <Grid Width="84" Margin="0,12" RowDefinitions="*,Auto" Name="NavigationPanel">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="6" HorizontalAlignment="Center" KeyboardNavigation.TabNavigation="Continue">
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Acasa}" Command="{Binding ShowAcasaCommand}" ToolTip.Tip="Acasă" AutomationProperties.Name="Acasă">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Acasa}" Command="{Binding ShowAcasaCommand}" ToolTip.Tip="{loc:Loc Text.Home}" AutomationProperties.Name="{loc:Loc Text.Home}">
                             <controls:AnimatedNavigationIcon Kind="Home" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Retete}" Command="{Binding ShowReteteCommand}" ToolTip.Tip="Rețete" AutomationProperties.Name="Rețete">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Retete}" Command="{Binding ShowReteteCommand}" ToolTip.Tip="{loc:Loc Text.Recipes}" AutomationProperties.Name="{loc:Loc Text.Recipes}">
                             <controls:AnimatedNavigationIcon Kind="Recipes" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Planificare}" Command="{Binding ShowPlanificareCommand}" ToolTip.Tip="Planificare" AutomationProperties.Name="Planificare">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Planificare}" Command="{Binding ShowPlanificareCommand}" ToolTip.Tip="{loc:Loc Text.Planner}" AutomationProperties.Name="{loc:Loc Text.Planner}">
                             <controls:AnimatedNavigationIcon Kind="Calendar" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Frigider}" Command="{Binding ShowFrigiderCommand}" ToolTip.Tip="Frigider" AutomationProperties.Name="Frigider">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Frigider}" Command="{Binding ShowFrigiderCommand}" ToolTip.Tip="{loc:Loc Text.Pantry}" AutomationProperties.Name="{loc:Loc Text.Pantry}">
                             <controls:AnimatedNavigationIcon Kind="Fridge" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi}" Command="{Binding ShowCumparaturiCommand}" ToolTip.Tip="Cumpărături" AutomationProperties.Name="Cumpărături">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi}" Command="{Binding ShowCumparaturiCommand}" ToolTip.Tip="{loc:Loc Text.Shopping}" AutomationProperties.Name="{loc:Loc Text.Shopping}">
                             <controls:AnimatedNavigationIcon Kind="Shopping" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Ingrediente}" Command="{Binding ShowIngredienteCommand}" ToolTip.Tip="Ingrediente" AutomationProperties.Name="Ingrediente">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Ingrediente}" Command="{Binding ShowIngredienteCommand}" ToolTip.Tip="{loc:Loc Text.Ingredients}" AutomationProperties.Name="{loc:Loc Text.Ingredients}">
                             <controls:AnimatedNavigationIcon Kind="Ingredients" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
-                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Rapoarte}" Command="{Binding ShowRapoarteCommand}" ToolTip.Tip="Rapoarte" AutomationProperties.Name="Rapoarte">
+                        <Button Classes="Rail" Classes.selected="{Binding ActiveTab, Converter={StaticResource StringEquals}, ConverterParameter=Rapoarte}" Command="{Binding ShowRapoarteCommand}" ToolTip.Tip="{loc:Loc Text.Reports}" AutomationProperties.Name="{loc:Loc Text.Reports}">
                             <controls:AnimatedNavigationIcon Kind="Reports" Width="36" Height="36" ReducedMotion="{DynamicResource ReducedMotion}"/>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
                 <StackPanel Grid.Row="1" Spacing="6" HorizontalAlignment="Center" Margin="0,12,0,0">
-                    <Button Classes="Rail" Command="{Binding ShowProfileCommand}" AutomationProperties.Name="Profil" ToolTip.Tip="Profil">
+                    <Button Classes="Rail" Command="{Binding ShowProfileCommand}" AutomationProperties.Name="{loc:Loc Text.Profile}" ToolTip.Tip="{loc:Loc Text.Profile}">
                         <Viewbox Width="32" Height="32"><Canvas Width="24" Height="24"><Path Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" Data="{StaticResource IconProfile}"/></Canvas></Viewbox>
                     </Button>
-                    <Button Classes="Rail" Command="{Binding ShowSettingsCommand}" AutomationProperties.Name="Setări" ToolTip.Tip="Setări">
+                    <Button Classes="Rail" Command="{Binding ShowSettingsCommand}" AutomationProperties.Name="{loc:Loc Text.Settings}" ToolTip.Tip="{loc:Loc Text.Settings}">
                         <Viewbox Width="32" Height="32"><Canvas Width="24" Height="24"><Path Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" Data="{StaticResource IconSettings}"/></Canvas></Viewbox>
                     </Button>
                 </StackPanel>
@@ -63,13 +63,13 @@
             <Border Grid.Row="1" Padding="24,8" Background="{DynamicResource Selection}" IsVisible="{Binding Cooking.HasTimer}">
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Text="{Binding Cooking.TimerText}" VerticalAlignment="Center"/>
-                    <Button Grid.Column="1" Classes="Secondary" Content="Revino la gătit" Command="{Binding ResumeCookingCommand}"/>
+                    <Button Grid.Column="1" Classes="Secondary" Content="{loc:Loc Text.ReturnToCooking}" Command="{Binding ResumeCookingCommand}"/>
                 </Grid>
             </Border>
             <Border Padding="24,12" Background="{DynamicResource SurfaceSecondary}" IsVisible="{Binding Notifications.HasMessage}">
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Text="{Binding Notifications.Message}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                    <Button Grid.Column="1" Content="Închide" Classes="Link" Command="{Binding Notifications.DismissCommand}"/>
+                    <Button Grid.Column="1" Content="{loc:Loc Text.Close}" Classes="Link" Command="{Binding Notifications.DismissCommand}"/>
                 </Grid>
             </Border>
             <ContentControl Grid.Row="2" Content="{Binding CurrentView}" Name="PageContent"/>

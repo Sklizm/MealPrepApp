@@ -30,11 +30,9 @@ public partial class App : Application
 
     public override void Initialize()
     {
-        var culture=System.Globalization.CultureInfo.GetCultureInfo("ro-RO");
-        System.Globalization.CultureInfo.DefaultThreadCurrentCulture=culture;
-        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture=culture;
+        var preferences = new PresentationPreferences();
+        L.Current.Language = preferences.Language;
         AvaloniaXamlLoader.Load(this);
-        var preferences=new PresentationPreferences();
         void ApplyTheme() => RequestedThemeVariant=preferences.Theme switch { Appearance.Light=>Avalonia.Styling.ThemeVariant.Light, Appearance.Dark=>Avalonia.Styling.ThemeVariant.Dark, _=>Avalonia.Styling.ThemeVariant.Default };
         void ApplyMotion()
         {
@@ -43,7 +41,7 @@ public partial class App : Application
             Resources["ReducedMotion"]=preferences.ReducedMotion;
         }
         ApplyTheme(); ApplyMotion();
-        preferences.PropertyChanged += (_,e) => { if(e.PropertyName==nameof(preferences.Theme)) ApplyTheme(); if(e.PropertyName==nameof(preferences.ReducedMotion))ApplyMotion(); };
+        preferences.PropertyChanged += (_,e) => { if(e.PropertyName==nameof(preferences.Language)) L.Current.Language=preferences.Language; if(e.PropertyName==nameof(preferences.Theme)) ApplyTheme(); if(e.PropertyName==nameof(preferences.ReducedMotion))ApplyMotion(); };
         Preferences=preferences;
     }
 
@@ -118,6 +116,7 @@ public partial class App : Application
         services.AddSingleton<NutritionRepository>();
 
         // Services
+        services.AddSingleton<ILocalizationService>(L.Current);
         services.AddSingleton(Current is App app ? app.Preferences : new PresentationPreferences());
         services.AddScoped<CookingSession>();
         services.AddScoped<NotificationCenter>();

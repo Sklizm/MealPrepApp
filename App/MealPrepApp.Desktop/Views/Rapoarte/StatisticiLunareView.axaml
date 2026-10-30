@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Rapoarte.StatisticiLunareView" x:DataType="vm:StatisticiLunareViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Rapoarte" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Rapoarte.StatisticiLunareView" x:DataType="vm:StatisticiLunareViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Styles>
         <Style Selector="Border.StatCard">
             <Setter Property="Background" Value="{DynamicResource Surface}"/>
@@ -20,10 +20,10 @@
     </UserControl.Styles>
     <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32">
         <!-- Title -->
-        <TextBlock Grid.Row="0" Text="Statistici lunare" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
+        <TextBlock Grid.Row="0" Text="{loc:Loc Text.MonthlyStatistics}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" Margin="0,0,0,16"/>
         <!-- Month picker toolbar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
-            <TextBlock Text="Luna" Classes="Muted" VerticalAlignment="Center"/>
+            <TextBlock Text="{loc:Loc Text.Month}" Classes="Muted" VerticalAlignment="Center"/>
             <ComboBox Width="160" ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:MonthOption">
@@ -32,13 +32,13 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <ComboBox Width="100" ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}"/>
-            <Button Content="Afișează" Classes="Primary" Margin="8,0,0,0" Command="{Binding AfiseazaCommand}" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="{loc:Loc Text.Show}" Classes="Primary" Margin="8,0,0,0" Command="{Binding AfiseazaCommand}" IsEnabled="{Binding !IsBusy}"/>
         </StackPanel>
         <!-- Error message -->
         <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,8">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding AfiseazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+            <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" Command="{Binding AfiseazaCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <!-- Content -->
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" IsVisible="{Binding HasData}">
@@ -48,24 +48,24 @@
                     <Border Classes="StatCard">
                         <StackPanel>
                             <TextBlock Text="{Binding Stats.TotalMealsPlanned, FallbackValue=0}" Classes="StatNumber"/>
-                            <TextBlock Text="Mese planificate" Classes="Muted" Margin="0,4,0,0"/>
+                            <TextBlock Text="{loc:Loc Text.PlannedMeals}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
                             <TextBlock Text="{Binding Stats.DistinctRecipes, FallbackValue=0}" Classes="StatNumber"/>
-                            <TextBlock Text="Rețete distincte" Classes="Muted" Margin="0,4,0,0"/>
+                            <TextBlock Text="{loc:Loc Text.DistinctRecipes}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
                             <TextBlock Text="{Binding Stats.DistinctIngredients, FallbackValue=0}" Classes="StatNumber"/>
-                            <TextBlock Text="Ingrediente distincte" Classes="Muted" Margin="0,4,0,0"/>
+                            <TextBlock Text="{loc:Loc Text.DistinctIngredients}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
                 <!-- Per-slot breakdown -->
-                <TextBlock Text="Pe categorii de masa" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0"/>
+                <TextBlock Text="{loc:Loc Text.ByMealCategory}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0"/>
                 <ItemsControl ItemsSource="{Binding SlotCounts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -87,21 +87,21 @@
                 <!-- Top recipes + top ingredients side by side -->
                 <StackPanel Spacing="24" Margin="0,8,0,0">
                     <StackPanel Grid.Column="0" Spacing="8">
-                        <TextBlock Text="Top 5 retete planificate" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
+                        <TextBlock Text="{loc:Loc Text.Top5PlannedRecipes}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
                         <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopRecipes}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Reteta" Binding="{Binding Title}" Width="*"/>
-                                <DataGridTextColumn Header="Categorie" Binding="{Binding CategoryName}" Width="130"/>
-                                <DataGridTextColumn Header="Planificari" Binding="{Binding PlannedCount}" Width="100"/>
+                                <DataGridTextColumn Header="{loc:Loc Text.Recipe187}" Binding="{Binding Title}" Width="*"/>
+                                <DataGridTextColumn Header="{loc:Loc Text.Category}" Binding="{loc:Display CategoryName}" Width="130"/>
+                                <DataGridTextColumn Header="{loc:Loc Text.Plans}" Binding="{Binding PlannedCount}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Spacing="8">
-                        <TextBlock Text="Top 10 ingrediente folosite" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
+                        <TextBlock Text="{loc:Loc Text.Top10IngredientsUsed}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
                         <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopIngredients}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Ingredient" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="Aparitii" Binding="{Binding UsageCount}" Width="100"/>
+                                <DataGridTextColumn Header="{loc:Loc Text.Ingredient165}" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="{loc:Loc Text.Occurrences}" Binding="{Binding UsageCount}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -111,8 +111,8 @@
         <!-- Empty state -->
         <Border Grid.Row="3" Background="{DynamicResource Surface}" CornerRadius="8" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding ShowEmptyState}">
             <StackPanel HorizontalAlignment="Center" Spacing="6">
-                <TextBlock Text="Nu sunt mese planificate in luna selectata" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" HorizontalAlignment="Center"/>
-                <TextBlock Text="Planifica mese din sectiunea Planificare pentru a vedea statistici aici." Classes="Muted" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="380"/>
+                <TextBlock Text="{loc:Loc Text.NoMealsPlannedForTheSelectedMonth}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" HorizontalAlignment="Center"/>
+                <TextBlock Text="{loc:Loc Text.PlanMealsInThePlannerToSeeStatisticsHere}" Classes="Muted" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="380"/>
             </StackPanel>
         </Border>
     </Grid>

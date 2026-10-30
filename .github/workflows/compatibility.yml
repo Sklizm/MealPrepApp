@@ -115,6 +115,7 @@ jobs:
           python-version: '3.11'
       - run: python3 Tests/Scripts/check_repository_paths.py
       - run: python3 Tests/Scripts/check_redesign_contrast.py
+      - run: python3 Tests/Scripts/check_localization.py
       - run: python3 Tests/Scripts/test_database_update.py
       - run: python3 Tests/Scripts/test_release_package.py
       - run: python3 Tests/Scripts/test_windows_packaging.py

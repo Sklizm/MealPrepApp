@@ -1,3 +1,5 @@
+using MealPrepApp.Desktop.Localization;
+using MealPrepApp.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -30,6 +32,22 @@ public partial class MessageDialog : Window
         return owner is not null && await dlg.ShowDialog<bool>(owner);
     }
 
+    public static async Task<bool> ShowModalAsync(MessageDialogKind kind, LocalizedMessage title, LocalizedMessage message)
+    {
+        var dlg = new MessageDialog();
+        MessageBinding.Set(dlg, dlg.HeaderText, TextBlock.TextProperty, title);
+        MessageBinding.Set(dlg, dlg, Window.TitleProperty, title);
+        MessageBinding.Set(dlg, dlg.MessageBody, TextBlock.TextProperty, message);
+        dlg.Configure(kind, null, null);
+        if (kind == MessageDialogKind.Confirm)
+        {
+            MessageBinding.Set(dlg, dlg.OkButton, Button.ContentProperty, L.Message("Text.Yes"));
+            MessageBinding.Set(dlg, dlg.CancelButton, Button.ContentProperty, L.Message("Text.No"));
+        }
+        var owner = ActiveOwner();
+        return owner is not null && await dlg.ShowDialog<bool>(owner);
+    }
+
     internal void Configure(MessageDialogKind kind, string? okText, string? cancelText)
     {
         switch (kind)
@@ -44,8 +62,8 @@ public partial class MessageDialog : Window
                 break;
 
             case MessageDialogKind.Confirm:
-                OkButton.Content = okText ?? "Da";
-                CancelButton.Content = cancelText ?? "Nu";
+                OkButton.Content = okText ?? L.Text("Text.Yes");
+                CancelButton.Content = cancelText ?? L.Text("Text.No");
                 CancelButton.IsVisible = true;
                 break;
 

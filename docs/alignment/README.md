@@ -1,5 +1,9 @@
 # Interface alignment reference
 
+Screenshots in this directory are historical Romanian localization evidence. See the
+[refreshed English captures and localization matrix](../localization/README.md) for the
+English-default application.
+
 These comparisons document consistent spacing and alignment in the pantry, recipe cards, Home, and navigation rail. The app uses fixed illustration areas, aligned labels, and stable selection borders across compact and wide layouts.
 
 Before screenshots were captured from `d61183b` before editing the views. These are

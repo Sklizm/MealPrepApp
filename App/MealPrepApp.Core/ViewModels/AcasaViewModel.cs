@@ -8,7 +8,7 @@ using MealPrepApp.Services;
 
 namespace MealPrepApp.ViewModels;
 
-/// <summary>Backs the Acasa dashboard: KPI tiles + the "Retete Recente" grid.</summary>
+/// <summary>Backs the Home dashboard: KPI tiles + the "Recent recipes" grid.</summary>
 public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
     private readonly DashboardRepository _dashboard;
@@ -46,7 +46,7 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
     private int _loadVersion;
     private bool _disposed;
     private CancellationTokenSource? _loadCts;
-    public void Dispose() { if (_disposed) return; _disposed = true; ++_loadVersion; _loadCts?.Cancel(); _loadCts?.Dispose(); }
+    public override void Dispose() { ReleaseLocalization(); if (_disposed) return; _disposed = true; ++_loadVersion; _loadCts?.Cancel(); _loadCts?.Dispose(); }
 
     public async Task LoadAsync()
     {
@@ -75,7 +75,7 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
             if (version == _loadVersion && !_disposed)
             {
                 AppDiagnostics.Record(ex);
-                ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Secțiunea nu a putut fi încărcată. Încearcă din nou.";
+                ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.ThisSectionCouldNotBeLoadedTryAgain");
             }
         }
         finally { if (version == _loadVersion && !_disposed) IsBusy = false; }

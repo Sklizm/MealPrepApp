@@ -56,7 +56,7 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
         };
     }
 
-    /// <summary>Called before the shell window is shown — opens the Acasa dashboard.</summary>
+    /// <summary>Called before the shell window is shown — opens the Home dashboard.</summary>
     public async Task InitializeAsync()
     {
         await ShowAcasaCommand.ExecuteAsync(null);
@@ -72,14 +72,14 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowRetete()
     {
-        StatusText = "Sectiunea Retete";
+        StatusText = L.Text("Text.RecipesSection");
         await _navigation.NavigateToAsync<ReteteListViewModel>();
     }
 
     [RelayCommand]
     private async Task ShowIngrediente()
     {
-        StatusText = "Sectiunea Ingrediente";
+        StatusText = L.Text("Text.IngredientsSection");
         await _navigation.NavigateToAsync<IngredienteListViewModel>();
     }
 
@@ -88,14 +88,14 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     [RelayCommand]
     private async Task ShowPlanificare()
     {
-        StatusText = "Sectiunea Planificare";
+        StatusText = L.Text("Text.PlannerSection");
         await _navigation.NavigateToAsync<PlanificareRootViewModel>();
     }
 
     [RelayCommand]
     private async Task ShowRapoarte()
     {
-        StatusText = "Rapoarte si statistici";
+        StatusText = L.Text("Text.ReportsAndStatistics");
         await _navigation.NavigateToAsync<RapoarteRootViewModel>();
     }
 

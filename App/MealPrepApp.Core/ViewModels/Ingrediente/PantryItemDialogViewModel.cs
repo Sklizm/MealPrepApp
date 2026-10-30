@@ -35,8 +35,8 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
     [ObservableProperty]
     private decimal? _quantity;
 
-    [ObservableProperty]
-    private string _title = "Adauga in frigider";
+    [LocalizedProperty]
+    public string Title { get => L.Text(IsEdit ? "Text.EditQuantity" : "Text.AddToPantry337"); private set => OnPropertyChanged(); }
 
     [ObservableProperty]
     private bool _isEdit;
@@ -58,7 +58,7 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
     public async Task InitForAddAsync()
     {
         IsEdit = false;
-        Title = "Adauga in frigider";
+        Title = L.Text("Text.AddToPantry337");
         _editingPantryId = null;
         SelectedIngredient = null;
         SelectedUnit = null;
@@ -69,7 +69,7 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
     public async Task InitForEditAsync(PantryItem item)
     {
         IsEdit = true;
-        Title = "Editeaza cantitatea";
+        Title = L.Text("Text.EditQuantity");
         _editingPantryId = item.UserPantryID;
         Quantity = item.Quantity;
 
@@ -95,13 +95,13 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -116,17 +116,17 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
 
         if (SelectedIngredient is null)
         {
-            ErrorMessage = "Alege un ingredient.";
+            ErrorContent = L.Message("Text.ChooseAnIngredient");
             return;
         }
         if (SelectedUnit is null)
         {
-            ErrorMessage = "Alege o unitate.";
+            ErrorContent = L.Message("Text.ChooseAUnit");
             return;
         }
         if (!Quantity.HasValue || Quantity.Value <= 0m)
         {
-            ErrorMessage = "Cantitatea trebuie sa fie mai mare decat 0.";
+            ErrorContent = L.Message("Text.TheQuantityMustBeGreaterThan0");
             return;
         }
 
@@ -150,13 +150,13 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

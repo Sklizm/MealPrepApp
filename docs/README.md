@@ -15,7 +15,9 @@
 
 ## Interface and validation references
 
-- [Current alignment comparisons](alignment/README.md): Home, recipe cards, fridge tiles, and navigation icons.
+- [Localization and refreshed English screenshots](localization/README.md): current public captures, three-language render matrix, and separate native acceptance status.
+
+- [Earlier alignment comparisons](alignment/README.md): Home, recipe cards, fridge tiles, and navigation icons.
 - [Illustrated fridge](fridge/README.md): category browsing, stock actions, recipe matching, and animation lifecycle checks.
 - [Theme and navigation refinement](refinement/README.md): semantic palettes, accessibility checks, and rendering evidence.
 - [Design reference](redesign/README.md) and [earlier validation](redesign/validation.md).

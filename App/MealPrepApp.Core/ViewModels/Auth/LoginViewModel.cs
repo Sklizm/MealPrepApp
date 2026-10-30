@@ -45,7 +45,7 @@ public sealed partial class LoginViewModel : ViewModelBase
         var identifier = Identifier.Trim();
         if (string.IsNullOrEmpty(identifier) || string.IsNullOrEmpty(password))
         {
-            ErrorMessage = "Introdu utilizatorul si parola.";
+            ErrorContent = L.Message("Text.EnterYourUsernameAndPassword");
             return;
         }
 
@@ -57,20 +57,20 @@ public sealed partial class LoginViewModel : ViewModelBase
             {
                 // Audit the attempt even though no user matched.
                 await _users.RecordLoginFailureAsync(null, identifier);
-                ErrorMessage = "Utilizator sau parola incorecte.";
+                ErrorContent = L.Message("Text.IncorrectUsernameOrPassword");
                 return;
             }
 
             if (user.LockedUntil is { } lockedUntil && lockedUntil > DateTime.UtcNow)
             {
-                ErrorMessage = $"Cont blocat temporar. Reincearca dupa ora {lockedUntil.ToLocalTime():HH:mm}.";
+                ErrorContent = L.Message("Auth.Locked", lockedUntil.ToLocalTime());
                 return;
             }
 
             if (!_hasher.Verify(password, user.PasswordHash))
             {
                 await _users.RecordLoginFailureAsync(user.UserID, identifier);
-                ErrorMessage = "Utilizator sau parola incorecte.";
+                ErrorContent = L.Message("Text.IncorrectUsernameOrPassword");
                 return;
             }
 
@@ -80,13 +80,13 @@ public sealed partial class LoginViewModel : ViewModelBase
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:views="using:MealPrepApp.Desktop.Views.Ingrediente" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteRootView" x:DataType="vm:IngredienteRootViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:views="using:MealPrepApp.Desktop.Views.Ingrediente" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteRootView" x:DataType="vm:IngredienteRootViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.DataTemplates>
         <DataTemplate DataType="{x:Type vm:IngredienteListViewModel}">
             <views:IngredienteListView/>
@@ -14,10 +14,10 @@
         <!-- Sidebar -->
         <Border Grid.Column="0" Background="{DynamicResource SurfaceSecondary}">
             <StackPanel Margin="0,16,0,0" Spacing="4">
-                <RadioButton Content="Toate" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowToateCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Toate, Mode=OneWay}"/>
-                <RadioButton Content="Categorii" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowCategoriiCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Categorii, Mode=OneWay}"/>
-                <RadioButton Content="Frigider" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowFrigiderCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Frigider, Mode=OneWay}"/>
-                <RadioButton Content="Lista de cumpărături" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowCumparaturiCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.All}" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowToateCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Toate, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.Categories}" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowCategoriiCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Categorii, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.Pantry}" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowFrigiderCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Frigider, Mode=OneWay}"/>
+                <RadioButton Content="{loc:Loc Text.ShoppingList}" Classes="Tab" GroupName="IngFilter" Command="{Binding ShowCumparaturiCommand}" IsChecked="{Binding ActiveSection, Converter={StaticResource StringEquals}, ConverterParameter=Cumparaturi, Mode=OneWay}"/>
             </StackPanel>
         </Border>
         <!-- Sub-View Region -->

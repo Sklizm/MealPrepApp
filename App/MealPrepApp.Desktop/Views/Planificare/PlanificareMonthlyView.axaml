@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareMonthlyView" x:DataType="vm:PlanificareMonthlyViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareMonthlyView" x:DataType="vm:PlanificareMonthlyViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Styles>
         <Style Selector="Border.Today">
             <Setter Property="Background" Value="{DynamicResource Selection}"/>
@@ -31,11 +31,11 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="32,8,32,24">
         <!-- Month navigation -->
         <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="False">
-            <Button DockPanel.Dock="Left" AutomationProperties.Name="Precedent" ToolTip.Tip="Precedent" Classes="Secondary" Command="{Binding PrevMonthCommand}">
+            <Button DockPanel.Dock="Left" AutomationProperties.Name="{loc:Loc Text.Previous}" ToolTip.Tip="{loc:Loc Text.Previous}" Classes="Secondary" Command="{Binding PrevMonthCommand}">
                 <Path Data="{StaticResource IconBack}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
             </Button>
-            <Button DockPanel.Dock="Left" Content="Azi" Classes="Secondary" Margin="8,0,0,0" Command="{Binding TodayCommand}"/>
-            <Button DockPanel.Dock="Right" AutomationProperties.Name="Următor" ToolTip.Tip="Următor" Classes="Secondary" Command="{Binding NextMonthCommand}">
+            <Button DockPanel.Dock="Left" Content="{loc:Loc Text.Today}" Classes="Secondary" Margin="8,0,0,0" Command="{Binding TodayCommand}"/>
+            <Button DockPanel.Dock="Right" AutomationProperties.Name="{loc:Loc Text.Next}" ToolTip.Tip="{loc:Loc Text.Next}" Classes="Secondary" Command="{Binding NextMonthCommand}">
                 <Path Data="{StaticResource IconNext}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
             </Button>
             <TextBlock Text="{Binding MonthLabel}" FontWeight="Bold" FontSize="{StaticResource FontSizeHeader}" VerticalAlignment="Center" Margin="20,0,0,0"/>
@@ -43,7 +43,7 @@
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,8">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Content="Încearcă din nou" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
+            <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
         <!-- Weekday headers -->
         <ItemsControl Grid.Row="2" ItemsSource="{Binding WeekdayHeaders}" Margin="0,0,0,6">

@@ -1,54 +1,54 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.AcasaView" x:DataType="vm:AcasaViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.AcasaView" x:DataType="vm:AcasaViewModel" Background="{DynamicResource AppBackground}">
     <ScrollViewer>
         <StackPanel Margin="32" Spacing="24">
             <StackPanel Spacing="8">
-                <TextBlock Text="Bine ai venit în bucătăria ta" Classes="Muted"/>
-                <TextBlock Text="Ce gătim azi?" Classes="Title"/>
-                <TextBlock Text="Alege ceva bun. Restul îl planificăm împreună." Classes="Body"/>
+                <TextBlock Text="{loc:Loc Text.WelcomeToYourKitchen}" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.WhatShallWeCookToday}" Classes="Title"/>
+                <TextBlock Text="{loc:Loc Text.ChooseSomethingDeliciousWeLlPlanTheRestTogether}" Classes="Body"/>
             </StackPanel>
             <Grid ColumnDefinitions="*,Auto">
-                <TextBox Name="SearchBox" Text="{Binding SearchTerm}" Watermark="Caută o rețetă sau un preparat" AutomationProperties.Name="Caută rețete">
+                <TextBox Name="SearchBox" Text="{Binding SearchTerm}" Watermark="{loc:Loc Text.SearchForARecipeOrDish}" AutomationProperties.Name="{loc:Loc Text.SearchRecipes}">
                     <TextBox.KeyBindings>
                         <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}"/>
                     </TextBox.KeyBindings>
                 </TextBox>
-                <Button Classes="Primary" Grid.Column="1" Content="Caută rețete" Command="{Binding SearchCommand}" Margin="8,0,0,0"/>
+                <Button Classes="Primary" Grid.Column="1" Content="{loc:Loc Text.SearchRecipes}" Command="{Binding SearchCommand}" Margin="8,0,0,0"/>
             </Grid>
             <WrapPanel>
-                <Button Content="Favoritele mele" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Favorite" Margin="0,0,8,8"/>
-                <Button Content="Din frigider" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Frigider" Margin="0,0,8,8"/>
-                <Button Classes="Primary" Content="Reia ciorna" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Drafts" IsVisible="{Binding HasDrafts}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.MyFavorites}" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Favorite" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc Text.FromThePantry}" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Frigider" Margin="0,0,8,8"/>
+                <Button Classes="Primary" Content="{loc:Loc Text.ResumeDraft}" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Drafts" IsVisible="{Binding HasDrafts}" Margin="0,0,8,8"/>
             </WrapPanel>
             <ProgressBar IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}" Height="4"/>
             <Border Classes="Card" IsVisible="{Binding HasError}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
-                    <Button Classes="Primary" Content="Încearcă din nou" Command="{Binding RetryCommand}" HorizontalAlignment="Left"/>
+                    <Button Classes="Primary" Content="{loc:Loc Text.TryAgain}" Command="{Binding RetryCommand}" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
             <Border Classes="Card">
                 <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="Mesele de azi" Classes="Header" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Classes="Link" Content="Deschide planul" Command="{Binding OpenSectionCommand}" CommandParameter="Planificare"/>
+                        <TextBlock Text="{loc:Loc Text.TodaySMeals}" Classes="Header" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Classes="Link" Content="{loc:Loc Text.OpenPlanner}" Command="{Binding OpenSectionCommand}" CommandParameter="Planificare"/>
                     </Grid>
                     <ItemsControl ItemsSource="{Binding TodayMeals}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:MealPlanEntry">
                                 <Grid ColumnDefinitions="140,*,Auto" Margin="0,8">
-                                    <TextBlock Text="{Binding CategoryName}" Classes="Muted"/>
+                                    <TextBlock Text="{loc:Display CategoryName}" Classes="Muted"/>
                                     <TextBlock Grid.Column="1" Text="{Binding RecipeTitle}" TextWrapping="Wrap"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding Servings, StringFormat='{}{0} porții'}" Classes="Muted"/>
+                                    <TextBlock Grid.Column="2" Text="{loc:Format Count.Servings, Servings}" Classes="Muted"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="Planul de azi este liber. Adaugă o rețetă preferată." Classes="Muted" IsVisible="{Binding TodayMeals.Count, Converter={StaticResource EmptyToBool}}"/>
+                    <TextBlock Text="{loc:Loc Text.NothingPlannedTodayAddAFavoriteRecipe}" Classes="Muted" IsVisible="{Binding TodayMeals.Count, Converter={StaticResource EmptyToBool}}"/>
                 </StackPanel>
             </Border>
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="Înapoi la ceva bun" Classes="Header" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="Toate rețetele" Classes="Link" Command="{Binding OpenSectionCommand}" CommandParameter="Retete"/>
+                <TextBlock Text="{loc:Loc Text.BackToSomethingDelicious}" Classes="Header" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="{loc:Loc Text.AllRecipes}" Classes="Link" Command="{Binding OpenSectionCommand}" CommandParameter="Retete"/>
             </Grid>
             <ItemsControl ItemsSource="{Binding RecentRecipes}">
                 <ItemsControl.ItemsPanel>
@@ -61,19 +61,19 @@
                         <Border Classes="Card" Width="272" Margin="0,0,16,16">
                             <StackPanel Spacing="12">
                                 <Border Background="{DynamicResource SurfaceSecondary}" CornerRadius="8" Height="72">
-                                    <TextBlock Text="Din colecția ta" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{loc:Loc Text.FromYourCollection}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <Button Classes="Link" Command="{Binding DataContext.OpenRecipeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Stretch" Height="56" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
                                     <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" LineHeight="24" MaxLines="2" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}"/>
                                 </Button>
-                                <TextBlock Text="{Binding CategoryName}" Classes="Muted"/>
-                                <TextBlock Text="{Binding Servings, StringFormat='{}{0} porții'}" Classes="Muted"/>
+                                <TextBlock Text="{loc:Display CategoryName}" Classes="Muted"/>
+                                <TextBlock Text="{loc:Format Count.Servings, Servings}" Classes="Muted"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="Colecția ta începe cu prima rețetă." Classes="Muted" IsVisible="{Binding RecentRecipes.Count, Converter={StaticResource EmptyToBool}}"/>
+            <TextBlock Text="{loc:Loc Text.YourCollectionStartsWithYourFirstRecipe}" Classes="Muted" IsVisible="{Binding RecentRecipes.Count, Converter={StaticResource EmptyToBool}}"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

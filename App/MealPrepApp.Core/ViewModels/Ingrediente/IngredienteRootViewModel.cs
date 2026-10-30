@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MealPrepApp.ViewModels.Ingrediente;
 
 /// <summary>
-/// Container for the Ingrediente tab. Sidebar entries — Toate / Categorii / Frigider /
-/// Lista de cumparaturi — swap <see cref="CurrentSubView"/> between three sub-VMs. The
+/// Container for the Ingredients tab. Sidebar entries — All / Categories / Pantry /
+/// Shopping list — swap <see cref="CurrentSubView"/> between three sub-VMs. The
 /// ingredient list VM serves both Toate (flat) and Categorii (grouped) via its
 /// <c>UseGrouping</c> flag.
 /// </summary>
@@ -30,7 +30,7 @@ public sealed partial class IngredienteRootViewModel : ViewModelBase, IAsyncLoad
         _services = services;
     }
 
-    public void Dispose() => _list?.Dispose();
+    public override void Dispose() { ReleaseLocalization(); _list?.Dispose(); }
 
     public Task LoadAsync() => CurrentSubView is null ? ShowToateCommand.ExecuteAsync(null) : Task.CompletedTask;
 

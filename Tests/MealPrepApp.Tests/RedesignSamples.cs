@@ -25,7 +25,7 @@ public static class RedesignSamples
         configure?.Invoke(services);
         return services.BuildServiceProvider();
     }
-    public static void Render(string output, bool alignmentOnly = false, bool recipeOnly = false)
+    public static void Render(string output, bool alignmentOnly = false, bool recipeOnly = false, bool localizationOnly = false, string? onlySection = null)
     {
         Directory.CreateDirectory(output);
         Application.Current!.Resources["MotionDuration"]=TimeSpan.Zero; // deterministic settled-state captures
@@ -35,37 +35,37 @@ public static class RedesignSamples
         provider.GetRequiredService<ISessionService>().SignIn(1,"Demo");
         var home=provider.GetRequiredService<AcasaViewModel>();
         home.HasDrafts=true;
-        foreach(var title in new[]{"Paste cu roșii și busuioc","Somon la cuptor","Salată de năut"}) home.RecentRecipes.Add(new RecentRecipe { RecipeID=1,Title=title, CategoryName="Prânz",Servings=2 });
-        home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Terci cu mere și scorțișoară",CategoryName="Mic dejun",Servings=2});
-        home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Paste cu roșii și busuioc",CategoryName="Prânz",Servings=2});
+        foreach(var title in new[]{"Tomato and basil pasta","Baked salmon","Chickpea salad"}) home.RecentRecipes.Add(new RecentRecipe { RecipeID=1,Title=title, CategoryName="Prânz",Servings=2 });
+        home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Apple and cinnamon oatmeal",CategoryName="Mic dejun",Servings=2});
+        home.TodayMeals.Add(new MealPlanEntry {RecipeTitle="Tomato and basil pasta",CategoryName="Prânz",Servings=2});
         var detail=provider.GetRequiredService<ReteteDetailViewModel>();
-        detail.Recipe=new RecipeFull { RecipeID=1,UserID=1,Title="Paste cu roșii și busuioc",Description="O masă simplă, cu arome proaspete. Perfectă pentru serile din timpul săptămânii.", CategoryName="Prânz",AuthorUsername="Demo",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20,Instructions="Fierbe pastele în apă cu sare, conform instrucțiunilor de pe ambalaj.\n\nÎncălzește uleiul și adaugă roșiile. Lasă sosul să fiarbă ușor, apoi amestecă pastele cu sosul și busuiocul.",Ingredients=new() { new(){IngredientName="Paste",Quantity=200,UnitAbbreviation="g"},new(){IngredientName="Roșii",Quantity=400,UnitAbbreviation="g"},new(){IngredientName="Ulei de măsline",Quantity=20,UnitAbbreviation="ml"},new(){IngredientName="Busuioc proaspăt",Quantity=5,UnitAbbreviation="g"} } };
+        detail.Recipe=new RecipeFull { RecipeID=1,UserID=1,Title="Tomato and basil pasta",Description="A simple meal with fresh flavors. Perfect for busy weeknights.", CategoryName="Prânz",AuthorUsername="Demo",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20,Instructions="Cook the pasta in salted water following the package instructions.\n\nWarm the oil and add the tomatoes. Simmer gently, then toss the pasta with the sauce and basil.",Ingredients=new() { new(){IngredientName="Pasta",Quantity=200,UnitAbbreviation="g"},new(){IngredientName="Tomatoes",Quantity=400,UnitAbbreviation="g"},new(){IngredientName="Olive oil",Quantity=20,UnitAbbreviation="ml"},new(){IngredientName="Fresh basil",Quantity=5,UnitAbbreviation="g"} } };
         detail.Nutrition=new RecipeNutritionSummary {TotalCalories=980,TotalProteinGrams=26,TotalCarbsGrams=148,TotalFatGrams=28};
         var week=provider.GetRequiredService<PlanificareWeeklyViewModel>();
         foreach(var label in new[]{"Mic dejun","Prânz","Cină","Gustare"}) week.SlotHeaders.Add(label);
-        for(int d=0;d<7;d++) week.Rows.Add(new WeekRowViewModel {Date=week.WeekStart.AddDays(d),DayLabel=MealSlots.DayRowLabel(week.WeekStart.AddDays(d)),Cells=Enumerable.Range(1,4).Select(slot=>new WeekCellViewModel {Date=week.WeekStart.AddDays(d),CategoryId=slot,Entries=slot==2 ? new[]{new MealPlanEntry {RecipeTitle=d%2==0 ? "Paste cu roșii" : "Salată de năut",CategoryName="Prânz",CategoryID=slot,Servings=2}}:Array.Empty<MealPlanEntry>()}).ToArray()});
+        for(int d=0;d<7;d++) week.Rows.Add(new WeekRowViewModel {Date=week.WeekStart.AddDays(d),DayLabel=MealSlots.DayRowLabel(week.WeekStart.AddDays(d)),Cells=Enumerable.Range(1,4).Select(slot=>new WeekCellViewModel {Date=week.WeekStart.AddDays(d),CategoryId=slot,Entries=slot==2 ? new[]{new MealPlanEntry {RecipeTitle=d%2==0 ? "Tomato pasta" : "Chickpea salad",CategoryName="Prânz",CategoryID=slot,Servings=2}}:Array.Empty<MealPlanEntry>()}).ToArray()});
         foreach(var row in week.Rows) foreach(var cell in row.Cells) foreach(var entry in cell.Entries) {entry.PlannedDate=cell.Date;week.AgendaEntries.Add(entry);}
-        var dessert=new MealPlanEntry {RecipeTitle="Mere coapte",CategoryName="Desert",CategoryID=5,Servings=2,PlannedDate=week.WeekStart};
+        var dessert=new MealPlanEntry {RecipeTitle="Baked apples",CategoryName="Desert",CategoryID=5,Servings=2,PlannedDate=week.WeekStart};
         week.SupplementaryEntries.Add(dessert);week.AgendaEntries.Add(dessert);
         var recipes=provider.GetRequiredService<ReteteListViewModel>();
         recipes.Categories.Add(new Category {CategoryID=0, Name="Toate categoriile"}); recipes.SelectedCategory=recipes.Categories[0];
-        foreach(var title in new[]{"Paste cu roșii și busuioc","Somon la cuptor","Salată de năut","Supă de legume","Terci cu mere","Mere coapte"}) recipes.Recipes.Add(new RecipeListItem {RecipeID=1,Title=title,CategoryName="Prânz",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20});
+        foreach(var title in new[]{"Tomato and basil pasta","Baked salmon","Chickpea salad","Vegetable soup","Apple oatmeal","Baked apples"}) recipes.Recipes.Add(new RecipeListItem {RecipeID=1,Title=title,CategoryName="Prânz",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20});
         var pantry=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.FrigiderViewModel>(); pantry.UseGrouping=true;
         var ingredients=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.IngredienteListViewModel>(); ingredients.UseGrouping=true;
-        foreach(var name in new[]{"Roșii","Busuioc","Morcovi","Ardei","Năut","Orez"})
+        foreach(var name in new[]{"Tomatoes","Basil","Carrots","Peppers","Chickpeas","Rice"})
         {
-            pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=name,Quantity=250,UnitAbbreviation="g",CategoryName=name=="Orez" ? "Cereale si paste" : name=="Busuioc" ? "Condimente si ierburi" : name=="Năut" ? "Conserve" : "Produse"});
-            ingredients.Ingredients.Add(new Ingredient {Name=name,IngredientCategoryName="Legume",DefaultUnitAbbreviation="g"});
+            pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=name,Quantity=250,UnitAbbreviation="g",CategoryName=name=="Rice" ? "Cereale si paste" : name=="Basil" ? "Condimente si ierburi" : name=="Chickpeas" ? "Conserve" : "Produse"});
+            ingredients.Ingredients.Add(new Ingredient {Name=name,IngredientCategoryName="Vegetables",DefaultUnitAbbreviation="g"});
         }
-        foreach(var stock in new[] { ("Lapte", "Lactate si oua", "ml"), ("Vită", "Carne si peste", "g"), ("Suc de mere", "Bauturi", "ml") })
+        foreach(var stock in new[] { ("Milk", "Lactate si oua", "ml"), ("Beef", "Carne si peste", "g"), ("Apple juice", "Bauturi", "ml") })
             pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=stock.Item1,CategoryName=stock.Item2,UnitAbbreviation=stock.Item3,Quantity=500});
         ingredients.Categories.Add(new IngredientCategory {Name="Toate categoriile"}); ingredients.SelectedCategory=ingredients.Categories[0];
         var shopping=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.ShoppingListViewModel>();
         shopping.LoadAsync().GetAwaiter().GetResult();
         var reports=provider.GetRequiredService<MealPrepApp.ViewModels.Rapoarte.StatisticiLunareViewModel>();
         reports.Stats=new MonthlyStats {TotalMealsPlanned=14,DistinctRecipes=6,DistinctIngredients=12};reports.HasData=true;
-        reports.TopRecipes.Add(new TopRecipe {Title="Paste cu roșii și busuioc",PlannedCount=4,CategoryName="Prânz"});
-        reports.TopIngredients.Add(new TopIngredient {Name="Roșii",UsageCount=8});
+        reports.TopRecipes.Add(new TopRecipe {Title="Tomato and basil pasta",PlannedCount=4,CategoryName="Prânz"});
+        reports.TopIngredients.Add(new TopIngredient {Name="Tomatoes",UsageCount=8});
         reports.SlotCounts.Add(new MealPrepApp.ViewModels.Rapoarte.SlotCount("Prânz",8));
         reports.SlotCounts.Add(new MealPrepApp.ViewModels.Rapoarte.SlotCount("Cină",6));
         var cooking=provider.GetRequiredService<CookingSession>();cooking.StartRecipe(detail.Recipe,3);cooking.Ingredients[0].IsChecked=true;
@@ -82,10 +82,10 @@ public static class RedesignSamples
                 ("shopping",new MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView{DataContext=shopping}),
                 ("ingredients",new MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView{DataContext=ingredients}),
                 ("reports",new MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView{DataContext=reportRoot}),
-                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => recipeOnly ? sample.Name=="recipe" : !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
+                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => onlySection is not null ? sample.Name == onlySection : localizationOnly ? sample.Name is "home" or "recipes" or "planner" or "pantry" or "shopping" or "ingredients" or "reports" or "cooking" or "recipe" : recipeOnly ? sample.Name=="recipe" : !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
             foreach(var size in new[]{new PixelSize(860,600),new PixelSize(1280,800),new PixelSize(1440,900)})
             {
-                foreach(var scale in new[]{1d,1.5d,2d})
+                foreach(var scale in localizationOnly && size.Width != 1280 ? new[]{1d} : new[]{1d,1.5d,2d})
                 {
                     var vm=provider.GetRequiredService<MealPrepApp.ViewModels.Shell.ShellViewModel>();
                     if(sample.Name.StartsWith("pantry")) pantry.SelectedCategory=sample.Name=="pantry-selected" ? "Produse" : sample.Name=="pantry-empty" ? "Altele" : null;
@@ -100,7 +100,7 @@ public static class RedesignSamples
                 }
             }
         }
-        if (!alignmentOnly && !recipeOnly) { RenderIconFrames(output); RenderAuxiliary(provider,output); }
+        if (!alignmentOnly && !recipeOnly && onlySection is null) { if (!localizationOnly) RenderIconFrames(output); RenderAuxiliary(provider,output); }
         var manifest=Directory.GetFiles(output,"*.png").Order().Select(path => new {File=Path.GetFileName(path),Bytes=new FileInfo(path).Length,SHA256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()});
         File.WriteAllText(Path.Combine(output,"manifest.json"),System.Text.Json.JsonSerializer.Serialize(manifest,new System.Text.Json.JsonSerializerOptions {WriteIndented=true}));
     }
@@ -113,13 +113,13 @@ public static class RedesignSamples
             var login=new MealPrepApp.Desktop.Views.Auth.LoginWindow(provider.GetRequiredService<MealPrepApp.ViewModels.Auth.LoginViewModel>(),provider.GetRequiredService<MealPrepApp.ViewModels.Auth.RegisterViewModel>());
             var register=new Window {Width=520,Height=700,Content=new ScrollViewer {Content=new Border {Padding=new Thickness(32),Child=new MealPrepApp.Desktop.Views.Auth.RegisterView {DataContext=provider.GetRequiredService<MealPrepApp.ViewModels.Auth.RegisterViewModel>()}}}};
             register.Bind(Window.BackgroundProperty,register.GetResourceObservable("AppBackground"));
-            var settings=new SettingsWindow();
+            var settings=new SettingsWindow(provider.GetRequiredService<PresentationPreferences>());
             var connection=new ConnectionSetupWindow(new MealPrepApp.Desktop.Services.ConnectionSettingsStore(Path.Combine(Path.GetTempPath(),$"fixture-{Guid.NewGuid()}.json"),basePath:Path.Combine(Path.GetTempPath(),"missing-mealprep-fixture.json"),localPaths:Array.Empty<string>()));
             var ingredient=new MealPrepApp.Desktop.Views.Ingrediente.IngredientAddDialog {DataContext=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.IngredientAddDialogViewModel>()};
             var plan=new MealPrepApp.Desktop.Views.Planificare.PlanMealDialog {DataContext=provider.GetRequiredService<PlanMealDialogViewModel>()};
             var error=new MealPrepApp.Desktop.Views.Shared.MessageDialog();
-            error.FindControl<TextBlock>("HeaderText")!.Text="Încărcarea nu a reușit";
-            error.FindControl<TextBlock>("MessageBody")!.Text="Verifică conexiunea și încearcă din nou.";
+            error.FindControl<TextBlock>("HeaderText")!.Text=L.Text("Text.Message");
+            error.FindControl<TextBlock>("MessageBody")!.Text=L.Text("Text.ThisSectionCouldNotBeLoadedTryAgain");
             error.Configure(MealPrepApp.Desktop.Views.Shared.MessageDialogKind.Error,null,null);
             foreach(var sample in new (string Name,Window Window)[]{("login",login),("register",register),("settings",settings),("connection",connection),("ingredient-dialog",ingredient),("plan-dialog",plan),("error-dialog",error)})
             {
@@ -153,7 +153,7 @@ public static class RedesignSamples
         public override Task<IReadOnlyList<ShoppingSnapshot>> GetSnapshotsAsync(int userId,CancellationToken cancellationToken=default) =>
             Task.FromResult<IReadOnlyList<ShoppingSnapshot>>(new[]{new ShoppingSnapshot {SnapshotID=1,StartDate=DateTime.Today,EndDate=DateTime.Today.AddDays(7),CreatedAt=DateTime.UtcNow.Date.AddHours(10)}});
         public override Task<IReadOnlyList<ShoppingListRow>> GetSnapshotItemsAsync(int userId,int snapshotId,CancellationToken cancellationToken=default) =>
-            Task.FromResult<IReadOnlyList<ShoppingListRow>>(new[]{"Roșii","Paste","Ulei de măsline"}.Select(name => new ShoppingListRow {ItemID=1,IngredientName=name,ToBuyQty=200,UnitAbbreviation="g",CategoryName="Pentru săptămâna aceasta",IsPurchased=name=="Paste"}).ToArray());
+            Task.FromResult<IReadOnlyList<ShoppingListRow>>(new[]{"Tomatoes","Pasta","Olive oil"}.Select(name => new ShoppingListRow {ItemID=1,IngredientName=name,ToBuyQty=200,UnitAbbreviation="g",CategoryName="For this week",IsPurchased=name=="Pasta"}).ToArray());
     }
     public sealed class NoDatabase:IDbConnectionFactory { public Microsoft.Data.SqlClient.SqlConnection Create()=>throw new InvalidOperationException("Sample mode has no database."); }
     public sealed class NoDialogs:IDialogService

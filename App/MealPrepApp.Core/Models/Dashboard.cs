@@ -1,6 +1,6 @@
 namespace MealPrepApp.Models;
 
-/// <summary>The single row from <c>sp_GetDashboardCounts</c> — the Acasa KPI tile values.</summary>
+/// <summary>The single row from <c>sp_GetDashboardCounts</c> — the Home KPI tile values.</summary>
 public sealed class DashboardCounts
 {
     public int RecipesActiveCount { get; set; }

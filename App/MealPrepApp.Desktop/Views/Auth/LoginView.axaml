@@ -1,14 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.LoginView" x:DataType="authvm:LoginViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:authvm="using:MealPrepApp.ViewModels.Auth" x:Class="MealPrepApp.Desktop.Views.Auth.LoginView" x:DataType="authvm:LoginViewModel">
     <StackPanel Spacing="10">
-        <TextBlock Text="Conectare" Classes="Title" Margin="0,0,0,8"/>
-        <TextBlock Text="Utilizator sau email" Classes="Muted"/>
+        <TextBlock Text="{loc:Loc Text.SignIn}" Classes="Title" Margin="0,0,0,8"/>
+        <TextBlock Text="{loc:Loc Text.UsernameOrEmail}" Classes="Muted"/>
         <TextBox Text="{Binding Identifier}"/>
-        <TextBlock Text="Parolă" Classes="Muted"/>
+        <TextBlock Text="{loc:Loc Text.Password}" Classes="Muted"/>
         <TextBox x:Name="PasswordBox" PasswordChar="*" RevealPassword="{Binding #PasswordBoxVisible.IsChecked}"/>
-        <CheckBox Name="PasswordBoxVisible" Content="Arată parola"/>
+        <CheckBox Name="PasswordBoxVisible" Content="{loc:Loc Text.ShowPassword}"/>
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-        <Button Content="Conectare" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnLoginClick" IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0"/>
-        <Button Content="Ai uitat parola?" Classes="Link" HorizontalAlignment="Center" Command="{Binding ForgotPasswordCommand}" IsEnabled="False" ToolTip.Tip="Contacteaza administratorul pentru recuperarea contului."/>
-        <Button Content="Cont nou? Înregistrează-te" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToRegisterCommand}"/>
+        <Button Content="{loc:Loc Text.SignIn}" Classes="Primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="OnLoginClick" IsEnabled="{Binding !IsBusy}" Margin="0,8,0,0"/>
+        <Button Content="{loc:Loc Text.ForgotPassword}" Classes="Link" HorizontalAlignment="Center" Command="{Binding ForgotPasswordCommand}" IsEnabled="False" ToolTip.Tip="{loc:Loc Text.ContactTheAdministratorToRecoverYourAccount}"/>
+        <Button Content="{loc:Loc Text.NewHereCreateAnAccount}" Classes="Link" HorizontalAlignment="Center" Command="{Binding SwitchToRegisterCommand}"/>
     </StackPanel>
 </UserControl>

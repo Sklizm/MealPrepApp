@@ -1,27 +1,27 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="MealPrepApp.Desktop.Views.ConnectionSetupWindow" Title="MealPrep • Conexiune"
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MealPrepApp.Desktop.Views.ConnectionSetupWindow" Title="{loc:Loc Text.MealprepConnection}"
         Width="520" Height="700" MinWidth="440" MinHeight="560"
         Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
     <ScrollViewer>
         <StackPanel Margin="32" Spacing="12">
-            <TextBlock Text="Conexiune la baza de date" Classes="Title" TextWrapping="Wrap"/>
-            <TextBlock Text="Introdu datele de acces primite de la administrator. Baza de date trebuie să fie deja configurată; conectează-te la rețeaua serverului sau la Tailscale." Classes="Muted" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.DatabaseConnection}" Classes="Title" TextWrapping="Wrap"/>
+            <TextBlock Text="{loc:Loc Text.EnterTheConnectionDetailsProvidedByYourAdministratorTheDatabaseMustAlreadyBeConfiguredConn}" Classes="Muted" TextWrapping="Wrap"/>
             <StackPanel Name="Fields" Spacing="8">
-                <TextBlock Text="Server (adresă,port)"/>
-                <TextBox Name="ServerBox" Watermark="100.x.x.x,1433" AutomationProperties.Name="Server"/>
-                <TextBlock Text="Bază de date"/>
-                <TextBox Name="DatabaseBox" AutomationProperties.Name="Bază de date"/>
-                <TextBlock Text="Utilizator SQL"/>
-                <TextBox Name="UserBox" AutomationProperties.Name="Utilizator SQL"/>
-                <TextBlock Text="Parolă SQL (gol = păstrează parola existentă)" TextWrapping="Wrap"/>
-                <TextBox Name="PasswordBox" PasswordChar="●" AutomationProperties.Name="Parolă SQL"/>
-                <CheckBox Name="TrustCertificate" Content="Acceptă certificatul propriu al serverului"/>
-                <TextBlock Text="Activează doar pentru un server cunoscut, de exemplu serverul personal prin Tailscale. Criptarea conexiunii rămâne activă." Classes="Muted" TextWrapping="Wrap"/>
+                <TextBlock Text="{loc:Loc Text.ServerAddressPort}"/>
+                <TextBox Name="ServerBox" Watermark="{loc:Loc Text.DbExampleCom1433}" AutomationProperties.Name="{loc:Loc Text.Server}"/>
+                <TextBlock Text="{loc:Loc Text.Database}"/>
+                <TextBox Name="DatabaseBox" AutomationProperties.Name="{loc:Loc Text.Database}"/>
+                <TextBlock Text="{loc:Loc Text.SqlUsername}"/>
+                <TextBox Name="UserBox" AutomationProperties.Name="{loc:Loc Text.SqlUsername}"/>
+                <TextBlock Text="{loc:Loc Text.SqlPasswordEmptyKeepExistingPassword}" TextWrapping="Wrap"/>
+                <TextBox Name="PasswordBox" PasswordChar="●" AutomationProperties.Name="{loc:Loc Text.SqlPassword}"/>
+                <CheckBox Name="TrustCertificate" Content="{loc:Loc Text.TrustTheServerSOwnCertificate}"/>
+                <TextBlock Text="{loc:Loc Text.EnableOnlyForAKnownServerWithItsOwnCertificateConnectionEncryptionRemainsEnabled}" Classes="Muted" TextWrapping="Wrap"/>
             </StackPanel>
             <WrapPanel>
-                <Button Name="TestButton" Content="Testează conexiunea" Classes="Secondary" Click="TestConnection" Margin="0,0,8,8"/>
-                <Button Name="SaveButton" Content="Salvează și continuă" Classes="Primary" Click="SaveConnection" Margin="0,0,8,8"/>
-                <Button Name="CancelButton" Content="Anulează" Classes="Secondary" Click="Cancel"/>
+                <Button Name="TestButton" Content="{loc:Loc Text.TestConnection}" Classes="Secondary" Click="TestConnection" Margin="0,0,8,8"/>
+                <Button Name="SaveButton" Content="{loc:Loc Text.SaveAndContinue}" Classes="Primary" Click="SaveConnection" Margin="0,0,8,8"/>
+                <Button Name="CancelButton" Content="{loc:Loc Text.Cancel83}" Classes="Secondary" Click="Cancel"/>
             </WrapPanel>
             <TextBlock Name="Status" TextWrapping="Wrap"/>
         </StackPanel>

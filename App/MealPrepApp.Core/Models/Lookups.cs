@@ -17,7 +17,7 @@ public sealed class Category
     public string? Description { get; set; }
 }
 
-/// <summary>Row from <c>sp_GetIngredientCategories</c> — the Ingrediente sidebar grouping.</summary>
+/// <summary>Row from <c>sp_GetIngredientCategories</c> — the Ingredients sidebar grouping.</summary>
 public sealed class IngredientCategory
 {
     public int IngredientCategoryID { get; set; }

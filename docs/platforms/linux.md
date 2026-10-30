@@ -57,5 +57,5 @@ the standard .NET `LocalApplicationData` mapping. Remove them separately to rese
 The shared database is unaffected.
 
 If the app fails before showing a window, verify native libraries and the X11/XWayland
-environment. If it opens but sign-in fails, use **Conexiune la baza de date** at login
+environment. If it opens but sign-in fails, use **Database connection** at login
 and check network or VPN connectivity, server address/port, certificate settings, and credentials.

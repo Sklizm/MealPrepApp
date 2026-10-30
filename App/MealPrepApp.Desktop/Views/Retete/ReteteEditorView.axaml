@@ -1,65 +1,65 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteEditorView" x:DataType="vm:ReteteEditorViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteEditorView" x:DataType="vm:ReteteEditorViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32" RowDefinitions="Auto,*,Auto,Auto">
         <TextBlock Grid.Row="0" Text="{Binding ScreenTitle}" Classes="Title" Margin="0,0,0,16"/>
         <ScrollViewer Grid.Row="1">
             <StackPanel MaxWidth="1024" HorizontalAlignment="Stretch" Spacing="10">
                 <!-- Title -->
-                <TextBlock Text="Titlu *" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.Title}" Classes="Muted"/>
                 <TextBox Text="{Binding Title}" MaxLength="150"/>
                 <!-- Category -->
-                <TextBlock Text="Categorie" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.Category}" Classes="Muted"/>
                 <ComboBox Width="260" HorizontalAlignment="Left" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="models:Category">
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{loc:Display Name}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <!-- Times & Servings -->
                 <Grid ColumnDefinitions="Auto,Auto,Auto">
                     <StackPanel Grid.Column="0" Margin="0,0,16,0" Spacing="4">
-                        <TextBlock Text="Preparare (min)" Classes="Muted"/>
-                        <NumericUpDown Width="120" Value="{Binding PrepTimeMinutes}" Minimum="0" Maximum="10080" FormatString="0" AutomationProperties.Name="PrepTimeMinutes"/>
+                        <TextBlock Text="{loc:Loc Text.PreparationMin}" Classes="Muted"/>
+                        <NumericUpDown Width="120" Value="{Binding PrepTimeMinutes}" Minimum="0" Maximum="10080" FormatString="0" AutomationProperties.Name="{loc:Loc Text.PreparationMin}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,16,0" Spacing="4">
-                        <TextBlock Text="Gătire (min)" Classes="Muted"/>
-                        <NumericUpDown Width="120" Value="{Binding CookTimeMinutes}" Minimum="0" Maximum="10080" FormatString="0" AutomationProperties.Name="CookTimeMinutes"/>
+                        <TextBlock Text="{loc:Loc Text.CookingMin}" Classes="Muted"/>
+                        <NumericUpDown Width="120" Value="{Binding CookTimeMinutes}" Minimum="0" Maximum="10080" FormatString="0" AutomationProperties.Name="{loc:Loc Text.CookingMin}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Spacing="4">
-                        <TextBlock Text="Porții" Classes="Muted"/>
-                        <NumericUpDown Width="120" Value="{Binding Servings}" Minimum="1" Maximum="1000" FormatString="0" AutomationProperties.Name="Servings"/>
+                        <TextBlock Text="{loc:Loc Text.Servings}" Classes="Muted"/>
+                        <NumericUpDown Width="120" Value="{Binding Servings}" Minimum="1" Maximum="1000" FormatString="0" AutomationProperties.Name="{loc:Loc Text.Servings216}"/>
                     </StackPanel>
                 </Grid>
                 <!-- Description -->
-                <TextBlock Text="Descriere" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.Description}" Classes="Muted"/>
                 <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" MaxLength="500"/>
                 <!-- Instructions -->
-                <TextBlock Text="Instrucțiuni *" Classes="Muted"/>
+                <TextBlock Text="{loc:Loc Text.Instructions218}" Classes="Muted"/>
                 <TextBox Text="{Binding Instructions}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100"/>
                 <Border Classes="Card">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Fotografie" Classes="Header"/>
-                        <TextBlock Text="După salvarea rețetei poți adăuga sau schimba fotografia din pagina ei." Classes="Muted" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Text.Photo}" Classes="Header"/>
+                        <TextBlock Text="{loc:Loc Text.AfterSavingAddOrChangeThePhotoFromTheRecipePage}" Classes="Muted" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
                 <!-- Ingredients Header -->
                 <Grid Margin="0,8,0,4">
-                    <TextBlock Text="Ingrediente" Classes="Header" VerticalAlignment="Center"/>
-                    <Button Content="+ Adaugă ingredient" Classes="Secondary" HorizontalAlignment="Right" Command="{Binding AddIngredientRowCommand}"/>
+                    <TextBlock Text="{loc:Loc Text.Ingredients}" Classes="Header" VerticalAlignment="Center"/>
+                    <Button Content="{loc:Loc Text.AddIngredient121}" Classes="Secondary" HorizontalAlignment="Right" Command="{Binding AddIngredientRowCommand}"/>
                 </Grid>
                 <!-- Ingredient Table Header -->
                 <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,4">
-                    <TextBlock Grid.Column="0" Text="Ingredient" Classes="Muted"/>
-                    <TextBlock Grid.Column="1" Text="Unitate" Classes="Muted" Margin="6,0,0,0"/>
-                    <TextBlock Grid.Column="2" Text="Cantitate" Classes="Muted" Margin="6,0,0,0"/>
-                    <TextBlock Grid.Column="3" Text="Note" Classes="Muted" Margin="6,0,0,0"/>
+                    <TextBlock Grid.Column="0" Text="{loc:Loc Text.Ingredient165}" Classes="Muted"/>
+                    <TextBlock Grid.Column="1" Text="{loc:Loc Text.Unit169}" Classes="Muted" Margin="6,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="{loc:Loc Text.Quantity221}" Classes="Muted" Margin="6,0,0,0"/>
+                    <TextBlock Grid.Column="3" Text="{loc:Loc Text.Notes}" Classes="Muted" Margin="6,0,0,0"/>
                 </Grid>
                 <!-- Ingredient Rows -->
                 <ItemsControl ItemsSource="{Binding IngredientRows}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:RecipeIngredientRowViewModel">
                             <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,3">
-                                <AutoCompleteBox Grid.Column="0" ItemsSource="{Binding AllIngredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" Watermark="Caută ingredient" AutomationProperties.Name="Ingredient">
+                                <AutoCompleteBox Grid.Column="0" ItemsSource="{Binding AllIngredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" Watermark="{loc:Loc Text.SearchIngredient}" AutomationProperties.Name="{loc:Loc Text.Ingredient165}">
                                     <AutoCompleteBox.ItemTemplate>
                                         <DataTemplate x:DataType="models:Ingredient">
                                             <TextBlock Text="{Binding Name}"/>
@@ -73,16 +73,16 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <NumericUpDown Grid.Column="2" Margin="6,0,0,0" Value="{Binding Quantity}" Minimum="0.01" Maximum="99999999" Increment="1" FormatString="0.##" AutomationProperties.Name="Cantitate"/>
+                                <NumericUpDown Grid.Column="2" Margin="6,0,0,0" Value="{Binding Quantity}" Minimum="0.01" Maximum="99999999" Increment="1" FormatString="0.##" AutomationProperties.Name="{loc:Loc Text.Quantity221}"/>
                                 <TextBox Grid.Column="3" Margin="6,0,0,0" Text="{Binding Notes}"/>
-                                <Button Grid.Column="4" AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" HorizontalAlignment="Center" Command="{Binding RemoveCommand}">
+                                <Button Grid.Column="4" AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" HorizontalAlignment="Center" Command="{Binding RemoveCommand}">
                                     <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
                                 </Button>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="Niciun ingredient adaugat." Classes="Muted" IsVisible="{Binding IngredientRows.Count, Converter={StaticResource EmptyToBool}}"/>
+                <TextBlock Text="{loc:Loc Text.NoIngredientsAdded}" Classes="Muted" IsVisible="{Binding IngredientRows.Count, Converter={StaticResource EmptyToBool}}"/>
             </StackPanel>
         </ScrollViewer>
         <TextBlock Grid.Row="2" Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}"/>
@@ -90,9 +90,9 @@
         <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,12,0,0" IsVisible="{Binding HasError}"/>
         <!-- Actions -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0" Spacing="8">
-            <Button Content="Salvează" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
-            <Button Content="Salvează ca draft" Classes="Secondary" Command="{Binding SaveDraftCommand}" IsEnabled="{Binding !IsBusy}"/>
-            <Button Content="Renunță" Classes="Secondary" Command="{Binding CancelCommand}"/>
+            <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="{loc:Loc Text.SaveAsDraft}" Classes="Secondary" Command="{Binding SaveDraftCommand}" IsEnabled="{Binding !IsBusy}"/>
+            <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Command="{Binding CancelCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

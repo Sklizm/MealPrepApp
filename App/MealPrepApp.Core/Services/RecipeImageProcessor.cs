@@ -10,18 +10,18 @@ public static class RecipeImageProcessor
     {
         await using var file = File.OpenRead(path);
         if (file.Length > 10 * 1024 * 1024)
-            throw new InvalidOperationException("Imaginea depaseste 10 MiB.");
+            throw new InvalidOperationException(L.Text("Text.TheImageExceeds10Mib"));
         using var stream = new MemoryStream();
         await file.CopyToAsync(stream);
         using var data = SKData.CreateCopy(stream.ToArray());
         using var codec = SKCodec.Create(data)
-            ?? throw new InvalidOperationException("Format de imagine invalid.");
+            ?? throw new InvalidOperationException(L.Text("Text.InvalidImageFormat"));
         var info = codec.Info;
         if (info.Width <= 0 || info.Height <= 0 || (long)info.Width * info.Height > 25_000_000)
-            throw new InvalidOperationException("Imaginea depaseste 25 megapixeli.");
+            throw new InvalidOperationException(L.Text("Text.TheImageExceeds25Megapixels"));
         using var decoded = new SKBitmap(info.Width, info.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         if (codec.GetPixels(decoded.Info, decoded.GetPixels()) != SKCodecResult.Success)
-            throw new InvalidOperationException("Imaginea nu a putut fi decodata.");
+            throw new InvalidOperationException(L.Text("Text.TheImageCouldNotBeDecoded"));
         using var normalized = Orient(decoded, codec.EncodedOrigin);
         return new(Encode(normalized, 2048, 85), Encode(normalized, 320, 75));
     }
@@ -61,7 +61,7 @@ public static class RecipeImageProcessor
         var info = new SKImageInfo(Math.Max(1, (int)Math.Round(image.Width * scale)),
             Math.Max(1, (int)Math.Round(image.Height * scale)));
         using var resized = image.Resize(info, SKFilterQuality.High)
-            ?? throw new InvalidOperationException("Imaginea nu a putut fi redimensionata.");
+            ?? throw new InvalidOperationException(L.Text("Text.TheImageCouldNotBeResized"));
         using var encodedImage = SKImage.FromBitmap(resized);
         using var jpeg = encodedImage.Encode(SKEncodedImageFormat.Jpeg, quality);
         return jpeg.ToArray();

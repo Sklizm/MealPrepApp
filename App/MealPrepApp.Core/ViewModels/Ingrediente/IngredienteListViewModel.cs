@@ -55,8 +55,9 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
     }
 
     private bool _disposed;
-    public void Dispose()
+    public override void Dispose()
     {
+        ReleaseLocalization();
         if (_disposed) return;
         _disposed = true;
         ++_requestVersion;
@@ -167,13 +168,13 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         }
         catch (AppDbException ex)
         {
-            if (version == _requestVersion) ErrorMessage = ex.FriendlyMessage;
+            if (version == _requestVersion) ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            if (version == _requestVersion) ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            if (version == _requestVersion) ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -249,22 +250,22 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
             if (usage is { RecipeCount: > 0 })
             {
                 await _dialog.ShowErrorAsync(
-                    $"Ingredientul \"{item.Name}\" este folosit in {usage.RecipeCount} retete si nu poate fi sters.");
+                    L.Message("Ingredient.InUse", item.Name, usage.RecipeCount));
                 return;
             }
 
-            await _dialog.ShowInfoAsync("Stergere indisponibila",
-                "Stergerea ingredientelor nu este disponibila in aceasta versiune.");
+            await _dialog.ShowInfoAsync(L.Message("Text.DeletionUnavailable"),
+                L.Message("Text.DeletingIngredientsIsUnavailableInThisVersion"));
         }
         catch (AppDbException ex)
         {
-            await _dialog.ShowErrorAsync(ex.FriendlyMessage);
+            await _dialog.ShowErrorAsync(ex.LocalizedMessage);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

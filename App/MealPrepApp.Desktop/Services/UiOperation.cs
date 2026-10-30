@@ -13,7 +13,7 @@ internal static class UiOperation
         {
             AppDiagnostics.Record(ex);
             await App.Services.GetRequiredService<IDialogService>()
-                .ShowErrorAsync("Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.");
+                .ShowErrorAsync(L.Text("Text.TheOperationCouldNotBeCompletedCheckTheAppLog"));
         }
     }
 }

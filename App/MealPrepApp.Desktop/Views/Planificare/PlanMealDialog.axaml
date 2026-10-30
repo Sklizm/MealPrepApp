@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanMealDialog" x:DataType="vm:PlanMealDialogViewModel" Title="{Binding Title}" Width="440" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanMealDialog" x:DataType="vm:PlanMealDialogViewModel" Title="{Binding Title}" Width="440" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Title bar -->
         <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
@@ -7,7 +7,7 @@
         <!-- Form body -->
         <StackPanel Grid.Row="1" Margin="20" Spacing="8">
             <!-- Recipe: autocomplete when adding, read-only box when editing -->
-            <TextBlock Text="Reteta *" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.Recipe}" Classes="Muted"/>
             <AutoCompleteBox ItemsSource="{Binding RecipeResults}" Text="{Binding RecipeSearchTerm, Mode=TwoWay}" SelectedItem="{Binding SelectedRecipe}" ValueMemberBinding="{Binding Title}" FilterMode="None" IsVisible="{Binding CanPickRecipe}">
                 <AutoCompleteBox.ItemTemplate>
                     <DataTemplate x:DataType="models:RecipeListItem">
@@ -17,22 +17,22 @@
             </AutoCompleteBox>
             <TextBox Text="{Binding FixedRecipeTitle}" IsReadOnly="True" IsVisible="{Binding IsEdit}"/>
             <!-- Meal slot -->
-            <TextBlock Text="Masa *" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.Meal}" Classes="Muted"/>
             <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="models:Category">
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{loc:Display Name}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <!-- Date -->
-            <TextBlock Text="Data *" Classes="Muted"/>
-            <DatePicker SelectedDate="{Binding PlannedDate, Converter={StaticResource DateTimeToDateTimeOffset}}" HorizontalAlignment="Left"/>
+            <TextBlock Text="{loc:Loc Text.Date}" Classes="Muted"/>
+            <loc:LocalizedCalendarDatePicker Width="152" SelectedDate="{Binding PlannedDate}" HorizontalAlignment="Left" AutomationProperties.Name="{loc:Loc Text.Date}"/>
             <!-- Servings -->
-            <TextBlock Text="Porții (optional)" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.ServingsOptional}" Classes="Muted"/>
             <TextBox Text="{Binding Servings}" Width="100" HorizontalAlignment="Left"/>
             <!-- Notes -->
-            <TextBlock Text="Notite (optional)" Classes="Muted"/>
+            <TextBlock Text="{loc:Loc Text.NotesOptional}" Classes="Muted"/>
             <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56"/>
             <!-- Error message -->
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
@@ -40,13 +40,13 @@
         <!-- Footer -->
         <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
             <Grid>
-                <!-- Sterge button (edit mode only) -->
-                <Button AutomationProperties.Name="Șterge" ToolTip.Tip="Șterge" Classes="Danger" HorizontalAlignment="Left" Command="{Binding DeleteCommand}" IsVisible="{Binding IsEdit}" IsEnabled="{Binding !IsBusy}">
+                <!-- Delete button (edit mode only) -->
+                <Button AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Danger" HorizontalAlignment="Left" Command="{Binding DeleteCommand}" IsVisible="{Binding IsEdit}" IsEnabled="{Binding !IsBusy}">
                     <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
                 </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Content="Renunță" Classes="Secondary" Click="OnCancelClick"/>
-                    <Button Content="Salvează" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
+                    <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>
+                    <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
             </Grid>
         </Border>

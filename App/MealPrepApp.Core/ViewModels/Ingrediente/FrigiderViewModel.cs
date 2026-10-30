@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MealPrepApp.ViewModels.Ingrediente;
 
 /// <summary>
-/// The Frigider (pantry) sub-view: lists what the current user has in stock and lets them
+/// The pantry sub-view: lists what the current user has in stock and lets them
 /// add / edit / remove rows. Backed by sp_GetPantry + sp_AddPantryItem +
 /// sp_UpdatePantryQuantity + sp_RemovePantryItem.
 /// </summary>
@@ -34,16 +34,19 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
     [ObservableProperty] private bool _isMutating;
     [ObservableProperty] private string? _selectedCategory;
     [ObservableProperty] private string _searchTerm = "";
-    [ObservableProperty] private string _sortOrder = "Ingredient";
-    public IReadOnlyList<string> SortOrders { get; } = new[] { "Ingredient", "Cantitate", "Adăugat recent" };
+    [ObservableProperty] private string _sortOrder = PantrySortIds.Ingredient;
+    public IReadOnlyList<string> SortOrders { get; } = new[] { PantrySortIds.Ingredient, PantrySortIds.Quantity, PantrySortIds.RecentlyAdded };
     public IReadOnlyList<PantryItem> VisibleItems => _visibleItems;
     public IReadOnlyList<FridgeStockRow> DisplayRows { get; private set; } = Array.Empty<FridgeStockRow>();
     public IReadOnlyList<PantryGroup> Groups => _groups;
     public IReadOnlyList<FridgeCategory> Categories { get; private set; } = Array.Empty<FridgeCategory>();
-    public string CategoryTitle => SelectedCategory ?? "Toate ingredientele";
-    public string StockSummary => $"{Items.Select(i => i.IngredientID).Distinct().Count()} ingrediente · {Items.Count} poziții în stoc";
+    [LocalizedProperty]
+    public string CategoryTitle => SelectedCategory ?? L.Text("Text.AllIngredients");
+    [LocalizedProperty]
+    public string StockSummary => L.Text("Pantry.Summary", L.Count("Count.Ingredients", Items.Select(i => i.IngredientID).Distinct().Count()), L.Count("Count.Stock", Items.Count));
     public bool IsEmpty => _visibleItems.Count == 0;
-    public string EmptyMessage => SearchTerm.Length > 0 ? "Niciun ingredient găsit. Încearcă altă căutare." : "Nu ai ingrediente aici. Adaugă produse în frigider.";
+    [LocalizedProperty]
+    public string EmptyMessage => SearchTerm.Length > 0 ? L.Text("Text.NoIngredientsFoundTryAnotherSearch") : L.Text("Text.NoIngredientsHereAddItemsToYourPantry");
     partial void OnSearchTermChanged(string value) => RebuildRows();
     partial void OnSortOrderChanged(string value) => RebuildRows();
     partial void OnSelectedCategoryChanged(string? value)
@@ -67,7 +70,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
     {
         var filtered = Items.Where(i => (SelectedCategory == null || CategoryOf(i) == SelectedCategory)
             && i.IngredientName.Contains(SearchTerm.Trim(), StringComparison.CurrentCultureIgnoreCase));
-        _visibleItems = (SortOrder switch { "Cantitate" => filtered.OrderBy(i => i.Quantity), "Adăugat recent" => filtered.OrderByDescending(i => i.AddedAt), _ => filtered.OrderBy(i => i.IngredientName) }).ToArray();
+        _visibleItems = (SortOrder switch { PantrySortIds.Quantity => filtered.OrderBy(i => i.Quantity), PantrySortIds.RecentlyAdded => filtered.OrderByDescending(i => i.AddedAt), _ => filtered.OrderBy(i => i.IngredientName) }).ToArray();
         _groups = _visibleItems.GroupBy(CategoryOf).OrderBy(g => g.Key).Select(g => new PantryGroup(g.Key, g)).ToArray();
         DisplayRows = SelectedCategory == null
             ? _groups.SelectMany(g => g.Select((item, index) => new FridgeStockRow(item, index == 0))).ToArray()
@@ -78,16 +81,16 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
     }
     private void Rebuild() { RebuildCategories(); RebuildRows(); }
     private void CancelRead() { ++_version; var old = _read; _read = null; old?.Cancel(); old?.Dispose(); }
-    public void Dispose() { if (_disposed) return; _disposed = true; CancelRead(); }
+    public override void Dispose() { ReleaseLocalization(); if (_disposed) return; _disposed = true; CancelRead(); }
     [RelayCommand] private Task Retry()=>RefreshAsync();
     [RelayCommand] private async Task SaveQuantity(PantryItem? item)
     {
         if(item is null || _disposed || IsBusy)return;
-        if(item.Quantity<=0){ErrorMessage="Cantitatea trebuie să fie pozitivă.";return;}
+        if(item.Quantity<=0){ErrorContent = L.Message("Text.TheQuantityMustBePositive");return;}
         CancelRead(); IsBusy=true; IsMutating=true;ClearError();
-        try {await _pantry.UpdatePantryQuantityAsync(item.UserPantryID,_session.CurrentUserId,item.Quantity);Notification="Cantitatea a fost actualizată.";}
-        catch(AppDbException ex){ErrorMessage=ex.FriendlyMessage;}
-        catch(Exception ex){AppDiagnostics.Record(ex);ErrorMessage="Cantitatea nu a putut fi actualizată.";}
+        try {await _pantry.UpdatePantryQuantityAsync(item.UserPantryID,_session.CurrentUserId,item.Quantity);NotificationContent = L.Message("Text.QuantityUpdated");}
+        catch(AppDbException ex){ErrorContent = ex.LocalizedMessage;}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent = L.Message("Text.TheQuantityCouldNotBeUpdated");}
         finally{IsBusy=false; IsMutating=false; Rebuild();}
     }
     public ObservableCollection<PantryItem> Items { get; } = new();
@@ -138,7 +141,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
             if (!_disposed && version == _version)
             {
                 AppDiagnostics.Record(ex);
-                ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Frigiderul nu a putut fi încărcat. Încearcă din nou.";
+                ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.ThePantryCouldNotBeLoadedTryAgain");
             }
         }
         finally
@@ -158,9 +161,9 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
             if (add) await vm.InitForAddAsync(); else await vm.InitForEditAsync(item!);
             saved = await _dialog.ShowDialogAsync(vm);
         }
-        catch (Exception ex) { AppDiagnostics.Record(ex); ErrorMessage = "Editorul nu a putut fi deschis."; }
+        catch (Exception ex) { AppDiagnostics.Record(ex); ErrorContent = L.Message("Text.TheEditorCouldNotBeOpened"); }
         finally { IsBusy = false; IsMutating = false; }
-        if (saved && !_disposed) { Notification = "Stocul a fost actualizat."; await RefreshAsync(); }
+        if (saved && !_disposed) { NotificationContent = L.Message("Text.StockUpdated"); await RefreshAsync(); }
     }
     [RelayCommand] private Task AddItem() => EditStockAsync(null, true);
     [RelayCommand] private Task EditItem(PantryItem? item) => item == null ? Task.CompletedTask : EditStockAsync(item, false);
@@ -171,14 +174,14 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
         CancelRead(); IsBusy = true; IsMutating = true; ClearError();
         try
         {
-            if (!await _dialog.ConfirmAsync("Șterge din frigider", $"Ștergi «{item.IngredientName}» din frigider?")) return;
+            if (!await _dialog.ConfirmAsync(L.Message("Text.RemoveFromPantry"), L.Message("Pantry.RemovePrompt", item.IngredientName))) return;
             await _pantry.RemovePantryItemAsync(item.UserPantryID, _session.CurrentUserId);
-            if (!_disposed) { Items.Remove(item); Notification = "Ingredientul a fost șters din frigider."; }
+            if (!_disposed) { Items.Remove(item); NotificationContent = L.Message("Text.IngredientRemovedFromPantry"); }
         }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            if (!_disposed) ErrorMessage = ex is AppDbException db ? db.FriendlyMessage : "Ingredientul nu a putut fi șters.";
+            if (!_disposed) ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheIngredientCouldNotBeRemoved");
         }
         finally { IsBusy = false; IsMutating = false; }
     }
@@ -186,7 +189,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
 
 public sealed class PantryGroup(string name, IEnumerable<PantryItem> items) : ObservableCollection<PantryItem>(items) { public string Name { get; } = name; }
 
-public sealed partial class FridgeCategory(string name, int count, bool selected) : ObservableObject
+public sealed partial class FridgeCategory(string name, int count, bool selected) : LocalizedObservableObject
 {
     public string Name { get; } = name;
     public int Count { get; } = count;
@@ -194,8 +197,10 @@ public sealed partial class FridgeCategory(string name, int count, bool selected
     public static readonly string[] DefaultNames = ["Produse", "Lactate si oua", "Carne si peste", "Conserve", "Condimente si ierburi", "Cereale si paste", "Bauturi", "Altele"];
     public bool HasStock => Count > 0;
     public double IllustrationOpacity => HasStock ? 1 : .55;
-    public string Summary => Count == 0 ? "Fără stoc" : Count == 1 ? "1 ingredient" : $"{Count} ingrediente";
-    public string AccessibleName => $"{Name}, {Summary}";
+    [LocalizedProperty]
+    public string Summary => Count == 0 ? L.Text("Text.NoStock") : L.Count("Count.Ingredients", Count).ToString();
+    [LocalizedProperty]
+    public string AccessibleName => $"{BuiltInLabels.Display(Name)}, {Summary}";
     public string Illustration => Name.ToLowerInvariant() switch
     {
         var n when n.Contains("produse") || n.Contains("legum") || n.Contains("fruct") => "Produce",

@@ -1,6 +1,10 @@
 # Appearance and navigation
 
-Use Settings to choose System, Light, or Dark appearance and the reduced-motion preference. The navigation rail provides direct access to the seven app sections, with profile and Settings below. Romanian tooltips identify each icon; Tab, arrow keys, and Enter/Space support keyboard navigation.
+Screenshots in this directory are historical Romanian localization evidence. See the
+[refreshed English captures and localization matrix](../localization/README.md) for the
+English-default application.
+
+Use Settings to choose System, Light, or Dark appearance and the reduced-motion preference. The navigation rail provides direct access to the seven app sections, with profile and Settings below. Localized tooltips identify each icon; Tab, arrow keys, and Enter/Space support keyboard navigation.
 
 The following dated reference records theme, interaction, and validation work. For current installation instructions, use the [platform guides](../platforms/).
 
@@ -19,7 +23,7 @@ System/Light/Dark and the existing reduced-motion setting remain available.
 
 The 84-DIP rail has seven 52-DIP destination buttons with 36-DIP native vector illustrations.
 Profile and Settings stay in the footer; the destination area scrolls independently.
-Romanian accessible names, tooltips, native window controls and menus remain. Tab and
+Localized accessible names, tooltips, native window controls and menus remain. Tab and
 arrow keys move focus, Enter/Space activate buttons, and modified arrow shortcuts remain
 available. Selection follows committed navigation, including rejected editor leave prompts.
 

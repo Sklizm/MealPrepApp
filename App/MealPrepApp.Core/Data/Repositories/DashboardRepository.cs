@@ -2,7 +2,7 @@ using MealPrepApp.Models;
 
 namespace MealPrepApp.Data.Repositories;
 
-/// <summary>Acasa dashboard: wraps sp_GetDashboardCounts, sp_GetRecentRecipes.</summary>
+/// <summary>Home dashboard: wraps sp_GetDashboardCounts, sp_GetRecentRecipes.</summary>
 public class DashboardRepository : RepositoryBase
 {
     public DashboardRepository(IDbConnectionFactory factory) : base(factory) { }

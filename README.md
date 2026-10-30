@@ -1,8 +1,8 @@
 # MealPrepApp
 
-MealPrepApp is a desktop app for organizing recipes, planning meals, tracking ingredients, and managing shopping lists. It runs on Windows, macOS, and Linux, with a Romanian-language interface and System, Light, and Dark themes.
+MealPrepApp is a desktop app for organizing recipes, planning meals, tracking ingredients, and managing shopping lists. It runs on Windows, macOS, and Linux, with English, Russian, and Romanian interfaces and System, Light, and Dark themes. English is the default, including upgrades without a saved language.
 
-![MealPrepApp home screen](docs/alignment/after/home-Light-1280-100.png)
+![MealPrepApp home screen](docs/localization/screenshots/en/home-Light-1280-100.png)
 
 [Download](https://github.com/Sklizm/MealPrepApp/releases) · [Windows](docs/platforms/windows.md) · [macOS](docs/platforms/macos.md) · [Linux](docs/platforms/linux.md) · [Contributing](CONTRIBUTING.md)
 
@@ -15,7 +15,7 @@ MealPrepApp is a desktop app for organizing recipes, planning meals, tracking in
 - **Shopping lists:** generate and reopen saved lists, track purchases, copy text or export to Excel, and explicitly add purchased items to pantry stock.
 - **Nutrition reports:** review estimates, meal-category breakdowns, and recipe and ingredient rankings. Missing nutrition data is clearly labeled.
 
-![Illustrated pantry](docs/alignment/after/pantry-Light-1280-100.png)
+![Illustrated pantry](docs/localization/screenshots/en/pantry-Light-1280-100.png)
 
 Checking a shopping item or a cooking ingredient does not change pantry quantities. Importing a purchased item is an explicit action and cannot add the same saved item twice. Compatible units are normalized; incompatible units remain separate.
 
@@ -33,15 +33,24 @@ Packages include the .NET runtime. A reachable SQL Server database is required; 
 
 Quit the app before updating. Connection settings and preferences are stored separately from the installation and survive updates and uninstall.
 
+## Language and appearance
+
+Open **Settings → Language** and choose **English**, **Русский**, or **Română**.
+The interface changes immediately and remembers the choice. Switching preserves your
+current page, unsaved edits, filters, cooking timer, and shopping checkmarks.
+Dates and numbers follow your system region; day and month names follow the selected
+language. Recipe content, ingredient names, custom categories, notes, and units remain
+as entered. Known built-in categories have translated display labels.
+
 ## Connection settings
 
-A fresh installation opens **Conexiune la baza de date** before login. Enter the server
+A fresh installation opens **Database connection** before login. Enter the server
 as `address,port`, database, SQL username, and password supplied by the administrator.
-Use **Testează conexiunea**, then **Salvează și continuă**. Saving proceeds to login
+Use **Test connection**, then **Save and continue**. Saving proceeds to login
 without restarting; it is allowed while the server is temporarily unreachable.
 
-The login screen always offers **Conexiune la baza de date** so connection failures can
-be corrected before signing in. The same editor is available from **Setări**; changes
+The login screen always offers **Database connection** so connection failures can
+be corrected before signing in. The same editor is available from **Settings**; changes
 made during a signed-in session apply after restarting.
 
 Use a hostname or IP address reachable from the client and the SQL Server TCP port
@@ -59,7 +68,7 @@ Settings, preferences, and redacted diagnostic logs are stored per user:
 | Linux | `~/.local/share/MealPrepApp/` |
 
 The actual directory follows .NET `LocalApplicationData` and platform environment settings.
-Connection settings use `appsettings.Local.json`; appearance uses `preferences.json`;
+Connection settings use `appsettings.Local.json`; appearance and language use `preferences.json`;
 logs are under `logs/`. Credentials are excluded from Git, release packages, and diagnostics.
 Updating or uninstalling the app preserves these files.
 

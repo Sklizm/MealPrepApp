@@ -56,7 +56,8 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
     public bool IsEdit => RecipeId.HasValue;
     public bool IsDraft => DraftId.HasValue && !IsEdit;
-    public string ScreenTitle => IsEdit ? "Editeaza reteta" : IsDraft ? "Editeaza draft" : "Reteta noua";
+    [LocalizedProperty]
+    public string ScreenTitle => IsEdit ? L.Text("Text.EditRecipe") : IsDraft ? L.Text("Text.EditDraft") : L.Text("Recipe.New");
 
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<RecipeIngredientRowViewModel> IngredientRows { get; } = new();
@@ -129,13 +130,13 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -148,7 +149,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         var recipe = await _recipes.GetRecipeFullAsync(recipeId);
         if (recipe is null)
         {
-            ErrorMessage = "Reteta nu a fost gasita.";
+            ErrorContent = L.Message("Text.RecipeNotFound");
             return;
         }
 
@@ -178,7 +179,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         var draft = await _drafts.GetDraftAsync(draftId, _session.CurrentUserId);
         if (draft is null)
         {
-            ErrorMessage = "Draftul nu a fost gasit.";
+            ErrorContent = L.Message("Text.DraftNotFound");
             return;
         }
 
@@ -268,17 +269,17 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             OnPropertyChanged(nameof(IsDraft));
             OnPropertyChanged(nameof(ScreenTitle));
             _savedState=Snapshot();
-            Notification="Ciorna a fost salvată.";
+            NotificationContent = L.Message("Text.DraftSaved");
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
@@ -294,21 +295,21 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
 
         if (string.IsNullOrWhiteSpace(Title))
         {
-            ErrorMessage = "Titlul retetei este obligatoriu.";
+            ErrorContent = L.Message("Text.ARecipeTitleIsRequired");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Instructions))
         {
-            ErrorMessage = "Instructiunile sunt obligatorii.";
+            ErrorContent = L.Message("Text.InstructionsAreRequired");
             return;
         }
 
         if(PrepTimeMinutes is <0 || CookTimeMinutes is <0 || Servings is <=0)
-        {ErrorMessage="Timpii trebuie să fie pozitivi sau zero, iar numărul de porții pozitiv.";return;}
+        {ErrorContent = L.Message("Text.TimesMustBeZeroOrPositiveAndServingsMustBePositive");return;}
         if (IngredientRows.Any(r => !r.IsComplete))
         {
-            ErrorMessage = "Completeaza fiecare rand de ingredient (ingredient, unitate, cantitate) sau elimina-l.";
+            ErrorContent = L.Message("Text.CompleteEachIngredientRowIngredientUnitQuantityOrRemoveIt");
             return;
         }
 
@@ -321,7 +322,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         if (duplicate is not null)
         {
             var name = duplicate.First().SelectedIngredient!.Name;
-            ErrorMessage = $"Ingredientul \"{name}\" apare de mai multe ori. Combina-l intr-un singur rand.";
+            ErrorContent = L.Message("Ingredient.Duplicate", name);
             return;
         }
 
@@ -356,22 +357,21 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         }
         catch (AppDbException ex) when (ex.ErrorNumber == 50004)
         {
-            if (await _dialog.ConfirmAsync("Conflict de editare",
-                    "Reteta a fost modificata in alta sesiune. Reincarca varianta curenta? " +
-                    "(modificarile tale nesalvate se vor pierde)"))
+            if (await _dialog.ConfirmAsync(L.Message("Text.EditingConflict"),
+                    L.Message("Message.Join", L.Message("Text.TheRecipeChangedInAnotherSessionReloadTheCurrentVersion"), L.Message("Text.YourUnsavedChangesWillBeLost"))))
             {
                 await ReloadAsync();
             }
         }
         catch (AppDbException ex)
         {
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {

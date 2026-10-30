@@ -1,3 +1,4 @@
+using MealPrepApp.Services;
 using Avalonia.Controls;
 using MealPrepApp.Desktop.Views.Shared;
 using MealPrepApp.ViewModels.Auth;
@@ -41,7 +42,7 @@ public partial class LoginWindow : Window
 
     private void ShowForgotPasswordDialog() =>
         _ = MealPrepApp.Desktop.Services.UiOperation.RunAsync(() => App.Services.GetRequiredService<MealPrepApp.Services.IDialogService>()
-            .ShowInfoAsync("Recuperare cont", "Contacteaza administratorul pentru recuperarea contului."));
+            .ShowInfoAsync(L.Message("Text.AccountRecovery"), L.Message("Text.ContactTheAdministratorToRecoverYourAccount")));
 
     private async void EditConnection(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {

@@ -25,17 +25,17 @@ public sealed partial class ChangePasswordViewModel : ViewModelBase
 
         if (string.IsNullOrEmpty(currentPassword))
         {
-            ErrorMessage = "Introdu parola actuala.";
+            ErrorContent = L.Message("Text.EnterYourCurrentPassword");
             return false;
         }
         if (newPassword.Length < 6)
         {
-            ErrorMessage = "Parola noua trebuie sa aiba cel putin 6 caractere.";
+            ErrorContent = L.Message("Text.TheNewPasswordMustContainAtLeast6Characters");
             return false;
         }
         if (newPassword != confirmPassword)
         {
-            ErrorMessage = "Parolele noi nu coincid.";
+            ErrorContent = L.Message("Text.TheNewPasswordsDoNotMatch");
             return false;
         }
 
@@ -46,14 +46,14 @@ public sealed partial class ChangePasswordViewModel : ViewModelBase
             var user = await _users.GetUserForLoginAsync(_session.CurrentUsername);
             if (user is null || !_hasher.Verify(currentPassword, user.PasswordHash))
             {
-                ErrorMessage = "Parola actuala este incorecta.";
+                ErrorContent = L.Message("Text.TheCurrentPasswordIsIncorrect");
                 return false;
             }
 
             var history = await _users.GetPasswordHistoryAsync(_session.CurrentUserId);
             if (history.Any(hash => _hasher.Verify(newPassword, hash)))
             {
-                ErrorMessage = "Parola a fost folosita recent. Alege o parola diferita.";
+                ErrorContent = L.Message("Text.ThisPasswordWasUsedRecentlyChooseADifferentPassword");
                 return false;
             }
             await _users.ChangePasswordAsync(_session.CurrentUserId, _hasher.Hash(newPassword), user.PasswordHash);
@@ -62,14 +62,14 @@ public sealed partial class ChangePasswordViewModel : ViewModelBase
         catch (AppDbException ex)
         {
             // 50001 → "this password was used recently".
-            ErrorMessage = ex.FriendlyMessage;
+            ErrorContent = ex.LocalizedMessage;
             return false;
         }
         catch (OperationCanceledException) { return false; }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorMessage = "Operatia nu a putut fi finalizata. Consulta jurnalul aplicatiei.";
+            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
             return false;
         }
         finally

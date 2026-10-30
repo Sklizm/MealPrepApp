@@ -2,7 +2,7 @@ USE MealPrepDB;
 GO
 
 -- IngredientCategories: lookup table for grouping the Ingrediente list
--- in the app's sidebar (Produse / Lactate si oua / Carne si peste / ...).
+-- in the app's sidebar (Produce / Dairy and eggs / Meat and fish / ...).
 -- Augments the original "ingredients are global" decision — the global pool
 -- stays, but each row now optionally belongs to a category for display.
 
