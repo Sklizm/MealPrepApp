@@ -106,11 +106,14 @@ public sealed partial class RegressionTests
         var shopping = new RefinementShopping { Immediate = true };
         using var provider = RefinementServices(shopping: shopping); using var scope = provider.CreateScope();
         var vm = scope.ServiceProvider.GetRequiredService<ShoppingListViewModel>(); await vm.LoadAsync();
+        var originalRow = vm.Rows[0]; var originalGroup = vm.Groups[0];
         shopping.Mutation = new(); var purchase = vm.TogglePurchasedCommand.ExecuteAsync(vm.Rows[0]);
+        Assert.True(originalRow.IsPurchased); Assert.True(originalRow.IsSaving);
         Assert.True(vm.IsMutating); Assert.True(vm.IsBusy);
         Assert.False(vm.GenerateCommand.CanExecute(null)); Assert.False(vm.ImportItemCommand.CanExecute(vm.Rows[0]));
         shopping.Mutation.SetResult(); await purchase;
         Assert.True(Assert.Single(vm.Rows).IsPurchased); Assert.False(vm.IsBusy); Assert.False(vm.IsMutating);
+        Assert.Same(originalRow, vm.Rows[0]); Assert.Same(originalGroup, vm.Groups[0]);
         // The server remains responsible for idempotency; reload reflects its imported state.
         shopping.Imported = true; await vm.LoadAsync(); Assert.False(Assert.Single(vm.Rows).CanImport);
         vm.StartDate = DateTime.Today; vm.EndDate = DateTime.Today.AddDays(-1);
@@ -330,8 +333,9 @@ public sealed partial class RegressionTests
         var checklist = Assert.IsType<ShoppingListViewModel>(shell.CurrentView);
         await checklist.GenerateCommand.ExecuteAsync(null); Assert.Equal(1, shopping.Created);
         await checklist.TogglePurchasedCommand.ExecuteAsync(checklist.Rows[0]); Assert.True(checklist.HasError); Assert.False(checklist.IsBusy);
-        await checklist.RetryCommand.ExecuteAsync(null); Assert.False(checklist.HasError);
-        await checklist.TogglePurchasedCommand.ExecuteAsync(checklist.Rows[0]); Assert.True(checklist.Rows[0].IsPurchased); Assert.Equal(100, pantry.Stock[0].Quantity);
+        var failedRow = checklist.Rows[0]; Assert.True(failedRow.IsPurchased); Assert.True(failedRow.SaveFailed);
+        await checklist.RetryItemCommand.ExecuteAsync(failedRow); Assert.False(checklist.HasError);
+        Assert.Same(failedRow, checklist.Rows[0]); Assert.True(checklist.Rows[0].IsPurchased); Assert.False(failedRow.SaveFailed); Assert.Equal(100, pantry.Stock[0].Quantity);
         await checklist.ImportItemCommand.ExecuteAsync(checklist.Rows[0]); Assert.True(checklist.Rows[0].IsImported); Assert.Equal(300, pantry.Stock[0].Quantity);
         await checklist.ImportItemCommand.ExecuteAsync(checklist.Rows[0]); Assert.Equal(300, pantry.Stock[0].Quantity);
         await shell.ShowSectionAsync("Frigider"); Assert.Equal(300, Assert.Single(Assert.IsType<FrigiderViewModel>(shell.CurrentView).Items).Quantity);
@@ -572,9 +576,11 @@ public sealed partial class RegressionTests
         public override Task<IReadOnlyList<ShoppingListRow>> GetSnapshotItemsAsync(int userId, int snapshotId, CancellationToken cancellationToken = default)
         {
             Tokens[snapshotId] = cancellationToken;
-            if(Immediate) return Task.FromResult<IReadOnlyList<ShoppingListRow>>(new[] { new ShoppingListRow { ItemID = 1, IngredientName = "Roșii", IsPurchased = Purchased, IsImported = Imported } });
+            if(Immediate) return Task.FromResult<IReadOnlyList<ShoppingListRow>>(new[] { new ShoppingListRow { ItemID = 1, SnapshotID = snapshotId, IngredientID = 1, UnitID = 1, ToBuyQty = 200, Version = 1, IngredientName = "Roșii", IsPurchased = Purchased, IsImported = Imported } });
             return (Pending[snapshotId] = new()).Task;
         }
+        public override async Task<MutationResult> ChangeItemAsync(int userId, Guid operationId, ShoppingChange change) { await SetPurchasedAsync(userId, change.ItemID!.Value, change.IsPurchased); return new(change.ItemID.Value, change.ExpectedVersion+1); }
+        public override async Task<MutationResult> ImportPurchaseAsync(int userId, Guid operationId, int itemId, long expectedVersion) { await ImportItemAsync(userId,itemId); return new(itemId,expectedVersion+1); }
         public override async Task SetPurchasedAsync(int userId, int itemId, bool purchased) { if(FailNextPurchase) { FailNextPurchase=false; throw new InvalidOperationException("Temporary mutation failure"); } if(Mutation != null) await Mutation.Task; Purchased = purchased; }
         public override Task ImportItemAsync(int userId, int itemId) { if(!Imported) { Imported=true; OnImport?.Invoke(); } return Task.CompletedTask; }
         public override Task<int> CreateSnapshotAsync(int userId, DateTime start, DateTime end) { Created++; return Task.FromResult(1); }

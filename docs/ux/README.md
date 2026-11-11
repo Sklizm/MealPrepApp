@@ -15,6 +15,20 @@ Every inventory mutation has a client operation ID. A retry returns the original
 result; reuse with a different payload fails. Corrections require the observed batch
 version. Undo is a compensating event and fails after subsequent use of that batch.
 
+## Shopping
+
+Shopping defaults to remaining groceries and offers week shortcuts. Saved lists,
+custom dates, exports and conversion notes are available in secondary controls.
+Checklist changes update immediately and save individually without replacing rows.
+Failed changes retain a Retry action; version conflicts require an explicit choice
+to discard the local change and load the server copy.
+
+Manual groceries work without catalog mappings. Pantry import requires an ingredient
+and unit. Required quantities remain separate from purchased quantities: a purchased
+litre is imported as a litre even when the plan requires 200 ml. Single and bulk
+imports show a review and remain idempotent. Imported quantities cannot be rewritten;
+use an explicit stock correction. Deleted shopping records remain as sync tombstones.
+
 ## Database upgrade
 
 On a database host, after the disposable suite passes:
@@ -22,6 +36,7 @@ On a database host, after the disposable suite passes:
 ```bash
 bash scripts/test-database.sh
 bash scripts/update-database.sh mealprep-db 20261111_inventory.sql
+bash scripts/update-database.sh mealprep-db 20261111_shopping.sql
 ```
 
 Apply the existing compatibility and cooking-redesign migrations first when needed.

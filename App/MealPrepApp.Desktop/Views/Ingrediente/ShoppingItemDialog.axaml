@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.ShoppingItemDialog" x:DataType="vm:ShoppingItemDialogViewModel" Title="{loc:Loc UX.Grocery}" Width="480" MaxHeight="700" SizeToContent="Height" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+ <Grid RowDefinitions="*,Auto" Margin="20">
+  <ScrollViewer><StackPanel Spacing="8">
+   <TextBlock Text="{loc:Loc UX.Grocery}" Classes="Header"/>
+   <TextBlock Text="{loc:Loc UX.GroceryName}"/>
+   <TextBox Text="{Binding Name}" MaxLength="150" AutomationProperties.Name="{loc:Loc UX.GroceryName}"/>
+   <TextBlock Text="{loc:Loc UX.OptionalMapping}" TextWrapping="Wrap" Classes="Muted"/>
+   <AutoCompleteBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" IsEnabled="{Binding CanEditPurchase}" AutomationProperties.Name="{loc:Loc Text.Ingredient}">
+    <AutoCompleteBox.ItemTemplate><DataTemplate x:DataType="models:Ingredient"><TextBlock Text="{Binding Name}"/></DataTemplate></AutoCompleteBox.ItemTemplate>
+   </AutoCompleteBox>
+   <TextBlock Text="{loc:Loc UX.RequiredQuantity}" IsVisible="{Binding IsNew}"/>
+   <NumericUpDown Value="{Binding RequiredQuantity}" Minimum="0.0001" Maximum="99999999" FormatString="0.####" IsVisible="{Binding IsNew}" AutomationProperties.Name="{loc:Loc UX.RequiredQuantity}"/>
+   <CheckBox Content="{loc:Loc Text.Purchased}" IsChecked="{Binding IsPurchased}"/>
+   <TextBlock Text="{loc:Loc UX.ActualPurchase}"/>
+   <Grid ColumnDefinitions="*,*">
+    <NumericUpDown Value="{Binding PurchasedQuantity}" Minimum="0.0001" Maximum="99999999" FormatString="0.####" IsEnabled="{Binding CanEditPurchase}" AutomationProperties.Name="{loc:Loc UX.ActualPurchase}"/>
+    <ComboBox Grid.Column="1" ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEditPurchase}" AutomationProperties.Name="{loc:Loc Text.Unit}">
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="models:Unit"><TextBlock Text="{Binding Abbreviation}"/></DataTemplate></ComboBox.ItemTemplate>
+    </ComboBox>
+   </Grid>
+   <TextBlock Text="{loc:Loc UX.OptionalPurchaseDate}"/>
+   <loc:LocalizedCalendarDatePicker SelectedDate="{Binding PurchasedOn}" IsEnabled="{Binding CanEditPurchase}"/>
+   <TextBlock Text="{loc:Loc UX.OptionalExpiry}"/>
+   <loc:LocalizedCalendarDatePicker SelectedDate="{Binding ExpiresOn}" IsEnabled="{Binding CanEditPurchase}"/>
+   <TextBlock Text="{loc:Loc UX.ImportedCorrection}" IsVisible="{Binding !CanEditPurchase}" TextWrapping="Wrap" Classes="Muted"/>
+   <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" TextWrapping="Wrap" Foreground="{DynamicResource Danger}"/>
+  </StackPanel></ScrollViewer>
+  <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+   <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="Cancel"/>
+   <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
+  </StackPanel>
+ </Grid>
+</Window>

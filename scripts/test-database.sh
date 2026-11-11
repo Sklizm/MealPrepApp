@@ -47,6 +47,8 @@ sql -Q "USE MealPrepDB; IF EXISTS(SELECT 1 FROM dbo.UserPantry p FULL JOIN (SELE
 # Reconstruct the predecessor inventory schema in this disposable container, retaining real totals.
 sql -Q "USE MealPrepDB;
 SELECT UserID,IngredientID,UnitID,Quantity,AddedAt,UpdatedAt INTO dbo.InventoryUpgradeExpected FROM dbo.UserPantry;
+ALTER TABLE dbo.ShoppingSnapshotItems DROP CONSTRAINT FK_ShoppingSnapshotItems_InventoryBatch;
+UPDATE dbo.ShoppingSnapshotItems SET ImportedBatchID=NULL;
 DROP TRIGGER dbo.tr_UserPantry_Batches;
 DROP TABLE dbo.StockEvents; DROP TABLE dbo.StockThresholds; DROP TABLE dbo.ClientOperations; DROP TABLE dbo.InventoryBatches;"
 sql -i migrations/20261111_inventory.sql
@@ -54,3 +56,6 @@ sql -i migrations/20261111_inventory.sql
 sql -Q "USE MealPrepDB;
 IF EXISTS(SELECT 1 FROM dbo.InventoryUpgradeExpected p LEFT JOIN dbo.InventoryBatches b ON b.UserID=p.UserID AND b.IngredientID=p.IngredientID AND b.UnitID=p.UnitID WHERE b.BatchID IS NULL OR b.RemainingQuantity<>p.Quantity OR b.SourceAddedAt<>p.AddedAt OR b.UpdatedAt<>COALESCE(p.UpdatedAt,p.AddedAt) OR b.PurchasedOn IS NOT NULL OR b.ExpiresOn IS NOT NULL) THROW 51000,N'Predecessor stock migration changed quantities or dates',1;
 DROP TABLE dbo.InventoryUpgradeExpected;"
+sql -i migrations/20261111_shopping.sql
+sql -i migrations/20261111_shopping.sql
+sql -i /tests/shopping-changes-regression.sql

@@ -4,28 +4,33 @@
             <TextBlock Text="{loc:Loc Text.Shopping}" Classes="Title"/>
             <TextBlock Text="{loc:Loc Text.ASavedListForEachPlanCheckPurchasesThenExplicitlyAddThemToThePantry}" Classes="Muted" TextWrapping="Wrap"/>
         </StackPanel>
-        <WrapPanel Grid.Row="1" Margin="0,16">
-            <loc:LocalizedCalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.From}"/>
-            <loc:LocalizedCalendarDatePicker IsEnabled="{Binding !IsBusy}" SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.To}"/>
-            <Button Classes="Primary" Content="{loc:Loc Text.GenerateANewList}" Command="{Binding GenerateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
-            <Button Content="{loc:Loc Text.ExportExcel}" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
-            <Button Content="{loc:Loc Text.CopyText}" Classes="Secondary" Click="CopyText" IsEnabled="{Binding !IsBusy}" Margin="0,0,8,8"/>
-        </WrapPanel>
-        <StackPanel Grid.Row="2" Spacing="8">
-            <ComboBox IsEnabled="{Binding !IsMutating}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.SavedLists}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="models:ShoppingSnapshot">
-                        <TextBlock Text="{Binding Label}"/>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,12">
+            <WrapPanel>
+                <Button Content="{loc:Loc UX.ThisWeek}" Classes="Primary" Command="{Binding ThisWeekCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc UX.NextWeek}" Classes="Secondary" Command="{Binding NextWeekCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc UX.AddGrocery}" Classes="Secondary" Command="{Binding AddGroceryCommand}" Margin="0,0,8,8"/>
+                <Button Content="{loc:Loc UX.ImportPurchased}" Classes="Secondary" Command="{Binding ImportAllCommand}" Margin="0,0,8,8"/>
+            </WrapPanel>
             <WrapPanel>
                 <ComboBox ItemsSource="{Binding PurchaseFilters}" SelectedItem="{Binding PurchaseFilter}" Width="160" AutomationProperties.Name="{loc:Loc Text.FilterPurchases}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:Display}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
                 <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="16,0"/>
             </WrapPanel>
-            <TextBlock Text="{loc:Loc Text.OnlyCompatibleMassAndVolumeUnitsAreNormalizedOtherUnitsRemainSeparatePurchaseQuantitiesRou}" Classes="Muted" TextWrapping="Wrap"/>
-            <TextBlock Text="{Binding Notification}" Foreground="{DynamicResource ActionPrimary}" IsVisible="{Binding Notification, Converter={StaticResource NotNullToBool}}" TextWrapping="Wrap"/>
         </StackPanel>
+        <Expander Grid.Row="2" Header="{loc:Loc UX.ShoppingOptions}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="8">
+                <ComboBox IsEnabled="{Binding !IsBusy}" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.SavedLists}">
+                    <ComboBox.ItemTemplate><DataTemplate x:DataType="models:ShoppingSnapshot"><TextBlock Text="{Binding Label}"/></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+                <WrapPanel>
+                    <loc:LocalizedCalendarDatePicker SelectedDate="{Binding StartDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.From}"/>
+                    <loc:LocalizedCalendarDatePicker SelectedDate="{Binding EndDate}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.To}"/>
+                    <Button Classes="Primary" Content="{loc:Loc Text.GenerateANewList}" Command="{Binding GenerateCommand}" Margin="0,0,8,8"/>
+                    <Button Content="{loc:Loc Text.ExportExcel}" Classes="Secondary" Command="{Binding ExportExcelCommand}" Margin="0,0,8,8"/>
+                    <Button Content="{loc:Loc Text.CopyText}" Classes="Secondary" Click="CopyText" Margin="0,0,8,8"/>
+                </WrapPanel>
+                <TextBlock Text="{loc:Loc Text.OnlyCompatibleMassAndVolumeUnitsAreNormalizedOtherUnitsRemainSeparatePurchaseQuantitiesRou}" Classes="Muted" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Expander>
         <StackPanel Grid.Row="3">
             <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
@@ -33,7 +38,7 @@
         </StackPanel>
         <ScrollViewer Grid.Row="4" Margin="0,16,0,0">
             <StackPanel>
-                <ItemsControl IsEnabled="{Binding !IsBusy}" ItemsSource="{Binding Groups}">
+                <ItemsControl ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShoppingGroup">
                             <StackPanel Margin="0,0,0,24" Spacing="8">
@@ -42,17 +47,25 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:ShoppingListRow">
                                             <Border Classes="Card" Margin="0,4">
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                    <CheckBox IsChecked="{Binding IsPurchased, Mode=OneWay}" Command="{Binding DataContext.TogglePurchasedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                                    <CheckBox IsEnabled="{Binding !IsSaving}" IsChecked="{Binding IsPurchased, Mode=OneWay}" Command="{Binding DataContext.TogglePurchasedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
                                                         <StackPanel>
                                                             <TextBlock Text="{Binding IngredientName}"/>
-                                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                                <TextBlock Text="{Binding ToBuyQty, StringFormat='{}{0:0.##}'}"/>
-                                                                <TextBlock Text="{Binding UnitAbbreviation}"/>
-                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding RequiredSummary}" Classes="Muted"/>
+                                                            <TextBlock Text="{Binding PurchasedSummary}" Classes="Muted"/>
+                                                            <TextBlock Text="{loc:Loc UX.OptionalMapping}" IsVisible="{Binding !HasMapping}" Classes="Muted" TextWrapping="Wrap"/>
+
                                                         </StackPanel>
                                                     </CheckBox>
-                                                    <Button Grid.Column="1" Content="{Binding ImportLabel}" Classes="Secondary" IsEnabled="{Binding CanImport}" Command="{Binding DataContext.ImportItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    <StackPanel Grid.Column="1" Spacing="6">
+                                                    <Button Content="{loc:Loc Text.Edit}" Classes="Secondary" Command="{Binding DataContext.EditGroceryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    <Button Content="{Binding ImportLabel}" Classes="Secondary" IsEnabled="{Binding CanImport}" Command="{Binding DataContext.ImportItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    </StackPanel>
+                                                    <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding SaveFailed}">
+                                                        <TextBlock Text="{loc:Loc UX.CheckRetry}" Foreground="{DynamicResource Danger}" Margin="0,8"/>
+                                                        <Button Content="{loc:Loc Text.TryAgain}" IsVisible="{Binding !HasConflict}" Classes="Secondary" Command="{Binding DataContext.RetryItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                        <Button Content="{loc:Loc UX.ResolveConflict}" IsVisible="{Binding HasConflict}" Classes="Secondary" Command="{Binding DataContext.ResolveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                                    </WrapPanel>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -62,7 +75,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="{loc:Loc Text.NoItemsInThisViewGenerateAListOrChangeTheFilter}" Classes="Muted" TextWrapping="Wrap">
+                <TextBlock Text="{Binding EmptyText}" Classes="Muted" TextWrapping="Wrap">
                     <TextBlock.IsVisible>
                         <MultiBinding Converter="{StaticResource ShowEmpty}">
                             <Binding Path="Groups.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/>

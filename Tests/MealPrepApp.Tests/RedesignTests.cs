@@ -98,7 +98,7 @@ public sealed partial class RegressionTests
         var ingredient=new Ingredient{IngredientID=1,Name="Grouped tomato",IngredientCategoryName="Vegetables"};ingredients.Ingredients.Add(ingredient);
         var shopping=services.GetRequiredService<ShoppingListViewModel>();
         var unpurchased=new ShoppingListRow{ItemID=1,IngredientName="Checklist tomato",CategoryName="Vegetables",ToBuyQty=2};
-        var purchased=new ShoppingListRow{ItemID=2,IngredientName="Purchased rice",CategoryName="Grains",ToBuyQty=3,IsPurchased=true};
+        var purchased=new ShoppingListRow{ItemID=2,IngredientID=1,UnitID=1,IngredientName="Purchased rice",CategoryName="Grains",ToBuyQty=3,IsPurchased=true};
         shopping.Rows.Add(unpurchased);shopping.Rows.Add(purchased);shopping.PurchaseFilter="De cumpărat";
         Assert.Single(shopping.Groups);Assert.False(unpurchased.CanImport);Assert.True(purchased.CanImport);purchased.IsImported=true;Assert.False(purchased.CanImport);
         var window=new Window{Width=860,Height=600};window.Show();
