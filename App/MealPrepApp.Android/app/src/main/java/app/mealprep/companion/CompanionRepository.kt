@@ -118,7 +118,8 @@ class CompanionRepository(val session:Session,val database:ShoppingDatabase,priv
  suspend fun setThreshold(reviewed:Threshold,quantity:String){gate.withLock{val amount=Quantities.validate(quantity,allowZero=true);online("threshold:${reviewed.ingredientId}","PUT","/v1/pantry/thresholds/${reviewed.ingredientId}","$amount"){WireJson.encodeToString(ThresholdChange(it,reviewed.version,reviewed.unitId,amount))}}}
  suspend fun createList():Int=gate.withLock{val today=LocalDate.now();online("list","POST","/v1/shopping/lists","$today – ${today.plusDays(6)}"){WireJson.encodeToString(CreateList(it,today.toString(),today.plusDays(6).toString()))}.id}
  suspend fun signOut(){gate.withLock{
-  try{api().revoke(session.sessionId)}catch(error:java.io.IOException){}
+  val current=vault.read();check(current?.accountKey==session.accountKey)
+  try{api().revoke(current!!.sessionId)}catch(error:java.io.IOException){}
   localGate.withLock{database.withTransaction{dao.clearOutbox();dao.clearItems();dao.clearAllCache()};vault.clear()}
  }}
 }

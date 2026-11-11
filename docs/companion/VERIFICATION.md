@@ -1,7 +1,7 @@
 # Companion verification
 
-The first Android candidate uses package `app.mealprep.companion`, version 1.0.0,
-code 1 and Room schema 1. It uses its own durable release-signing identity, outside
+The Android companion uses package `app.mealprep.companion`, version 1.0.1,
+code 2 and Room schema 1. It uses its own durable release-signing identity, outside
 Git. Distribution is manual; automated builds do not publish releases.
 
 Verified implementation evidence:
@@ -18,8 +18,10 @@ Verified implementation evidence:
 - Android 15 ARM64 emulator: Room reopen and queued actual purchases, idempotent
   response recovery, expired-session retention, explicit conflict resolution,
   non-blocking local edits during network waits, account isolation, interrupted
-  stock requests, Compose login and three-language/theme screenshots.
+  stock requests, current-session revocation after reauthentication, Compose login and
+  three-language/theme screenshots.
 - Separate airplane-mode seed, force-stop and recovery instrumentation phases.
+- Signed 1.0.0 → 1.0.1 install-over upgrade and launch with denied notifications.
 - Android HTTPS health and anonymous-401 checks against a private Serve endpoint.
   No synthetic accounts or test stock are promoted to a live database.
 

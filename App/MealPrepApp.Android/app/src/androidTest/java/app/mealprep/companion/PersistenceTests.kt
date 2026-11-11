@@ -92,4 +92,13 @@ class PersistenceTests {
   val saved=WireJson.decodeFromString<OnlineReview>(db.dao().cache("review").single().payload);repository(stock).resumeReview(saved)
   assertEquals(2,ids.size);assertEquals(ids[0],ids[1]);assertTrue(db.dao().cache("review").isEmpty())
  }
+ @Test fun signOutAfterReauthenticationRevokesTheCurrentDeviceSession()=runBlocking {
+  var revoked="";var usedSession=""
+  val transport=object:ApiClient(session.baseUrl){override suspend fun call(method:String,path:String,body:String?):String{revoked=path;return "{}"}}
+  val repo=CompanionRepository(session,db,vault,{}, {usedSession=it.sessionId;transport})
+  repo.addManual(1,"Pending grocery");vault.save(session.copy(sessionId="renewed-device",token="renewed-token"))
+  repo.signOut();assertEquals("renewed-device",usedSession);assertEquals("/v1/sessions/renewed-device/revoke",revoked)
+  assertNull(vault.read());assertTrue(db.dao().items().isEmpty());assertTrue(db.dao().outbox().isEmpty())
+ }
+
 }
