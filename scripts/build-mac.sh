@@ -25,6 +25,7 @@ dotnet publish "$REPO_ROOT/App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj" \
     "$@"
 
 cp "$REPO_ROOT/App/MealPrepApp.Desktop/Assets/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
+cp "$REPO_ROOT/App/MealPrepApp.Desktop/Assets/Icons/app-icon.icns" "$RESOURCES_DIR/MealPrepApp.icns"
 
 python3 - "$APP_BUNDLE/Contents/Info.plist" "$REPO_ROOT/release.json" <<'PYVERSION'
 import json, plistlib, sys

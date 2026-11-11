@@ -29,6 +29,7 @@ OutputBaseFilename=MealPrepApp-{#AppVersion}-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\..\App\MealPrepApp.Desktop\Assets\Icons\app-icon.ico
 UninstallDisplayIcon={app}\MealPrepApp.Desktop.exe
 AppMutex=MealPrepApp.Desktop.Running
 CloseApplications=yes

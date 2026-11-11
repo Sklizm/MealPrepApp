@@ -10,6 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationIcon>Assets/Icons/app-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MealPrepApp.Core\MealPrepApp.Core.csproj" />
+    <AvaloniaResource Include="Assets/Icons/app-icon.png" />
   </ItemGroup>
 
   <ItemGroup>

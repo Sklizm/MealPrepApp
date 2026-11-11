@@ -56,6 +56,10 @@
           dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
           executables = [ "MealPrepApp.Desktop" ];
           runtimeDeps = runtimeLibs;
+          postInstall = ''
+            install -Dm644 App/MealPrepApp.Desktop/Assets/Icons/app-icon-512.png "$out/share/icons/hicolor/512x512/apps/mealprep.png"
+            install -Dm644 App/MealPrepApp.Desktop/Assets/mealprep.desktop "$out/share/applications/mealprep.desktop"
+          '';
         };
       }
     );

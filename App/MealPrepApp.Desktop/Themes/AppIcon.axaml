@@ -1,0 +1,5 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style Selector="Window">
+        <Setter Property="Icon" Value="avares://MealPrepApp.Desktop/Assets/Icons/app-icon.png"/>
+    </Style>
+</Styles>

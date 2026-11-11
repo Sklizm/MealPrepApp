@@ -24,6 +24,7 @@ dotnet publish "$REPO_ROOT/App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj" \
 chmod +x "$OUTPUT_DIR/MealPrepApp.Desktop"
 
 cp "$REPO_ROOT/App/MealPrepApp.Desktop/Assets/mealprep.desktop" "$OUTPUT_DIR/"
+cp "$REPO_ROOT/App/MealPrepApp.Desktop/Assets/Icons/app-icon-512.png" "$OUTPUT_DIR/mealprep.png"
 
 
 echo "=== Build Complete! ==="

@@ -49,6 +49,7 @@ if [[ -d "$DESTINATION" ]]; then
     mv "$DESTINATION" "$STAGING/previous.app"
 fi
 mv "$STAGING/MealPrepApp.app" "$DESTINATION"
+touch "$DESTINATION"
 
 echo "Installed: $DESTINATION"
 echo "Launch with: open \"$DESTINATION\""
