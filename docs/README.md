@@ -15,6 +15,8 @@
 
 ## Interface and validation references
 
+- [Illustrated ingredient catalog](catalog/README.md): category navigation, virtualization, localized summaries, and reproducible captures.
+
 - [Localization and refreshed English screenshots](localization/README.md): current public captures, three-language render matrix, and separate native acceptance status.
 
 - [Earlier alignment comparisons](alignment/README.md): Home, recipe cards, fridge tiles, and navigation icons.

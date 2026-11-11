@@ -23,8 +23,8 @@ public sealed class IngredientGroup : ObservableCollection<Ingredient>
 }
 
 /// <summary>
-/// The ingredient list sub-view: a search box, category dropdown, and a list that is either
-/// flat ("Toate") or grouped by <c>IngredientCategoryName</c> ("Categorii").
+/// Cached ingredient catalog with immediate local filtering and stable sort identities.
+/// Retains the flat and grouped collection APIs for the legacy client.
 /// </summary>
 public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
@@ -42,7 +42,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
     private readonly IServiceProvider _services;
 
     [RelayCommand] private Task Retry()=>RefreshAsync();
-    private bool _loaded;
+    private IReadOnlyList<Ingredient> _source = Array.Empty<Ingredient>();
     private bool _populating;
     private int _requestVersion;
     private CancellationTokenSource? _loadCts;
@@ -50,7 +50,6 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
     {
         ++_requestVersion;
         _loadCts?.Cancel();
-        _searchCts?.Cancel();
         IsBusy = false;
     }
 
@@ -63,12 +62,33 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         ++_requestVersion;
         _loadCts?.Cancel();
         _loadCts?.Dispose();
-        _searchCts?.Cancel();
-        _searchCts?.Dispose();
     }
 
-    private CancellationTokenSource? _searchCts;
-    private const int SearchDebounceMs = 300;
+    public IReadOnlyList<CatalogCategory> CategoryIndex { get; private set; } = Array.Empty<CatalogCategory>();
+    public int TotalIngredientCount => _source.Count;
+    public int NutritionIngredientCount { get; private set; }
+    [LocalizedProperty]
+    public string CatalogSummary => L.Text("Catalog.Summary", L.Count("Count.Ingredients", TotalIngredientCount), NutritionIngredientCount);
+    [LocalizedProperty]
+    public string SelectedCategoryTitle => BuiltInLabels.Display(SelectedCategory?.Name ?? AllCategories.Name);
+    [LocalizedProperty]
+    public string ResultSummary => L.Count("Count.CatalogResults", Ingredients.Count).ToString();
+    public CatalogCategory? CatalogSelection
+    {
+        get => CategoryIndex.FirstOrDefault(c => c.Category == SelectedCategory);
+        set { if (value != null) SelectedCategory = value.Category; }
+    }
+    public IReadOnlyList<string> SortOrders { get; } = [IngredientSortIds.NameAscending, IngredientSortIds.NameDescending, IngredientSortIds.Category, IngredientSortIds.MissingNutrition];
+    [ObservableProperty] private string _sortOrder = IngredientSortIds.NameAscending;
+    [LocalizedProperty]
+    public string EmptyMessage => _source.Count == 0 ? L.Text("Text.AddYourFirstIngredientToGetStarted")
+        : !string.IsNullOrWhiteSpace(SearchTerm) ? L.Text("Text.NoIngredientsFoundTryAnotherSearch") : L.Text("Catalog.EmptyCategory");
+    public bool IsEmpty => Ingredients.Count == 0;
+    partial void OnSortOrderChanged(string value) => ApplyFilters();
+    [RelayCommand] private void SelectCatalogCategory(CatalogCategory? entry)
+    {
+        if (entry != null) SelectedCategory = entry.Category;
+    }
 
     public ObservableCollection<Ingredient> Ingredients { get; } = new();
     public ObservableCollection<IngredientCategory> Categories { get; } = new();
@@ -134,37 +154,35 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         IsBusy = true;
         try
         {
-            if (!_loaded)
-            {
-                var categories = await _lookups.GetIngredientCategoriesAsync(token);
-                if (version != _requestVersion || _disposed) return;
-                Categories.Clear(); Categories.Add(AllCategories);
-                foreach (var lookupCategory in categories) Categories.Add(lookupCategory);
-                SelectedCategory = AllCategories;
-            }
-            var term = SearchTerm?.Trim() ?? "";
-            var categoryId = SelectedCategory is { IngredientCategoryID: > 0 } category
-                ? category.IngredientCategoryID : (int?)null;
-            var all = await _ingredients.GetIngredientsAsync(categoryId, token);
-            var rows = all.Where(i => term.Length == 0 ||
-                i.Name.Contains(term, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            var categories = await _lookups.GetIngredientCategoriesAsync(token);
             if (version != _requestVersion || _disposed) return;
-
+            var all = await _ingredients.GetIngredientsAsync(null, token);
+            if (version != _requestVersion || _disposed) return;
+            var selectedId = SelectedCategory?.IngredientCategoryID ?? 0;
+            _source = all;
+            NutritionIngredientCount = all.Count(i => i.HasNutrition);
             _populating = true;
             try
             {
-                Ingredients.Clear();
-                foreach (var row in rows)
-                {
-                    if (string.IsNullOrEmpty(row.IngredientCategoryName))
-                        row.IngredientCategoryName = UngroupedLabel;
-                    Ingredients.Add(row);
-                }
+                Categories.Clear();
+                Categories.Add(AllCategories);
+                // Stable identity order, independent of translated labels and search.
+                foreach (var category in categories.Concat(all.Where(i => i.IngredientCategoryID is > 0)
+                    .Select(i => new IngredientCategory { IngredientCategoryID = i.IngredientCategoryID!.Value, Name = i.IngredientCategoryName ?? UngroupedLabel }))
+                    .DistinctBy(c => c.IngredientCategoryID).OrderBy(c => c.IngredientCategoryID))
+                    Categories.Add(category);
+                Categories.Add(new IngredientCategory { IngredientCategoryID = -1, Name = UngroupedLabel });
+                SelectedCategory = Categories.FirstOrDefault(c => c.IngredientCategoryID == selectedId) ?? AllCategories;
+                CategoryIndex = Categories.Select(c => new CatalogCategory(c,
+                    c.IngredientCategoryID == 0 ? all.Count : all.Count(i => CategoryId(i) == c.IngredientCategoryID))).ToArray();
             }
             finally { _populating = false; }
-            UpdateGrouping();
-            _loaded = true;
-            OnPropertyChanged(nameof(IngredientsView));
+            OnPropertyChanged(nameof(CategoryIndex));
+            OnPropertyChanged(nameof(CatalogSelection));
+            OnPropertyChanged(nameof(TotalIngredientCount));
+            OnPropertyChanged(nameof(NutritionIngredientCount));
+            OnPropertyChanged(nameof(CatalogSummary));
+            ApplyFilters();
         }
         catch (AppDbException ex)
         {
@@ -182,31 +200,35 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
         }
     }
 
-    partial void OnSelectedCategoryChanged(IngredientCategory? value)
-    {
-        if (_loaded && !_disposed)
-            _ = RefreshAsync();
-    }
+    private static int CategoryId(Ingredient item) => item.IngredientCategoryID is > 0 ? item.IngredientCategoryID.Value : -1;
 
-    /// <summary>As-you-type filtering with a 300ms debounce — each keystroke cancels the
-    /// previous pending refresh so only one query fires once the user pauses.</summary>
-    partial void OnSearchTermChanged(string value)
-    {
-        if (_disposed) return;
-        _searchCts?.Cancel();
-        _searchCts?.Dispose();
-        ++_requestVersion;
-        _loadCts?.Cancel();
-        _searchCts = new CancellationTokenSource();
-        _ = DebouncedRefreshAsync(_searchCts.Token);
-    }
+    partial void OnSelectedCategoryChanged(IngredientCategory? value) { ApplyFilters(); OnPropertyChanged(nameof(CatalogSelection)); }
+    partial void OnSearchTermChanged(string value) => ApplyFilters();
 
-    private async Task DebouncedRefreshAsync(CancellationToken token)
+    private void ApplyFilters()
     {
-        try { await Task.Delay(SearchDebounceMs, token); }
-        catch (TaskCanceledException) { return; }
-        if (token.IsCancellationRequested) return;
-        await RefreshAsync();
+        if (_disposed || _populating) return;
+        var categoryId = SelectedCategory?.IngredientCategoryID ?? 0;
+        var term = SearchTerm?.Trim() ?? "";
+        var rows = _source.Where(i => (categoryId == 0 || CategoryId(i) == categoryId)
+            && i.Name.Contains(term, StringComparison.CurrentCultureIgnoreCase));
+        var order = Categories.Select((c, index) => (c.IngredientCategoryID, index)).ToDictionary(c => c.IngredientCategoryID, c => c.index);
+        rows = SortOrder switch
+        {
+            IngredientSortIds.NameDescending => rows.OrderByDescending(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(i => i.IngredientID),
+            IngredientSortIds.Category => rows.OrderBy(i => order.GetValueOrDefault(CategoryId(i), int.MaxValue)).ThenBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(i => i.IngredientID),
+            IngredientSortIds.MissingNutrition => rows.OrderBy(i => i.HasNutrition).ThenBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(i => i.IngredientID),
+            _ => rows.OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(i => i.IngredientID)
+        };
+        _populating = true;
+        try { Ingredients.Clear(); foreach (var row in rows) Ingredients.Add(row); }
+        finally { _populating = false; }
+        UpdateGrouping();
+        OnPropertyChanged(nameof(IngredientsView));
+        OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(EmptyMessage));
+        OnPropertyChanged(nameof(SelectedCategoryTitle));
+        OnPropertyChanged(nameof(ResultSummary));
     }
 
     [RelayCommand]
@@ -234,7 +256,7 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
 
         var dialogVm = _services.GetRequiredService<IngredientNutritionDialogViewModel>();
         await dialogVm.LoadAsync(item);
-        await _dialog.ShowDialogAsync(dialogVm);
+        if (await _dialog.ShowDialogAsync(dialogVm)) await RefreshAsync();
     }
 
     [RelayCommand]
@@ -272,4 +294,30 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
             IsBusy = false;
         }
     }
+}
+
+public sealed record CatalogCategory(IngredientCategory Category, int Count)
+{
+    public string Name => Category.Name;
+    public string Symbol => Category.IngredientCategoryID switch { 0 => "≡", -1 => "○", _ => "◇" };
+    // Presentation identity only: custom and synthetic categories use the existing food box.
+    public string Illustration => Name switch
+    {
+        "Produse" => "Produce",
+        "Lactate si oua" => "Dairy",
+        "Carne si peste" => "Meat",
+        "Conserve" => "Jar",
+        "Condimente si ierburi" => "Herbs",
+        "Cereale si paste" => "Pasta",
+        "Bauturi" => "Drink",
+        _ => "Other"
+    };
+}
+
+public static class IngredientSortIds
+{
+    public const string NameAscending = "Catalog.NameAscending";
+    public const string NameDescending = "Catalog.NameDescending";
+    public const string Category = "Catalog.Category";
+    public const string MissingNutrition = "Catalog.MissingNutrition";
 }

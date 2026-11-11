@@ -51,15 +51,16 @@ public static class RedesignSamples
         recipes.Categories.Add(new Category {CategoryID=0, Name="Toate categoriile"}); recipes.SelectedCategory=recipes.Categories[0];
         foreach(var title in new[]{"Tomato and basil pasta","Baked salmon","Chickpea salad","Vegetable soup","Apple oatmeal","Baked apples"}) recipes.Recipes.Add(new RecipeListItem {RecipeID=1,Title=title,CategoryName="Prânz",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20});
         var pantry=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.FrigiderViewModel>(); pantry.UseGrouping=true;
-        var ingredients=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.IngredienteListViewModel>(); ingredients.UseGrouping=true;
+        var ingredients=new MealPrepApp.ViewModels.Ingrediente.IngredienteListViewModel(new CatalogFixtureRepository(),new CatalogFixtureLookups(),new NoDialogs(),provider);
+        ingredients.LoadAsync().GetAwaiter().GetResult();
         foreach(var name in new[]{"Tomatoes","Basil","Carrots","Peppers","Chickpeas","Rice"})
         {
             pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=name,Quantity=250,UnitAbbreviation="g",CategoryName=name=="Rice" ? "Cereale si paste" : name=="Basil" ? "Condimente si ierburi" : name=="Chickpeas" ? "Conserve" : "Produse"});
-            ingredients.Ingredients.Add(new Ingredient {Name=name,IngredientCategoryName="Vegetables",DefaultUnitAbbreviation="g"});
+
         }
         foreach(var stock in new[] { ("Milk", "Lactate si oua", "ml"), ("Beef", "Carne si peste", "g"), ("Apple juice", "Bauturi", "ml") })
             pantry.Items.Add(new PantryItem {IngredientID=pantry.Items.Count+1,IngredientName=stock.Item1,CategoryName=stock.Item2,UnitAbbreviation=stock.Item3,Quantity=500});
-        ingredients.Categories.Add(new IngredientCategory {Name="Toate categoriile"}); ingredients.SelectedCategory=ingredients.Categories[0];
+
         var shopping=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.ShoppingListViewModel>();
         shopping.LoadAsync().GetAwaiter().GetResult();
         var reports=provider.GetRequiredService<MealPrepApp.ViewModels.Rapoarte.StatisticiLunareViewModel>();

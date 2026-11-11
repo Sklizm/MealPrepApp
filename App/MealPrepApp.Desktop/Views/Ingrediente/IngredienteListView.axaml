@@ -1,79 +1,104 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView" x:DataType="vm:IngredienteListViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" xmlns:controls="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView" x:DataType="vm:IngredienteListViewModel" Background="{DynamicResource AppBackground}">
     <UserControl.Resources>
-        <DataTemplate x:Key="IngredientRowTemplate" x:DataType="models:Ingredient">
-            <Border Classes="Card" Padding="12,8" Margin="0,2">
-                <Grid ColumnDefinitions="*,Auto,Auto,Auto">
-                    <StackPanel>
-                        <TextBlock Text="{Binding Name}" Classes="Body"/>
-                        <TextBlock Text="{loc:Loc Text.NutritionDataMissing}" Classes="Muted" IsVisible="{Binding HasNutrition, Converter={StaticResource InverseBool}}"/>
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{DynamicResource SurfaceSecondary}" CornerRadius="3" Padding="6,2" Margin="0,0,8,0" IsVisible="{Binding DefaultUnitAbbreviation, Converter={StaticResource NotNullToBool}}">
-                        <TextBlock Text="{Binding DefaultUnitAbbreviation}" Foreground="{DynamicResource TextPrimary}" FontSize="11"/>
-                    </Border>
-                    <Button Grid.Column="2" Content="{loc:Loc Text.Nutrition}" Classes="Secondary" Margin="0,0,8,0" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
-                    <Button Grid.Column="3" AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" Command="{Binding DataContext.DeleteIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
-                        <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
-                    </Button>
-                </Grid>
-            </Border>
+        <DataTemplate x:Key="CategoryEntry" x:DataType="vm:CatalogCategory">
+            <Grid ColumnDefinitions="44,*,Auto" MinHeight="44">
+                <controls:FridgeFoodIllustration Kind="{Binding Illustration}" Width="36" Height="34" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{loc:Display Name}" TextWrapping="Wrap" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,8,0"/>
+                <TextBlock Grid.Column="2" Text="{Binding Count}" Classes="Muted" VerticalAlignment="Center"/>
+            </Grid>
         </DataTemplate>
     </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.CategoryRail ListBoxItem">
+            <Setter Property="Padding" Value="6,4"/><Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="CornerRadius" Value="12"/><Setter Property="BorderThickness" Value="2"/><Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBox.CategoryRail ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Selection}"/><Setter Property="BorderBrush" Value="{DynamicResource ActionPrimary}"/>
+        </Style>
+        <Style Selector="ListBoxItem:focus-visible /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource Focus}"/>
+        </Style>
+        <Style Selector="ListBox.CatalogIngredients ListBoxItem">
+            <Setter Property="Margin" Value="0,0,0,8"/><Setter Property="CornerRadius" Value="16"/>
+        </Style>
+        <Style Selector="ListBox.CatalogIngredients ListBoxItem:selected Border.CatalogCard">
+            <Setter Property="BorderBrush" Value="{DynamicResource ActionPrimary}"/>
+        </Style>
+        <Style Selector="Button.Refresh">
+            <Setter Property="Width" Value="40"/><Setter Property="Height" Value="40"/><Setter Property="Padding" Value="10"/>
+        </Style>
+    </UserControl.Styles>
     <Grid Margin="32" RowDefinitions="Auto,Auto,*">
-        <!-- Toolbar -->
-        <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
-            <TextBlock Text="{loc:Loc Text.IngredientCatalog}" Classes="Title"/>
-            <WrapPanel>
-                <TextBox Watermark="{loc:Loc Text.SearchIngredients}" Text="{Binding SearchTerm}" Width="208" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.SearchIngredients115}"/>
-                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="176" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.IngredientCategory}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:IngredientCategory">
-                            <TextBlock Text="{loc:Display Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <CheckBox Content="{loc:Loc Text.GroupByCategory}" IsChecked="{Binding UseGrouping}" Margin="0,0,8,8"/>
-                <Button Classes="Primary" Content="{loc:Loc Text.AddIngredient99}" Command="{Binding AddIngredientCommand}" Margin="0,0,8,8"/>
-                <Button Content="{loc:Loc Text.Reload}" Classes="Secondary" Command="{Binding RetryCommand}" Margin="0,0,8,8"/>
-            </WrapPanel>
-        </StackPanel>
-        <!-- Error slot -->
-        <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,8">
-            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+        <Grid Name="CatalogHeader" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,0,0,12">
+            <StackPanel Spacing="2" Margin="0,0,12,0">
+                <TextBlock Text="{loc:Loc Text.IngredientCatalog}" Classes="Title" TextWrapping="Wrap"/>
+                <TextBlock Name="CatalogSummary" Text="{Binding CatalogSummary}" Classes="Muted" TextWrapping="Wrap"/>
+            </StackPanel>
+            <Button Name="AddIngredient" Grid.Column="1" Classes="Primary" Content="{loc:Loc Text.AddIngredient99}" Command="{Binding AddIngredientCommand}" VerticalAlignment="Center"/>
+        </Grid>
+        <StackPanel Grid.Row="1" Spacing="4" Margin="0,0,0,8">
+            <ProgressBar Height="3" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
-            <Button Content="{loc:Loc Text.TryAgain}" Classes="Secondary" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left"/>
         </StackPanel>
-        <!-- List / empty -->
-        <Grid Grid.Row="2">
-            <ScrollViewer>
-                <StackPanel>
-                    <ItemsControl ItemsSource="{Binding Ingredients}" IsVisible="{Binding !UseGrouping}" ItemTemplate="{StaticResource IngredientRowTemplate}"/>
-                    <ItemsControl ItemsSource="{Binding GroupedIngredients}" IsVisible="{Binding UseGrouping}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:IngredientGroup">
-                                <StackPanel Margin="0,0,0,24">
-                                    <TextBlock Text="{loc:Display Name}" Classes="Header" Margin="0,0,0,8"/>
-                                    <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource IngredientRowTemplate}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
-            <!-- Empty state -->
-            <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Border.IsVisible>
-                    <MultiBinding Converter="{StaticResource ShowEmpty}">
-                        <Binding Path="Ingredients.Count"/>
-                        <Binding Path="IsBusy"/>
-                        <Binding Path="HasError"/>
-                    </MultiBinding>
-                </Border.IsVisible>
-                <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                    <TextBlock Text="{loc:Loc Text.NoIngredients}" Classes="Header" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{loc:Loc Text.AddYourFirstIngredientToGetStarted}" Classes="Muted" HorizontalAlignment="Center"/>
-                    <Button Content="{loc:Loc Text.AddIngredient121}" Classes="Primary" HorizontalAlignment="Center" Margin="0,10,0,0" Command="{Binding AddIngredientCommand}"/>
-                </StackPanel>
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+            <Border Name="CategoryPanel" Width="260" Margin="0,0,20,0" Background="{DynamicResource SurfaceSecondary}" BorderBrush="{DynamicResource Divider}" BorderThickness="2" CornerRadius="24" Padding="12">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="{loc:Loc Text.IngredientCategory}" Classes="Header" TextWrapping="Wrap" Margin="4,0,4,12"/>
+                    <ListBox Name="CategorySidebar" Grid.Row="1" Classes="CategoryRail" ItemsSource="{Binding CategoryIndex}" SelectedItem="{Binding CatalogSelection}" ItemTemplate="{StaticResource CategoryEntry}" AutomationProperties.Name="{loc:Loc Text.IngredientCategory}"/>
+                </Grid>
             </Border>
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*">
+                <ComboBox Name="CompactCategory" IsVisible="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,12" ItemsSource="{Binding CategoryIndex}" SelectedItem="{Binding CatalogSelection}" ItemTemplate="{StaticResource CategoryEntry}" AutomationProperties.Name="{loc:Loc Text.IngredientCategory}"/>
+                <StackPanel Grid.Row="1" Spacing="2" Margin="0,0,0,12">
+                    <TextBlock Name="SelectedCategoryTitle" Text="{Binding SelectedCategoryTitle}" Classes="Header" TextWrapping="Wrap"/>
+                    <TextBlock Name="ResultSummary" Text="{Binding ResultSummary}" Classes="Muted" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Grid Name="CatalogToolbar" Grid.Row="2" ColumnDefinitions="*,240,Auto" RowDefinitions="Auto,Auto" Margin="0,0,0,12">
+                    <TextBox Name="CatalogSearch" Watermark="{loc:Loc Text.SearchIngredients}" Text="{Binding SearchTerm}" Margin="0,0,8,0" AutomationProperties.Name="{loc:Loc Text.SearchIngredients115}"/>
+                    <ComboBox Name="CatalogSort" Grid.Column="1" ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" HorizontalAlignment="Stretch" Margin="0,0,8,0" AutomationProperties.Name="{loc:Loc Text.Sort}">
+                        <ComboBox.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Text="{loc:Display}" TextWrapping="Wrap"/></DataTemplate></ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Name="CatalogRefresh" Grid.Column="2" Classes="Secondary Refresh" Command="{Binding RetryCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="{loc:Loc Text.Reload}" AutomationProperties.Name="{loc:Loc Text.Reload}">
+                        <Path Width="18" Height="18" Stretch="Uniform" Data="M 18,8 A 7,7 0 1 0 19,14 M 18,3 L 18,8 L 13,8" Stroke="{DynamicResource TextPrimary}" StrokeThickness="1.7" StrokeLineCap="Round"/>
+                    </Button>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <ListBox Name="IngredientList" Classes="CatalogIngredients" ItemsSource="{Binding Ingredients}" AutomationProperties.Name="{loc:Loc Text.IngredientCatalog}">
+                        <ListBox.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate></ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Ingredient">
+                                <Border Classes="Card CatalogCard" CornerRadius="16" Padding="16,12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Spacing="6" Margin="0,0,16,0">
+                                            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <WrapPanel>
+                                                <TextBlock Text="{loc:Display IngredientCategoryName, FallbackKey=Text.Uncategorized}" Classes="Muted" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                                                <Border Background="{DynamicResource SurfaceSecondary}" CornerRadius="6" Padding="6,2"><TextBlock Text="{Binding DefaultUnitAbbreviation}" FontSize="12"/></Border>
+                                            </WrapPanel>
+                                            <TextBlock Text="{loc:Loc Catalog.NutritionAvailable}" Foreground="{DynamicResource ActionPrimary}" FontSize="12" IsVisible="{Binding HasNutrition}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{loc:Loc Catalog.NutritionMissing}" Classes="Muted" FontSize="12" IsVisible="{Binding !HasNutrition}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="{loc:Loc Text.Nutrition}" Classes="Secondary" VerticalAlignment="Center" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="24">
+                        <StackPanel.IsVisible><MultiBinding Converter="{StaticResource ShowEmpty}"><Binding Path="Ingredients.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/></MultiBinding></StackPanel.IsVisible>
+                        <TextBlock Text="{loc:Loc Text.NoIngredients}" Classes="Header" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding EmptyMessage}" Classes="Muted" TextWrapping="Wrap" MaxWidth="320"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

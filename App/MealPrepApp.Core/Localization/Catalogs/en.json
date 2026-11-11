@@ -461,5 +461,17 @@
   "Count.Servings.One": "{0} serving",
   "Count.Servings.Few": "{0} servings",
   "Count.Servings.Many": "{0} servings",
-  "Text.Date450": "Date"
+  "Text.Date450": "Date",
+  "Catalog.Summary": "{0} · {1} with nutrition",
+  "Count.CatalogResults.One": "{0} result",
+  "Count.CatalogResults.Few": "{0} results",
+  "Count.CatalogResults.Many": "{0} results",
+  "Catalog.NameAscending": "Name A–Z",
+  "Catalog.NameDescending": "Name Z–A",
+  "Catalog.Category": "Category",
+  "Catalog.MissingNutrition": "Missing nutrition first",
+  "Catalog.EmptyCategory": "This category has no ingredients.",
+  "Catalog.NutritionAvailable": "✓ Nutrition available",
+  "Catalog.NutritionMissing": "○ Nutrition missing",
+  "Text.Sort": "Sort"
 }

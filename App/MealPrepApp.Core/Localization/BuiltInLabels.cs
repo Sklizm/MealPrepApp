@@ -5,6 +5,10 @@ public static class BuiltInLabels
 {
     private static readonly IReadOnlyDictionary<string, string> Keys = new Dictionary<string, string>(StringComparer.Ordinal)
     {
+        ["Catalog.NameAscending"] = "Catalog.NameAscending",
+        ["Catalog.NameDescending"] = "Catalog.NameDescending",
+        ["Catalog.Category"] = "Catalog.Category",
+        ["Catalog.MissingNutrition"] = "Catalog.MissingNutrition",
         ["Toate"] = "Text.All",
         ["Ingredient"] = "Text.Ingredient165",
         ["Titlu"] = "Text.Title249",

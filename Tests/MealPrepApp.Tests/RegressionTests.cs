@@ -208,7 +208,7 @@ public sealed partial class RegressionTests
             Assert.Contains(shell.GetVisualDescendants().OfType<TextBlock>(),
                 text => text.Text == "Rendered ingredient");
             AssertCommand(ingredients.EditNutritionCommand, ingredients.Ingredients[0]);
-            AssertCommand(ingredients.DeleteIngredientCommand, ingredients.Ingredients[0]);
+            Assert.DoesNotContain(shell.GetVisualDescendants().OfType<Button>(), b => ReferenceEquals(b.Command, ingredients.DeleteIngredientCommand));
 
             var pantry = provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.FrigiderViewModel>();
             var item = new MealPrepApp.Models.PantryItem { UserPantryID = 1, IngredientName = "Pantry row", Quantity = 2 };

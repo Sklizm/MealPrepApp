@@ -461,5 +461,17 @@
   "Count.Servings.One": "{0} porție",
   "Count.Servings.Few": "{0} porții",
   "Count.Servings.Many": "{0} de porții",
-  "Text.Date450": "Data"
+  "Text.Date450": "Data",
+  "Catalog.Summary": "{0} · {1} cu date nutriționale",
+  "Count.CatalogResults.One": "{0} rezultat",
+  "Count.CatalogResults.Few": "{0} rezultate",
+  "Count.CatalogResults.Many": "{0} de rezultate",
+  "Catalog.NameAscending": "Nume A–Z",
+  "Catalog.NameDescending": "Nume Z–A",
+  "Catalog.Category": "Categorie",
+  "Catalog.MissingNutrition": "Fără valori nutritive mai întâi",
+  "Catalog.EmptyCategory": "Această categorie nu conține ingrediente.",
+  "Catalog.NutritionAvailable": "✓ Valori nutritive disponibile",
+  "Catalog.NutritionMissing": "○ Lipsesc valorile nutritive",
+  "Text.Sort": "Sortare"
 }

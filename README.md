@@ -11,6 +11,7 @@ MealPrepApp is a desktop app for organizing recipes, planning meals, tracking in
 - **Recipes:** search and filter your collection, save favorites and drafts, manage photos, and scale ingredient quantities and nutrition to your servings.
 - **Cooking:** follow readable instructions, check off ingredients, and keep a timer running while you navigate the app.
 - **Meal planning:** organize a week or month, move and duplicate meals, and preview a week before copying it.
+- **Ingredients:** browse a searchable catalog by category, sort by name or missing nutrition, and edit nutrition values.
 - **Pantry:** browse illustrated food categories, search your stock, update quantities, and find recipes using ingredients you already have.
 - **Shopping lists:** generate and reopen saved lists, track purchases, copy text or export to Excel, and explicitly add purchased items to pantry stock.
 - **Nutrition reports:** review estimates, meal-category breakdowns, and recipe and ingredient rankings. Missing nutrition data is clearly labeled.

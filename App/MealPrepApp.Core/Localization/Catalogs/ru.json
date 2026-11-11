@@ -461,5 +461,17 @@
   "Count.Servings.One": "{0} порция",
   "Count.Servings.Few": "{0} порции",
   "Count.Servings.Many": "{0} порций",
-  "Text.Date450": "Дата"
+  "Text.Date450": "Дата",
+  "Catalog.Summary": "{0} · {1} с пищевой ценностью",
+  "Count.CatalogResults.One": "{0} результат",
+  "Count.CatalogResults.Few": "{0} результата",
+  "Count.CatalogResults.Many": "{0} результатов",
+  "Catalog.NameAscending": "Название А–Я",
+  "Catalog.NameDescending": "Название Я–А",
+  "Catalog.Category": "Категория",
+  "Catalog.MissingNutrition": "Сначала без пищевой ценности",
+  "Catalog.EmptyCategory": "В этой категории пока нет ингредиентов.",
+  "Catalog.NutritionAvailable": "✓ Пищевая ценность указана",
+  "Catalog.NutritionMissing": "○ Пищевая ценность не указана",
+  "Text.Sort": "Сортировка"
 }
