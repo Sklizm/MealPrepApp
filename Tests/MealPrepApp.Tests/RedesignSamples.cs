@@ -23,6 +23,7 @@ public static class RedesignSamples
         services.AddSingleton<IDbConnectionFactory,NoDatabase>(); services.AddSingleton<IDialogService>(dialogs ?? new NoDialogs());
         services.AddSingleton(new PresentationPreferences(Path.Combine(Path.GetTempPath(), $"mealprep-fixture-{Guid.NewGuid()}.json")));
         services.AddScoped<EditorRecoveryService>(_ => new(null));
+        services.AddScoped<CookingSession>(_ => new());
         services.AddSingleton<MealPrepApp.Data.Repositories.InventoryRepository>(sp => new EmptyInventory(sp));
         services.AddSingleton<MealPrepApp.Data.Repositories.CookingBatchRepository>(sp=>new EmptyCooking(sp));
         services.AddSingleton<MealPrepApp.Data.Repositories.PlanningWorkflowRepository>(new EmptyPlanning());
