@@ -59,3 +59,7 @@ DROP TABLE dbo.InventoryUpgradeExpected;"
 sql -i migrations/20261111_shopping.sql
 sql -i migrations/20261111_shopping.sql
 sql -i /tests/shopping-changes-regression.sql
+
+sql -i migrations/20261111_batch_meals.sql
+sql -i migrations/20261111_batch_meals.sql
+sql -i /tests/cooking-batches-regression.sql

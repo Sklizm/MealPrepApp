@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DB_CONTAINER="${1:-mealprep-db}"
 MIGRATION_FILE="${2:-20261028_compatibility.sql}"
-case "$MIGRATION_FILE" in 20261028_compatibility.sql|20261028_cooking_redesign.sql|20261111_inventory.sql|20261111_shopping.sql) ;; *) echo "Unsupported migration" >&2; exit 2 ;; esac
+case "$MIGRATION_FILE" in 20261028_compatibility.sql|20261028_cooking_redesign.sql|20261111_inventory.sql|20261111_shopping.sql|20261111_batch_meals.sql) ;; *) echo "Unsupported migration" >&2; exit 2 ;; esac
 MIGRATION_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 STAGE_DIR="/tmp/mealprep-compatibility-$MIGRATION_ID"
 CONTAINER_BACKUP="/var/opt/mssql/backup/MealPrepDB-before-compatibility-$MIGRATION_ID.bak"

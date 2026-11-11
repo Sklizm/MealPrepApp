@@ -29,6 +29,22 @@ litre is imported as a litre even when the plan requires 200 ml. Single and bulk
 imports show a review and remain idempotent. Imported quantities cannot be rewritten;
 use an explicit stock correction. Deleted shopping records remain as sync tombstones.
 
+## Cooking and prepared portions
+
+Cooking opens the current numbered step with Previous/Next navigation and a
+collapsible ingredient checklist. Named timers support pause/resume and adding a
+minute. Local account-scoped recovery saves the recipe, servings, step, checks and
+timer deadlines. Alarms require the app to remain running; missed deadlines are
+shown after recovery. Native notifications and sounds are best effort, with an
+in-app fallback when unavailable.
+
+Finish cooking opens an explicit review of actual production, ingredient deductions,
+consumption and leftover expiry. Deductions propose eligible batches in expiry order.
+No checkmark changes stock. A batch can supply several planned meals, generating raw
+ingredient demand once. Cooking records recipe/nutrition snapshots. Consuming prepared
+portions never deducts raw stock, and reservations protect portions allocated to meals.
+Reports can distinguish planned, cooked, consumed and explicitly discarded activity.
+
 ## Database upgrade
 
 On a database host, after the disposable suite passes:
@@ -37,6 +53,7 @@ On a database host, after the disposable suite passes:
 bash scripts/test-database.sh
 bash scripts/update-database.sh mealprep-db 20261111_inventory.sql
 bash scripts/update-database.sh mealprep-db 20261111_shopping.sql
+bash scripts/update-database.sh mealprep-db 20261111_batch_meals.sql
 ```
 
 Apply the existing compatibility and cooking-redesign migrations first when needed.

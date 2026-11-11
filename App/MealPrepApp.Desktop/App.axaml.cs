@@ -110,6 +110,7 @@ public partial class App : Application
         services.AddSingleton<FavoriteRepository>();
         services.AddSingleton<PantryRepository>();
         services.AddSingleton<InventoryRepository>();
+        services.AddSingleton<CookingBatchRepository>();
         services.AddSingleton<ShoppingListRepository>();
         services.AddSingleton<DashboardRepository>();
         services.AddSingleton<ReportRepository>();
@@ -119,7 +120,14 @@ public partial class App : Application
         // Services
         services.AddSingleton<ILocalizationService>(L.Current);
         services.AddSingleton(Current is App app ? app.Preferences : new PresentationPreferences());
-        services.AddScoped<CookingSession>();
+        services.AddScoped(sp => {
+            var identity = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString);
+            var accountKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(identity.DataSource + "/" + identity.InitialCatalog)))[..16];
+            var signedIn = sp.GetRequiredService<ISessionService>();
+            if (!signedIn.IsAuthenticated) return new CookingSession();
+            var user = signedIn.CurrentUserId;
+            return new CookingSession(recoveryPath: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MealPrepApp", "recovery", accountKey, user.ToString(System.Globalization.CultureInfo.InvariantCulture), "cooking.json"));
+        });
         services.AddScoped<NotificationCenter>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();

@@ -29,6 +29,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
     /// <summary>The recipe to show. Set by the caller before <see cref="LoadAsync"/> runs.</summary>
     public int RecipeId { get; set; }
+    public MealPlanEntry? PlannedMealContext { get; set; }
 
     [ObservableProperty]
     private RecipeFull? _recipe;
@@ -60,7 +61,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     {
         if(Recipe is null) return Task.CompletedTask;
         Cooking.StartRecipe(Recipe,SelectedServings);
-        return _navigation.NavigateToAsync(new CookingViewModel(Cooking));
+        Cooking.CookingBatchID = PlannedMealContext?.CookingBatchID; Cooking.Save();
+        return _navigation.NavigateToAsync(new CookingViewModel(Cooking, _services));
     }
     [RelayCommand] private Task Retry() => LoadAsync();
     public bool HasPhoto => PhotoBytes is not null && PhotoBytes.Length > 0;
@@ -104,6 +106,8 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
                 ErrorContent = L.Message("Text.RecipeNotFound");
                 return;
             }
+
+            if (PlannedMealContext is { } plan) SelectedServings = plan.PlannedPortions > 0 ? plan.PlannedPortions : plan.Servings ?? Recipe.Servings ?? 1;
 
             // No single-recipe "is favorite?" proc — derive it from the user's favorites list.
             var favorites = await _favorites.GetFavoriteRecipesAsync(_session.CurrentUserId, pageSize: 500);

@@ -34,6 +34,7 @@ public partial class ShellWindow : Window
             if (DataContext is ShellViewModel vm)
             {
                 _viewModel = vm;
+                vm.Cooking.AlarmCompleted += OnAlarmCompleted;
                 _timer.Start();
                 vm.SettingsRequested += OnSettingsRequested;
                 vm.SignOutRequested += OnSignOutRequested;
@@ -45,10 +46,19 @@ public partial class ShellWindow : Window
         {
             _timer.Stop();
             if (_viewModel is null) return;
+            _viewModel.Cooking.Save();
+            _viewModel.Cooking.AlarmCompleted -= OnAlarmCompleted;
             _viewModel.SettingsRequested -= OnSettingsRequested;
             _viewModel.SignOutRequested -= OnSignOutRequested;
             _viewModel.ChangePasswordRequested -= OnChangePasswordRequested;
         };
+    }
+
+    private async void OnAlarmCompleted(object? sender, string name)
+    {
+        _viewModel?.Notifications.Post(MealPrepApp.Services.L.Message("UX.TimerAlarm", name));
+        var delivered = await TimerAlarmService.NotifyAsync(name);
+        if (!delivered) _viewModel?.Notifications.Post(MealPrepApp.Services.L.Message("UX.TimerFallback", name));
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

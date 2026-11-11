@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MealPrepApp.Data;
@@ -30,6 +31,35 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
         detail.RecipeId=recipe.RecipeID;
         await Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<INavigationService>(_services).NavigateToAsync(detail);
     }
+    [RelayCommand] private async Task OpenMeal(MealPlanEntry? entry) {
+        if (entry is null || _services is null) return;
+        var detail = _services.GetRequiredService<MealPrepApp.ViewModels.Retete.ReteteDetailViewModel>();
+        detail.RecipeId = entry.RecipeID; detail.PlannedMealContext = entry;
+        await _services.GetRequiredService<INavigationService>().NavigateToAsync(detail);
+    }
+    [RelayCommand] private async Task CookMeal(MealPlanEntry? entry) {
+        if (entry is null || _services is null) return;
+        if (entry.IsPrepared) { await ConsumeMeal(entry); return; }
+        try {
+            var recipe = await _services.GetRequiredService<RecipeRepository>().GetRecipeFullAsync(entry.RecipeID);
+            if (recipe is null) return;
+            var cooking = _services.GetRequiredService<CookingSession>();
+            cooking.StartRecipe(recipe, entry.PlannedPortions > 0 ? entry.PlannedPortions : entry.Servings ?? recipe.Servings ?? 1);
+            cooking.CookingBatchID = entry.CookingBatchID; cooking.Save();
+            await _services.GetRequiredService<INavigationService>().NavigateToAsync(new MealPrepApp.ViewModels.Retete.CookingViewModel(cooking,_services));
+        } catch (Exception ex) { AppDiagnostics.Record(ex); ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog"); }
+    }
+    [RelayCommand] private async Task ConsumeMeal(MealPlanEntry? entry) {
+        if (entry?.CookingBatchID is not int batch || entry.UnconsumedPortions <= 0 || _services?.GetService<CookingBatchRepository>() is not { } repository) return;
+        try {
+            if (!await _services.GetRequiredService<IDialogService>().ConfirmAsync(L.Message("UX.ConsumeLeftovers"),L.Message("UX.ConsumePrompt",entry.UnconsumedPortions,entry.RecipeTitle))) return;
+            await repository.PortionEventAsync(_session.CurrentUserId,Guid.NewGuid(),batch,entry.BatchVersion,entry.UnconsumedPortions,"Consumed",entry.MealPlanEntryID);
+            await LoadAsync();
+        } catch (Exception ex) { AppDiagnostics.Record(ex); ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog"); }
+    }
+    [RelayCommand] private Task ResumeCooking() => _services is null ? Task.CompletedTask :
+        _services.GetRequiredService<INavigationService>().NavigateToAsync(new MealPrepApp.ViewModels.Retete.CookingViewModel(_services.GetRequiredService<CookingSession>(),_services));
+    public bool CanResumeCooking => _services?.GetService<CookingSession>()?.Recipe is not null;
     [RelayCommand] private Task Retry() => LoadAsync();
     [ObservableProperty]
     private DashboardCounts? _counts;
@@ -67,6 +97,7 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
             if (version != _loadVersion || _disposed) return;
             TodayMeals.Clear(); foreach (var entry in mealsTask.Result.Where(e => e.PlannedDate.Date == date)) TodayMeals.Add(entry);
             HasDrafts = draftsTask.Result.Count > 0; Counts = countsTask.Result;
+            OnPropertyChanged(nameof(CanResumeCooking));
             RecentRecipes.Clear(); foreach (var recipe in recentTask.Result) RecentRecipes.Add(recipe);
         }
         catch (OperationCanceledException) { }

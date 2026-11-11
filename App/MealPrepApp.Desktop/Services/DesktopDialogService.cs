@@ -53,6 +53,7 @@ public sealed class DesktopDialogService : IDialogService
         Window? window = viewModel switch
         {
             PlanMealDialogViewModel => new PlanMealDialog(),
+            MealPrepApp.ViewModels.Retete.FinishCookingDialogViewModel => new MealPrepApp.Desktop.Views.Retete.FinishCookingDialog(),
             ShoppingItemDialogViewModel => new ShoppingItemDialog(),
             PantryItemDialogViewModel => new PantryItemDialog(),
             IngredientAddDialogViewModel => new IngredientAddDialog(),

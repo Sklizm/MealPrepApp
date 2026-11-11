@@ -1,46 +1,46 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Retete.CookingView" x:DataType="vm:CookingViewModel" Background="{DynamicResource AppBackground}">
-    <ScrollViewer>
-        <StackPanel Margin="32" Spacing="24">
-            <TextBlock Text="{loc:Loc Text.InTheKitchen}" Classes="Muted"/>
-            <TextBlock Text="{Binding Session.Recipe.Title}" Classes="Title" TextWrapping="Wrap"/>
-            <TextBlock Text="{loc:Loc Text.CheckmarksAreTemporaryPantryStockOnlyChangesThroughYourExplicitAction}" Classes="Muted" TextWrapping="Wrap"/>
-            <WrapPanel>
-                <StackPanel Margin="0,0,24,8">
-                    <TextBlock Text="{loc:Loc Text.Servings}"/>
-                    <NumericUpDown Value="{Binding Session.Servings}" Minimum="1" Maximum="1000" FormatString="0" Width="128" IsEnabled="{Binding Session.CanScale}" AutomationProperties.Name="{loc:Loc Text.CookingServings}"/>
-                </StackPanel>
-                <StackPanel Margin="0,0,24,8">
-                    <TextBlock Text="{loc:Loc Text.TimerMinutes}"/>
-                    <NumericUpDown Value="{Binding Session.TimerMinutes}" Minimum="1" Maximum="1440" FormatString="0" Width="140" AutomationProperties.Name="{loc:Loc Text.TimerDurationInMinutes}"/>
-                </StackPanel>
-                <Button Classes="Primary" Content="{loc:Loc Text.Start}" Command="{Binding Session.StartTimerCommand}" Margin="0,20,8,8"/>
-                <Button Content="{loc:Loc Text.Stop}" Classes="Secondary" Command="{Binding Session.StopTimerCommand}" Margin="0,20,8,8"/>
-            </WrapPanel>
-            <TextBlock Text="{Binding Session.TimerText}" FontSize="28"/>
-            <TextBlock Text="{loc:Loc Text.TheTimerContinuesBetweenPagesClosingTheAppStopsIt}" Classes="Muted" TextWrapping="Wrap"/>
-            <Border Classes="Card">
-                <ItemsControl ItemsSource="{Binding Session.Ingredients}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="services:CookingIngredient">
-                            <CheckBox IsChecked="{Binding IsChecked}" Margin="0,8">
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <TextBlock Text="{Binding Name}" FontSize="18"/>
-                                    <TextBlock Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" FontSize="18"/>
-                                    <TextBlock Text="{Binding Unit}" FontSize="18"/>
-                                </StackPanel>
-                            </CheckBox>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Border>
-            <TextBlock Text="{loc:Loc Text.Instructions}" Classes="Header"/>
-            <ItemsControl ItemsSource="{Binding Session.Paragraphs}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="22" LineHeight="36" Margin="0,0,0,24"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </ScrollViewer>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:services="using:MealPrepApp.Services" x:Class="MealPrepApp.Desktop.Views.Retete.CookingView" x:DataType="vm:CookingViewModel" Background="{DynamicResource AppBackground}">
+ <ScrollViewer><StackPanel Margin="24" Spacing="14">
+  <TextBlock Text="{Binding Session.Recipe.Title}" Classes="Title" TextWrapping="Wrap"/>
+  <Border Classes="Card"><StackPanel Spacing="12">
+   <TextBlock Text="{Binding Session.StepLabel}" Classes="Muted"/>
+   <TextBlock Text="{Binding Session.CurrentInstruction}" TextWrapping="Wrap" FontSize="24" LineHeight="34"/>
+   <WrapPanel>
+    <Button Content="{loc:Loc UX.PreviousStep}" Classes="Secondary" Command="{Binding Session.PreviousStepCommand}" IsEnabled="{Binding Session.HasPrevious}" Margin="0,0,8,0"/>
+    <Button Content="{loc:Loc UX.NextStep}" Classes="Primary" Command="{Binding Session.NextStepCommand}" IsEnabled="{Binding Session.HasNext}"/>
+   </WrapPanel>
+  </StackPanel></Border>
+  <WrapPanel>
+   <TextBlock Text="{loc:Loc Text.Servings}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+   <NumericUpDown Value="{Binding Session.Servings}" Minimum="1" Maximum="1000" FormatString="0.##" Width="110" IsEnabled="{Binding Session.CanScale}" AutomationProperties.Name="{loc:Loc Text.CookingServings}" Margin="0,0,16,8"/>
+   <Button Content="{loc:Loc UX.FinishCooking}" Classes="Primary" Command="{Binding FinishCookingCommand}" Margin="0,0,0,8"/>
+  </WrapPanel>
+  <TextBlock Text="{Binding Notification}" IsVisible="{Binding Notification, Converter={StaticResource NotNullToBool}}" Foreground="{DynamicResource ActionPrimary}" TextWrapping="Wrap"/>
+  <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+  <TextBlock Text="{loc:Loc UX.RecoverySaveFailed}" IsVisible="{Binding Session.SaveFailed}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+  <Expander Header="{loc:Loc Text.Ingredients}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+   <StackPanel Spacing="8">
+    <TextBlock Text="{loc:Loc Text.CheckmarksAreTemporaryPantryStockOnlyChangesThroughYourExplicitAction}" Classes="Muted" TextWrapping="Wrap"/>
+    <ItemsControl ItemsSource="{Binding Session.Ingredients}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="services:CookingIngredient">
+     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,6"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,12,0"/><TextBlock Text="{Binding Quantity, StringFormat='{}{0:0.####}'}" Margin="0,0,6,0"/><TextBlock Text="{Binding Unit}"/></WrapPanel></CheckBox>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+   </StackPanel>
+  </Expander>
+  <TextBlock Text="{loc:Loc UX.Timers}" Classes="Header"/>
+  <WrapPanel>
+   <TextBox Text="{Binding Session.TimerName}" Watermark="{loc:Loc UX.TimerName}" Width="160" MaxLength="80" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc UX.TimerName}"/>
+   <NumericUpDown Value="{Binding Session.TimerMinutes}" Minimum="1" Maximum="1440" FormatString="0.##" Width="110" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.TimerDurationInMinutes}"/>
+   <Button Content="{loc:Loc Text.Start}" Classes="Primary" Command="{Binding Session.StartTimerCommand}" Margin="0,0,8,8"/>
+  </WrapPanel>
+  <TextBlock Text="{loc:Loc UX.TimerRunningRequirement}" Classes="Muted" TextWrapping="Wrap"/>
+  <ItemsControl ItemsSource="{Binding Session.Timers}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="services:CookingTimer">
+   <Border Classes="Card" Margin="0,4"><StackPanel Spacing="8">
+    <WrapPanel><TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,12,0"/><TextBlock Text="{Binding Text}" FontSize="22"/></WrapPanel>
+    <WrapPanel>
+     <Button Content="{Binding PauseLabel}" Command="{Binding PauseResumeCommand}" Classes="Secondary" Margin="0,0,8,0"/>
+     <Button Content="{loc:Loc UX.AddMinute}" Command="{Binding AddMinuteCommand}" Classes="Secondary" Margin="0,0,8,0"/>
+     <Button Content="{loc:Loc Text.Stop}" Command="{Binding $parent[UserControl].DataContext.Session.RemoveTimerCommand}" CommandParameter="{Binding}" Classes="Secondary"/>
+    </WrapPanel>
+   </StackPanel></Border>
+  </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+ </StackPanel></ScrollViewer>
 </UserControl>

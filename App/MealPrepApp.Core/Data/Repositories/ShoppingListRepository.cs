@@ -14,7 +14,7 @@ public class ShoppingListRepository : RepositoryBase
         QueryProcAsync<ShoppingListRow>("sp_GetShoppingList",
             new { UserID = userId, StartDate = startDate.Date, EndDate = endDate.Date });
 
-    public virtual Task<int> CreateSnapshotAsync(int userId,DateTime start,DateTime end) => ExecuteScalarProcAsync<int>("sp_CreateShoppingSnapshot",new {UserID=userId,StartDate=start.Date,EndDate=end.Date});
+    public virtual Task<int> CreateSnapshotAsync(int userId,DateTime start,DateTime end) => ExecuteScalarProcAsync<int>("sp_CreateShoppingSnapshot",new {UserID=userId,StartDate=start.Date,EndDate=end.Date,StockDate=DateTime.Today});
     public virtual Task<IReadOnlyList<ShoppingSnapshot>> GetSnapshotsAsync(int userId, CancellationToken cancellationToken = default) => QueryProcAsync<ShoppingSnapshot>("sp_GetShoppingSnapshots",new {UserID=userId}, cancellationToken);
     public virtual Task<IReadOnlyList<ShoppingListRow>> GetSnapshotItemsAsync(int userId,int snapshotId, CancellationToken cancellationToken = default) => QueryProcAsync<ShoppingListRow>("sp_GetShoppingSnapshotItems",new {UserID=userId,SnapshotID=snapshotId}, cancellationToken);
     public virtual Task SetPurchasedAsync(int userId,int itemId,bool purchased) => ExecuteProcAsync("sp_SetShoppingPurchased",new {UserID=userId,ItemID=itemId,IsPurchased=purchased});

@@ -26,7 +26,7 @@ public sealed partial class ShellViewModel : ObservableObject, IShellNavigator
     public NotificationCenter Notifications {get;}
     public CookingSession Cooking { get; }
     [RelayCommand] private void ShowSettings() => SettingsRequested?.Invoke(this,EventArgs.Empty);
-    [RelayCommand] private Task ResumeCooking() => _navigation.NavigateToAsync(new CookingViewModel(Cooking));
+    [RelayCommand] private Task ResumeCooking() => _navigation.NavigateToAsync(new CookingViewModel(Cooking, _services));
 
     /// <summary>Raised when the user asks to change their password; the shell window opens the dialog.</summary>
     public event EventHandler? ChangePasswordRequested;

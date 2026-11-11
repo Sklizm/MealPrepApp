@@ -70,6 +70,9 @@
 :r procs/17_inventory.sql
 :r 21_shopping_changes.sql
 :r procs/18_shopping_changes.sql
+:r 22_cooking_batches.sql
+:r procs/19_cooking_batches.sql
+:r procs/20_batch_demand.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

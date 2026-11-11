@@ -15,6 +15,7 @@
                 <Button Classes="Primary" Grid.Column="1" Content="{loc:Loc Text.SearchRecipes}" Command="{Binding SearchCommand}" Margin="8,0,0,0"/>
             </Grid>
             <WrapPanel>
+                <Button Content="{loc:Loc UX.ResumeCooking}" Command="{Binding ResumeCookingCommand}" IsVisible="{Binding CanResumeCooking}" Classes="Primary" Margin="0,0,8,8"/>
                 <Button Content="{loc:Loc Text.MyFavorites}" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Favorite" Margin="0,0,8,8"/>
                 <Button Content="{loc:Loc Text.FromThePantry}" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Frigider" Margin="0,0,8,8"/>
                 <Button Classes="Primary" Content="{loc:Loc Text.ResumeDraft}" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Drafts" IsVisible="{Binding HasDrafts}" Margin="0,0,8,8"/>
@@ -35,10 +36,14 @@
                     <ItemsControl ItemsSource="{Binding TodayMeals}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:MealPlanEntry">
-                                <Grid ColumnDefinitions="140,*,Auto" Margin="0,8">
-                                    <TextBlock Text="{loc:Display CategoryName}" Classes="Muted"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding RecipeTitle}" TextWrapping="Wrap"/>
-                                    <TextBlock Grid.Column="2" Text="{loc:Format Count.Servings, Servings}" Classes="Muted"/>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,8">
+                                    <Button Classes="Link" Command="{Binding $parent[UserControl].DataContext.OpenMealCommand}" CommandParameter="{Binding}" HorizontalContentAlignment="Left"><TextBlock Text="{Binding RecipeTitle}" TextWrapping="Wrap"/></Button>
+                                    <TextBlock Grid.Row="1" Text="{loc:Display CategoryName}" Classes="Muted"/>
+                                    <StackPanel Grid.Column="1" Grid.RowSpan="2" Spacing="4">
+                                        <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}" Classes="Muted"/>
+                                        <Button Content="{loc:Loc Text.Cook}" IsVisible="{Binding !IsPrepared}" Classes="Primary" Command="{Binding $parent[UserControl].DataContext.CookMealCommand}" CommandParameter="{Binding}"/>
+                                        <Button Content="{loc:Loc UX.ConsumeLeftovers}" IsVisible="{Binding IsPrepared}" Classes="Secondary" Command="{Binding $parent[UserControl].DataContext.ConsumeMealCommand}" CommandParameter="{Binding}"/>
+                                    </StackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
