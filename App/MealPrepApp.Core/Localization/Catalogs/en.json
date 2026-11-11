@@ -473,5 +473,12 @@
   "Catalog.EmptyCategory": "This category has no ingredients.",
   "Catalog.NutritionAvailable": "✓ Nutrition available",
   "Catalog.NutritionMissing": "○ Nutrition missing",
-  "Text.Sort": "Sort"
+  "Text.Sort": "Sort",
+  "UX.Ready": "Ready to cook",
+  "UX.Missing": "Missing ingredients",
+  "UX.Review": "Needs review",
+  "UX.Servings": "Servings (empty uses recipe default)",
+  "UX.NoMatches": "No matching recipes",
+  "UX.ChangeFilters": "Try another search or clear the filters.",
+  "UX.TotalTime": "{0} min · {1} servings"
 }

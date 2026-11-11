@@ -65,5 +65,9 @@
 :r procs/15_shopping_snapshots.sql
 :r procs/16_week_copy.sql
 
+-- ===== Inventory batches and audited compatibility =====
+:r 20_inventory_batches.sql
+:r procs/17_inventory.sql
+
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

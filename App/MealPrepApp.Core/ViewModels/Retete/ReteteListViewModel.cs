@@ -32,6 +32,8 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private readonly IDialogService _dialog;
     private readonly IServiceProvider _services;
 
+    [ObservableProperty] private decimal? _readinessServings;
+    partial void OnReadinessServingsChanged(decimal? value) { if (_loaded && !_disposed) { PageNumber = 1; _ = RefreshAsync(); } }
     private readonly PantryRepository? _pantry;
     [RelayCommand] private Task ShowPantry() {ActiveFilter=RecipeFilterIds.Pantry;PageNumber=1;return RefreshAsync();}
     [RelayCommand] private Task Retry()=>RefreshAsync();
@@ -91,11 +93,17 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         var sorted=SortOrder switch { RecipeSortIds.Newest => Recipes.OrderByDescending(r=>r.CreatedAt), RecipeSortIds.PreparationTime => Recipes.OrderBy(r=>(r.PrepTimeMinutes ?? 0)+(r.CookTimeMinutes ?? 0)), _ => Recipes.OrderBy(r=>r.Title) };
         var rows=sorted.ToArray(); Recipes.Clear(); foreach(var row in rows) Recipes.Add(row);
     }
+    public bool IsPantryFilter => ActiveFilter == RecipeFilterIds.Pantry;
+    [LocalizedProperty] public string EmptyTitle => L.Text(SearchTerm.Length > 0 || SelectedCategory?.CategoryID > 0 || ActiveFilter != RecipeFilterIds.All ? "UX.NoMatches" : "Text.NoRecipes");
+    [LocalizedProperty] public string EmptyHint => L.Text(SearchTerm.Length > 0 || SelectedCategory?.CategoryID > 0 || ActiveFilter != RecipeFilterIds.All ? "UX.ChangeFilters" : "Text.AddYourFirstRecipeToGetStarted");
+    private void NotifyEmpty() { OnPropertyChanged(nameof(EmptyTitle)); OnPropertyChanged(nameof(EmptyHint)); }
     public bool IsShowingDrafts => ActiveFilter == RecipeFilterIds.Drafts;
     public bool IsShowingRecipes => !IsShowingDrafts;
 
     partial void OnActiveFilterChanged(string value)
     {
+        OnPropertyChanged(nameof(IsPantryFilter));
+        NotifyEmpty();
         OnPropertyChanged(nameof(IsShowingDrafts));
         OnPropertyChanged(nameof(IsShowingRecipes));
     }
@@ -193,10 +201,9 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             IReadOnlyList<RecipeListItem> rows;
             if(filter==RecipeFilterIds.Pantry && _pantry != null)
             {
-                var stock=await _pantry.GetPantryAsync(userId, token);
-                var matches=await _recipes.FindRecipesByIngredientsAsync(stock.Select(p=>p.IngredientID).Distinct().ToArray(),1, token);
-                var filtered=matches.OrderBy(r=>r.Title).Where(r=>(!categoryId.HasValue || r.CategoryID==categoryId) && r.Title.Contains(term,StringComparison.CurrentCultureIgnoreCase)).ToArray();
-                rows=filtered.Skip((page-1)*PageSize).Take(PageSize).Select(r=>new RecipeListItem{RecipeID=r.RecipeID,Title=r.Title,CategoryName=r.CategoryName,CategoryID=r.CategoryID,TotalCount=filtered.Length,MatchMessage=L.Message("Recipe.Matches", r.MatchedIngredients, r.TotalIngredients)}).ToArray();
+                rows = await _recipes.BrowseReadyAsync(userId, DateTime.Today, ReadinessServings, term, categoryId, page, PageSize, token);
+                foreach (var row in rows) row.MatchMessage = L.Message(row.Readiness switch {
+                    ReadinessStatus.Ready => "UX.Ready", ReadinessStatus.Missing => "UX.Missing", _ => "UX.Review" });
             }
             else rows = await _recipes.BrowseAsync(userId, filter, term, categoryId, page, PageSize, token, sort);
             if (version != _requestVersion || _disposed) return;
@@ -205,7 +212,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             Recipes.Clear();
             foreach (var row in rows)
                 Recipes.Add(row);
-            if(filter==RecipeFilterIds.Pantry)SortRows();
+
             _loaded = true;
         }
         catch (AppDbException ex)
@@ -260,6 +267,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     /// previous pending refresh so only one query fires once the user pauses.</summary>
     partial void OnSearchTermChanged(string value)
     {
+        NotifyEmpty();
         if (_disposed || _preparing) return;
         _searchCts?.Cancel();
         _searchCts?.Dispose();
@@ -288,6 +296,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     /// <summary>Category-filter changes re-query immediately — but only once the initial load is done.</summary>
     partial void OnSelectedCategoryChanged(Category? value)
     {
+        NotifyEmpty();
         if (_loaded && !_disposed && !_preparing)
         {
             PageNumber = 1;

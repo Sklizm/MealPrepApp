@@ -69,19 +69,14 @@ public sealed partial class RegressionTests
         using var provider = RefinementServices(recipes: recipes, drafts: drafts, pantry: pantry); using var scope = provider.CreateScope();
         var vm = scope.ServiceProvider.GetRequiredService<ReteteListViewModel>(); await vm.LoadAsync();
         drafts.Pending = new(); var old = vm.ShowDraftsCommand.ExecuteAsync(null);
-        vm.PrepareDestination("Frigider", ""); pantry.Pending = new(); var current = vm.LoadAsync();
+        vm.PrepareDestination("Frigider", ""); recipes.PendingReady = new(); var current = vm.LoadAsync();
         Assert.True(drafts.LastToken.IsCancellationRequested); Assert.True(vm.IsBusy);
         drafts.Pending.SetResult(new[] { new RecipeDraftListItem { Title = "stale" } }); await old;
         Assert.Empty(vm.Drafts); Assert.True(vm.IsBusy);
         vm.PrepareDestination("Toate", "latest"); await vm.LoadAsync();
-        Assert.True(pantry.LastToken.IsCancellationRequested);
-        pantry.Pending.SetResult(Array.Empty<PantryItem>()); await current;
+        Assert.True(recipes.ReadyToken.IsCancellationRequested);
+        recipes.PendingReady.SetResult(new[] { new RecipeListItem { Title = "old match" } }); await current;
         Assert.Equal("latest", recipes.Queries.Last().Term); Assert.False(vm.IsBusy);
-        // Matching itself also gets the same cancellation token.
-        pantry.Pending = null; recipes.PendingMatch = new(); vm.PrepareDestination("Frigider", ""); var matching = vm.LoadAsync();
-        vm.PrepareDestination("Toate", "newer"); await vm.LoadAsync();
-        Assert.True(recipes.MatchToken.IsCancellationRequested);
-        recipes.PendingMatch.SetResult(new[] { new RecipeFindResult { Title = "old match" } }); await matching;
         Assert.DoesNotContain(vm.Recipes, r => r.Title == "old match");
         vm.Dispose();
     }
@@ -172,7 +167,7 @@ public sealed partial class RegressionTests
         var vm=scope.ServiceProvider.GetRequiredService<FrigiderViewModel>();
         await vm.CookCommand.ExecuteAsync(null);
         var destination=Assert.IsType<ReteteListViewModel>(scope.ServiceProvider.GetRequiredService<INavigationService>().CurrentView);
-        Assert.Equal("Frigider", destination.ActiveFilter); Assert.Equal(1, pantry.Calls);
+        Assert.Equal("Frigider", destination.ActiveFilter); Assert.Equal(1, recipes.ReadyCalls); Assert.Equal(0, pantry.Calls);
     }
 
     [AvaloniaFact]
@@ -540,11 +535,14 @@ public sealed partial class RegressionTests
     }
     private sealed class RefinementRecipes() : RecipeRepository(new RedesignSamples.NoDatabase())
     {
-        public List<(string Mode, string Term, int? Category)> Queries = new(); public TaskCompletionSource<IReadOnlyList<RecipeFindResult>>? PendingMatch; public CancellationToken MatchToken;
+        public List<(string Mode, string Term, int? Category)> Queries = new();
+        public TaskCompletionSource<IReadOnlyList<RecipeListItem>>? PendingReady;
+        public CancellationToken ReadyToken; public int ReadyCalls;
+        public override Task<IReadOnlyList<RecipeListItem>> BrowseReadyAsync(int userId, DateTime today, decimal? servings, string term, int? categoryId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        { ReadyCalls++; ReadyToken = cancellationToken; return PendingReady?.Task ?? Task.FromResult<IReadOnlyList<RecipeListItem>>([]); }
         public override Task<IReadOnlyList<RecipeListItem>> BrowseAsync(int userId, string mode, string term, int? categoryId, int pageNumber, int pageSize, CancellationToken cancellationToken = default, string sort = "Cele mai noi")
         { Queries.Add((mode, term, categoryId)); return Task.FromResult<IReadOnlyList<RecipeListItem>>(new[] { new RecipeListItem { RecipeID = 1, Title = term, TotalCount = 1 } }); }
-        public override Task<IReadOnlyList<RecipeFindResult>> FindRecipesByIngredientsAsync(IReadOnlyCollection<int> ingredientIds, int? minMatchCount = null, CancellationToken cancellationToken = default)
-        { MatchToken = cancellationToken; return PendingMatch?.Task ?? Task.FromResult<IReadOnlyList<RecipeFindResult>>(Array.Empty<RecipeFindResult>()); }
+
     }
     private sealed class RefinementIngredients() : IngredientRepository(new RedesignSamples.NoDatabase())
     {

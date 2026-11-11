@@ -109,6 +109,7 @@ public partial class App : Application
         services.AddSingleton<MealPlanRepository>();
         services.AddSingleton<FavoriteRepository>();
         services.AddSingleton<PantryRepository>();
+        services.AddSingleton<InventoryRepository>();
         services.AddSingleton<ShoppingListRepository>();
         services.AddSingleton<DashboardRepository>();
         services.AddSingleton<ReportRepository>();

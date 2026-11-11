@@ -473,5 +473,12 @@
   "Catalog.EmptyCategory": "В этой категории пока нет ингредиентов.",
   "Catalog.NutritionAvailable": "✓ Пищевая ценность указана",
   "Catalog.NutritionMissing": "○ Пищевая ценность не указана",
-  "Text.Sort": "Сортировка"
+  "Text.Sort": "Сортировка",
+  "UX.Ready": "Можно готовить",
+  "UX.Missing": "Не хватает ингредиентов",
+  "UX.Review": "Требует проверки",
+  "UX.Servings": "Порции (пусто: по рецепту)",
+  "UX.NoMatches": "Рецепты не найдены",
+  "UX.ChangeFilters": "Измените запрос или сбросьте фильтры.",
+  "UX.TotalTime": "{0} мин · {1} порций"
 }

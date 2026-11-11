@@ -39,3 +39,18 @@ sql -i /tests/redesign-regression.sql
 sql -i migrations/20261028_cooking_redesign.sql
 sql -i migrations/20261028_cooking_redesign.sql
 sql -i /tests/redesign-upgrade-regression.sql
+
+sql -i /tests/inventory-regression.sql
+sql -i migrations/20261111_inventory.sql
+sql -i migrations/20261111_inventory.sql
+sql -Q "USE MealPrepDB; IF EXISTS(SELECT 1 FROM dbo.UserPantry p FULL JOIN (SELECT UserID,IngredientID,UnitID,SUM(RemainingQuantity) AS Qty FROM dbo.InventoryBatches GROUP BY UserID,IngredientID,UnitID HAVING SUM(RemainingQuantity)>0) b ON b.UserID=p.UserID AND b.IngredientID=p.IngredientID AND b.UnitID=p.UnitID WHERE COALESCE(p.Quantity,0)<>COALESCE(b.Qty,0)) THROW 51000,N'Batch totals mismatch after migration rerun',1;"
+# Reconstruct the predecessor inventory schema in this disposable container, retaining real totals.
+sql -Q "USE MealPrepDB;
+SELECT UserID,IngredientID,UnitID,Quantity,AddedAt,UpdatedAt INTO dbo.InventoryUpgradeExpected FROM dbo.UserPantry;
+DROP TRIGGER dbo.tr_UserPantry_Batches;
+DROP TABLE dbo.StockEvents; DROP TABLE dbo.StockThresholds; DROP TABLE dbo.ClientOperations; DROP TABLE dbo.InventoryBatches;"
+sql -i migrations/20261111_inventory.sql
+sql -i migrations/20261111_inventory.sql
+sql -Q "USE MealPrepDB;
+IF EXISTS(SELECT 1 FROM dbo.InventoryUpgradeExpected p LEFT JOIN dbo.InventoryBatches b ON b.UserID=p.UserID AND b.IngredientID=p.IngredientID AND b.UnitID=p.UnitID WHERE b.BatchID IS NULL OR b.RemainingQuantity<>p.Quantity OR b.SourceAddedAt<>p.AddedAt OR b.UpdatedAt<>COALESCE(p.UpdatedAt,p.AddedAt) OR b.PurchasedOn IS NOT NULL OR b.ExpiresOn IS NOT NULL) THROW 51000,N'Predecessor stock migration changed quantities or dates',1;
+DROP TABLE dbo.InventoryUpgradeExpected;"

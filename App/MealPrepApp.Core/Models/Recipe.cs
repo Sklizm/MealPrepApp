@@ -24,6 +24,10 @@ public sealed class RecipeListItem : LocalizedObservableObject
     [LocalizedProperty]
     public string? MatchLabel { get => MatchMessage?.ToString() ?? _matchLabel; set => _matchLabel = value; }
     public int TotalCount { get; set; }
+    public ReadinessStatus Readiness { get; set; }
+    public int ShortageCount { get; set; }
+    [LocalizedProperty] public string TimingSummary => L.Text("UX.TotalTime", TotalMinutes, Servings);
+    public int TotalMinutes => (PrepTimeMinutes ?? 0) + (CookTimeMinutes ?? 0);
 }
 
 /// <summary>An ingredient line of a recipe (second result set of <c>sp_GetRecipeFull</c>).</summary>

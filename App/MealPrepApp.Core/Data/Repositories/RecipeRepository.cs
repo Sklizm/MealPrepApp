@@ -89,6 +89,12 @@ public class RecipeRepository : RepositoryBase
             return recipe;
         });
 
+    public virtual Task<IReadOnlyList<RecipeListItem>> BrowseReadyAsync(
+        int userId, DateTime today, decimal? servings, string term, int? categoryId, int pageNumber, int pageSize,
+        CancellationToken cancellationToken = default) =>
+        QueryProcAsync<RecipeListItem>("sp_BrowseReadyRecipes", new { UserID = userId, Today = today.Date,
+            Servings = servings, Term = term, CategoryID = categoryId, PageNumber = pageNumber, PageSize = pageSize }, cancellationToken);
+
     public virtual Task<IReadOnlyList<RecipeListItem>> BrowseAsync(
         int userId, string mode, string term, int? categoryId, int pageNumber, int pageSize,
         CancellationToken cancellationToken = default, string sort="Cele mai noi") =>

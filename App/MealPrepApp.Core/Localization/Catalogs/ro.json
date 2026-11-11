@@ -473,5 +473,12 @@
   "Catalog.EmptyCategory": "Această categorie nu conține ingrediente.",
   "Catalog.NutritionAvailable": "✓ Valori nutritive disponibile",
   "Catalog.NutritionMissing": "○ Lipsesc valorile nutritive",
-  "Text.Sort": "Sortare"
+  "Text.Sort": "Sortare",
+  "UX.Ready": "Gata de gătit",
+  "UX.Missing": "Ingrediente insuficiente",
+  "UX.Review": "Necesită verificare",
+  "UX.Servings": "Porții (gol: valoarea rețetei)",
+  "UX.NoMatches": "Nicio rețetă potrivită",
+  "UX.ChangeFilters": "Încercați altă căutare sau eliminați filtrele.",
+  "UX.TotalTime": "{0} min · {1} porții"
 }
