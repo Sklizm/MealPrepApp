@@ -20,6 +20,8 @@ MealPrepApp is a desktop app for organizing recipes, planning meals, tracking in
 
 Checking a shopping item or a cooking ingredient does not change pantry quantities. Importing a purchased item is an explicit action and cannot add the same saved item twice. Compatible units are normalized; incompatible units remain separate.
 
+See [inventory, batch cooking and recovery](docs/WORKFLOWS.md) for the desktop workflows and the [Android companion guide](docs/companion/ANDROID.md) for offline Shopping and Pantry. The [private API guide](docs/companion/API.md) covers server setup.
+
 ## Install and run
 
 | Platform | Download | Guide |

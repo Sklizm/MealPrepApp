@@ -1,0 +1,18 @@
+[Unit]
+Description=MealPrepApp private companion API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=%h/.local/opt/MealPrepApp.Api
+ExecStart=/usr/bin/dotnet %h/.local/opt/MealPrepApp.Api/MealPrepApp.Api.dll
+Environment=MEALPREP_API_SETTINGS=%h/.config/MealPrepApp.Api/settings.json
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Restart=on-failure
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

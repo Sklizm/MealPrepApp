@@ -6,8 +6,8 @@ existing direct SQL connection. No SQL credentials belong in Android packages.
 
 ## Configuration
 
-Apply the existing database migrations through the verified-backup-first updater,
-then apply `20261111_companion.sql`. Run disposable SQL and API checks first:
+Apply the ordered migrations listed in `release.json` through the verified-backup-first
+updater, ending with `20261111_companion.sql`. Run disposable SQL and API checks first:
 
 ```bash
 bash scripts/test-database.sh
@@ -33,6 +33,12 @@ unused HTTPS port and preserving existing routes, for example:
 ```bash
 tailscale serve --bg --https=9443 http://127.0.0.1:18924
 ```
+
+For a Linux user service, adapt [the systemd example](../../packaging/systemd/mealprep-api.service),
+install published files under `~/.local/opt/MealPrepApp.Api`, and private settings under
+`~/.config/MealPrepApp.Api/settings.json` (mode 0600). Verify the host's `dotnet` path.
+Enable the user service and arrange persistent user services with the administrator
+if needed. Back up the token key and database securely.
 
 Enter the resulting private HTTPS address in Android. Do not enable Funnel or publish
 the backend port. `GET /health` returns protocol availability without account data.
