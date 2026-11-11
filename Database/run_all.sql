@@ -76,6 +76,8 @@
 :r 23_workflow_enhancements.sql
 :r procs/02_recipes_write.sql
 :r procs/21_workflow_enhancements.sql
+:r 24_device_sessions.sql
+:r procs/22_companion.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

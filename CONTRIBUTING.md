@@ -19,6 +19,8 @@ Use the app's connection setup or copy the relevant `appsettings.Local.template.
 | Directory | Purpose |
 |---|---|
 | `App/MealPrepApp.Core/` | UI-independent models, ViewModels, services, and Dapper repositories |
+| `App/MealPrepApp.Api/` | Private authenticated ASP.NET Core companion API |
+| `App/MealPrepApp.Android/` | Kotlin Shopping and Pantry companion |
 | `App/MealPrepApp.Desktop/` | Avalonia views, vector controls, themes, and desktop integration |
 | `App/MealPrepApp/` | Legacy Windows WPF client sharing Core logic |
 | `App/legacy-winforms/` | Historical Windows interface reference |
@@ -52,6 +54,7 @@ python3 Tests/Scripts/test_branch_consolidation.py
 python3 Tests/Scripts/check_redesign_contrast.py
 python3 Tests/Scripts/check_localization.py
 bash scripts/test-database.sh
+bash scripts/test-api.sh
 ```
 
 The SQL suite uses a disposable container. Never reset a deployed database to run tests.

@@ -66,3 +66,6 @@ sql -i /tests/cooking-batches-regression.sql
 sql -i migrations/20261111_workflows.sql
 sql -i migrations/20261111_workflows.sql
 sql -i /tests/workflows-regression.sql
+
+sql -i migrations/20261111_companion.sql
+sql -i migrations/20261111_companion.sql

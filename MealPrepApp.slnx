@@ -2,4 +2,5 @@
   <Project Path="App/MealPrepApp.Core/MealPrepApp.Core.csproj" />
   <Project Path="App/MealPrepApp.Desktop/MealPrepApp.Desktop.csproj" />
   <Project Path="App/MealPrepApp/MealPrepApp.csproj" />
+  <Project Path="App/MealPrepApp.Api/MealPrepApp.Api.csproj" />
 </Solution>
