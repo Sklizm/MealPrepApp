@@ -62,6 +62,76 @@ public sealed partial class RegressionTests
         await vm.AddIngredientCommand.ExecuteAsync(null); Assert.Equal(3, repository.Reads);
     }
 
+    [AvaloniaFact]
+    public void CatalogCalendarTodayHonorsConstraintsAndKeepsTemplateParts()
+    {
+        var picker = new LocalizedCalendarDatePicker { Width=220, SelectedDate=DateTime.Today.AddDays(-5), DisplayDateStart=DateTime.Today.AddDays(-10), DisplayDateEnd=DateTime.Today.AddDays(-1) };
+        var window = new Window { Content=picker, Width=400, Height=200 };
+        try
+        {
+            window.Show(); picker.IsDropDownOpen=true; Dispatcher.UIThread.RunJobs();
+            var popup = picker.GetVisualDescendants().OfType<Popup>().First();
+            var today = popup.Child!.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PART_Today");
+            var calendar = popup.Child!.GetVisualDescendants().OfType<Calendar>().Single();
+            Assert.False(today.IsEnabled);
+            Assert.Equal(42, calendar.GetVisualDescendants().OfType<CalendarDayButton>().Count());
+            picker.DisplayDateEnd = DateTime.Today.AddDays(10); picker.IsDropDownOpen=false; picker.IsDropDownOpen=true; Dispatcher.UIThread.RunJobs();
+            Assert.True(today.IsEnabled);
+            calendar.DisplayMode=CalendarMode.Year; Dispatcher.UIThread.RunJobs(); calendar.UpdateLayout(); Assert.True(picker.IsDropDownOpen);
+            Assert.All(calendar.GetVisualDescendants().OfType<Button>().Where(b=>b.Name is "PART_PreviousButton" or "PART_NextButton"), b=>Assert.True(b.Bounds.Width >= 36));
+            var selectedBefore=picker.SelectedDate; var displayBefore=calendar.DisplayDate;
+            var monthsBefore=calendar.GetVisualDescendants().OfType<CalendarButton>().Select(b=>b.Content?.ToString()).ToArray();
+            var languageBefore=L.Current.Language;
+            try { L.Current.Language=languageBefore == "ru" ? "ro" : "ru"; Dispatcher.UIThread.RunJobs(); Assert.Equal(displayBefore,calendar.DisplayDate); Assert.Equal(selectedBefore,picker.SelectedDate);
+                Assert.NotEqual(string.Join("|",monthsBefore),string.Join("|",calendar.GetVisualDescendants().OfType<CalendarButton>().Select(b=>b.Content?.ToString()))); }
+            finally { L.Current.Language=languageBefore; }
+            calendar.DisplayMode=CalendarMode.Decade; Dispatcher.UIThread.RunJobs(); Assert.True(picker.IsDropDownOpen);
+            today.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Dispatcher.UIThread.RunJobs();
+            Assert.Equal(DateTime.Today, picker.SelectedDate); Assert.False(picker.IsDropDownOpen);
+            Assert.True(picker.GetVisualDescendants().OfType<TextBox>().Single().IsFocused);
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void CatalogDialogsKeepActionsVisibleAndEnterOutOfMultilineAndEscapeCancels()
+    {
+        using var provider = RedesignSamples.Services(); using var scope=provider.CreateScope();
+        var vm=scope.ServiceProvider.GetRequiredService<MealPrepApp.ViewModels.Planificare.PlanMealDialogViewModel>();
+        var dialog=new MealPrepApp.Desktop.Views.Planificare.PlanMealDialog { DataContext=vm };
+        try
+        {
+            dialog.Show(); Dispatcher.UIThread.RunJobs(); dialog.UpdateLayout();
+            Assert.True(dialog.Bounds.Height <= 560);
+            var save=dialog.GetVisualDescendants().OfType<Button>().Single(b=>ReferenceEquals(b.Command,vm.SaveCommand));
+            Assert.True(save.TranslatePoint(default,dialog)!.Value.Y+save.Bounds.Height <= dialog.Bounds.Height);
+            var notes=dialog.GetVisualDescendants().OfType<TextBox>().Single(t=>t.AcceptsReturn); notes.Focus();
+            dialog.KeyPressQwerty(PhysicalKey.Enter,RawInputModifiers.None); dialog.KeyReleaseQwerty(PhysicalKey.Enter,RawInputModifiers.None); Dispatcher.UIThread.RunJobs();
+            Assert.False(vm.HasError);
+            vm.IsBusy=true; dialog.KeyPressQwerty(PhysicalKey.Escape,RawInputModifiers.None); dialog.KeyReleaseQwerty(PhysicalKey.Escape,RawInputModifiers.None); Assert.True(dialog.IsVisible);
+            vm.IsBusy=false; dialog.KeyPressQwerty(PhysicalKey.Escape,RawInputModifiers.None); Assert.False(dialog.IsVisible);
+        }
+        finally { dialog.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void CatalogDestructiveConfirmationDoesNotUseEnterAsDefault()
+    {
+        var dialog=new MealPrepApp.Desktop.Views.Shared.MessageDialog();
+        dialog.Configure(MealPrepApp.Desktop.Views.Shared.MessageDialogKind.Confirm,L.Text("Text.Delete"),L.Text("Text.Cancel"),true);
+        try
+        {
+            dialog.Show(); Dispatcher.UIThread.RunJobs();
+            var action=dialog.FindControl<Button>("OkButton")!;
+            Assert.Contains("Danger",action.Classes); Assert.DoesNotContain("Primary",action.Classes);
+            dialog.RaiseEvent(new KeyEventArgs {RoutedEvent=InputElement.KeyDownEvent,Key=Key.Enter});
+            Assert.True(dialog.IsVisible);
+            dialog.RaiseEvent(new KeyEventArgs {RoutedEvent=InputElement.KeyDownEvent,Key=Key.Escape});
+            Assert.False(dialog.IsVisible);
+        }
+        finally { dialog.Close(); }
+    }
+
     private sealed class CatalogResultDialogs : IDialogService
     {
         public bool Result;

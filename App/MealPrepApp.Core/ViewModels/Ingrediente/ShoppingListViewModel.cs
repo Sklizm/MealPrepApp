@@ -161,7 +161,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     [RelayCommand(CanExecute = nameof(CanMutate))]
     private Task ImportItem(ShoppingListRow? row) => row is null || !row.CanImport || !Rows.Contains(row) ? Task.CompletedTask : MutateAsync(async () =>
     {
-        if (!await _dialog.ConfirmAsync(L.Message("Text.AddToPantry"), L.Message("Shopping.ImportPrompt", row.ActualQuantity, row.ActualUnit, row.IngredientName))) return;
+        if (!await _dialog.ConfirmAsync(L.Message("Text.AddToPantry"), L.Message("Shopping.ImportPrompt", row.ActualQuantity, row.ActualUnit, row.IngredientName), L.Message("Text.AddToPantry"), destructive: false)) return;
         await ImportReviewed(row);
         if (!_disposed) NotificationContent = L.Message("Text.QuantityAddedToPantry");
     });

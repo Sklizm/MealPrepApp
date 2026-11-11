@@ -25,7 +25,7 @@ if args[0] == 'cp' and '.bak' in args[1]:
 """
 
 class DatabaseUpdateTests(unittest.TestCase):
-    def run_update(self, **flags):
+    def run_update(self, migration=None, **flags):
         with tempfile.TemporaryDirectory(prefix="mealprep-migration-test-") as directory:
             root = Path(directory)
             (root / "scripts").mkdir()
@@ -39,7 +39,10 @@ class DatabaseUpdateTests(unittest.TestCase):
             log = root / "docker.log"
             env = dict(os.environ, PATH=str(root / "bin") + os.pathsep + os.environ["PATH"],
                        DOCKER_TEST_LOG=str(log), **flags)
-            result = subprocess.run(["bash", str(root / "scripts/update-database.sh")],
+            command = ["bash", str(root / "scripts/update-database.sh")]
+            if migration:
+                command += ["mealprep-db", migration]
+            result = subprocess.run(command,
                                     env=env, capture_output=True, text=True)
             calls = [json.loads(line) for line in log.read_text().splitlines()]
             backups = list((root / "backups").glob("*.bak"))
@@ -72,6 +75,32 @@ class DatabaseUpdateTests(unittest.TestCase):
         result, calls, _ = self.run_update(FAIL_BACKUP_COPY="1")
         self.assertNotEqual(0, result.returncode)
         self.assertFalse(any(self.is_migration(call) for call in calls))
+
+    def test_catalog_import_requires_verified_host_backup(self):
+        migration = "20261111_moldova_ingredients.sql"
+        result, calls, modes = self.run_update(migration=migration)
+        self.assertEqual(0, result.returncode, result.stderr)
+        copied = next(i for i, call in enumerate(calls) if call[0] == "cp" and ".bak" in call[1])
+        applied = next(i for i, call in enumerate(calls) if "migrations/" + migration in call)
+        self.assertLess(copied, applied)
+        self.assertEqual([0o600], modes)
+        for failure in ("FAIL_BACKUP", "FAIL_BACKUP_COPY"):
+            result, calls, _ = self.run_update(migration=migration, **{failure: "1"})
+            self.assertNotEqual(0, result.returncode)
+            self.assertFalse(any("migrations/" + migration in call for call in calls))
+
+    def test_nutrition_import_requires_verified_host_backup(self):
+        migration = "20261111_ingredient_nutrition.sql"
+        result, calls, modes = self.run_update(migration=migration)
+        self.assertEqual(0, result.returncode, result.stderr)
+        copied = next(i for i, call in enumerate(calls) if call[0] == "cp" and ".bak" in call[1])
+        applied = next(i for i, call in enumerate(calls) if "migrations/" + migration in call)
+        self.assertLess(copied, applied)
+        self.assertEqual([0o600], modes)
+        for failure in ("FAIL_BACKUP", "FAIL_BACKUP_COPY"):
+            result, calls, _ = self.run_update(migration=migration, **{failure: "1"})
+            self.assertNotEqual(0, result.returncode)
+            self.assertFalse(any("migrations/" + migration in call for call in calls))
 
 if __name__ == "__main__":
     unittest.main()

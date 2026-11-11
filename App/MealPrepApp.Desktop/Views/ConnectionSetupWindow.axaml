@@ -1,10 +1,10 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="MealPrepApp.Desktop.Views.ConnectionSetupWindow" Title="{loc:Loc Text.MealprepConnection}"
-        Width="520" Height="700" MinWidth="440" MinHeight="560"
+        Width="520" Height="560" MinWidth="440" MinHeight="360"
         Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterScreen">
-    <ScrollViewer>
-        <StackPanel Margin="32" Spacing="12">
-            <TextBlock Text="{loc:Loc Text.DatabaseConnection}" Classes="Title" TextWrapping="Wrap"/>
+    <controls:DialogLayout>
+        <Border Classes="DialogHeading"><TextBlock Text="{loc:Loc Text.DatabaseConnection}" Classes="Header" TextWrapping="Wrap"/></Border>
+        <ScrollViewer Grid.Row="1"><StackPanel Spacing="12">
             <TextBlock Text="{loc:Loc Text.EnterTheConnectionDetailsProvidedByYourAdministratorTheDatabaseMustAlreadyBeConfiguredConn}" Classes="Muted" TextWrapping="Wrap"/>
             <StackPanel Name="Fields" Spacing="8">
                 <TextBlock Text="{loc:Loc Text.ServerAddressPort}"/>
@@ -18,12 +18,17 @@
                 <CheckBox Name="TrustCertificate" Content="{loc:Loc Text.TrustTheServerSOwnCertificate}"/>
                 <TextBlock Text="{loc:Loc Text.EnableOnlyForAKnownServerWithItsOwnCertificateConnectionEncryptionRemainsEnabled}" Classes="Muted" TextWrapping="Wrap"/>
             </StackPanel>
-            <WrapPanel>
-                <Button Name="TestButton" Content="{loc:Loc Text.TestConnection}" Classes="Secondary" Click="TestConnection" Margin="0,0,8,8"/>
-                <Button Name="SaveButton" Content="{loc:Loc Text.SaveAndContinue}" Classes="Primary" Click="SaveConnection" Margin="0,0,8,8"/>
-                <Button Name="CancelButton" Content="{loc:Loc Text.Cancel83}" Classes="Secondary" Click="Cancel"/>
-            </WrapPanel>
             <TextBlock Name="Status" TextWrapping="Wrap"/>
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+        <Border Grid.Row="2" Classes="DialogFooter">
+            <Grid RowDefinitions="Auto,Auto">
+                <Button Name="TestButton" Content="{loc:Loc Text.TestConnection}" Classes="Secondary" Click="TestConnection" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Name="CancelButton" Content="{loc:Loc Text.Cancel83}" Classes="Secondary DialogCancel" Click="Cancel"/>
+                    <Button Name="SaveButton" Content="{loc:Loc Text.SaveAndContinue}" Classes="Primary" Click="SaveConnection"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </controls:DialogLayout>
 </Window>

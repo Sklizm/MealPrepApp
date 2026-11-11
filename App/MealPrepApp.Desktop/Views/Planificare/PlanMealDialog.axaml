@@ -1,11 +1,11 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanMealDialog" x:DataType="vm:PlanMealDialogViewModel" Title="{Binding Title}" Width="440" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,*,Auto">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanMealDialog" x:DataType="vm:PlanMealDialogViewModel" Title="{Binding Title}" Width="520" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+    <controls:DialogLayout>
         <!-- Title bar -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
-            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource OnMeal}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
+        <Border Grid.Row="0" Classes="DialogHeading">
+            <Grid ColumnDefinitions="32,*"><Path Data="{StaticResource IconPlan}" Width="20" Height="20" Stretch="Uniform" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" HorizontalAlignment="Left" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource TextPrimary}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/></Grid>
         </Border>
         <!-- Form body -->
-        <StackPanel Grid.Row="1" Margin="20" Spacing="8">
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="0,0,0,8" Spacing="12">
             <!-- Recipe: autocomplete when adding, read-only box when editing -->
             <TextBlock Text="{loc:Loc Text.Recipe}" Classes="Muted"/>
             <AutoCompleteBox ItemsSource="{Binding RecipeResults}" Text="{Binding RecipeSearchTerm, Mode=TwoWay}" SelectedItem="{Binding SelectedRecipe}" ValueMemberBinding="{Binding Title}" FilterMode="None" IsVisible="{Binding CanPickRecipe}">
@@ -48,19 +48,17 @@
                 </StackPanel>
             </Expander>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
-        </StackPanel>
+        </StackPanel></ScrollViewer>
         <!-- Footer -->
-        <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
+        <Border Grid.Row="2" Classes="DialogFooter">
             <Grid>
                 <!-- Delete button (edit mode only) -->
-                <Button AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Danger" HorizontalAlignment="Left" Command="{Binding DeleteCommand}" IsVisible="{Binding IsEdit}" IsEnabled="{Binding !IsBusy}">
-                    <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
-                </Button>
+                <Button Content="{loc:Loc Text.Delete}" Classes="DestructiveLink" HorizontalAlignment="Left" Command="{Binding DeleteCommand}" IsVisible="{Binding IsEdit}" IsEnabled="{Binding !IsBusy}"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>
+                    <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary DialogCancel" Click="OnCancelClick"/>
                     <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
             </Grid>
         </Border>
-    </Grid>
+    </controls:DialogLayout>
 </Window>

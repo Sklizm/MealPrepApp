@@ -17,6 +17,8 @@ namespace MealPrepApp.Desktop.Services;
 
 public sealed class DesktopDialogService : IDialogService
 {
+    public Task<bool> ConfirmAsync(LocalizedMessage title, LocalizedMessage message, LocalizedMessage actionLabel, bool destructive = false) =>
+        MessageDialog.ShowModalAsync(MessageDialogKind.Confirm, title, message, actionLabel, destructive);
     public Task<bool> ConfirmAsync(LocalizedMessage title, LocalizedMessage message) =>
         MessageDialog.ShowModalAsync(MessageDialogKind.Confirm, title, message);
     public Task ShowErrorAsync(LocalizedMessage message)
@@ -25,7 +27,7 @@ public sealed class DesktopDialogService : IDialogService
     { App.Services.GetRequiredService<NotificationCenter>().Post(L.Message("Notification.Combined", title, message)); return Task.CompletedTask; }
 
     public Task<bool> ConfirmAsync(string title, string message) =>
-        MessageDialog.ShowModalAsync(MessageDialogKind.Confirm, title, message, okText: L.Text("Text.Yes"), cancelText: L.Text("Text.No"));
+        MessageDialog.ShowModalAsync(MessageDialogKind.Confirm, title, message, okText: L.Text("Text.Continue"), cancelText: L.Text("Text.Cancel"));
 
     public Task ShowErrorAsync(string message)
     { App.Services.GetRequiredService<NotificationCenter>().Post(message,true);return Task.CompletedTask; }
@@ -34,18 +36,31 @@ public sealed class DesktopDialogService : IDialogService
     public async Task<LeaveDecision> ChooseLeaveAsync()
     {
         var owner=ActiveOwner();if(owner is null)return LeaveDecision.Stay;
-        var dialog=new Window {Title=L.Text("Text.UnsavedChanges"),Width=520,Height=240,CanResize=false,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        return await CreateLeaveDialog().ShowDialog<LeaveDecision>(owner);
+    }
+
+    internal static Window CreateLeaveDialog()
+    {
+        var dialog=new Window {Title=L.Text("Text.UnsavedChanges"),Width=560,Height=300,CanResize=false,WindowStartupLocation=WindowStartupLocation.CenterOwner};
         dialog.Bind(Window.BackgroundProperty,new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("AppBackground"));
-        var save=new Button {Content=L.Text("Text.SaveDraft")};save.Classes.Add("Primary");var discard=new Button {Content=L.Text("Text.DiscardChanges")};discard.Classes.Add("Secondary");
-        var stay=new Button {Content=L.Text("Text.StayHere")};stay.Classes.Add("Secondary");
+        var save=new Button {Content=L.Text("Text.SaveDraft")};save.Classes.Add("Primary");var discard=new Button {Content=L.Text("Text.DiscardChanges")};discard.Classes.Add("DestructiveLink");
+        var stay=new Button {Content=L.Text("Text.StayHere")};stay.Classes.Add("Secondary");stay.Classes.Add("DialogCancel");
         save.Click+=(_,_)=>dialog.Close(LeaveDecision.SaveDraft);discard.Click+=(_,_)=>dialog.Close(LeaveDecision.Discard);stay.Click+=(_,_)=>dialog.Close(LeaveDecision.Stay);
-        dialog.Content=new StackPanel {Margin=new Thickness(24),Spacing=24,Children={new TextBlock {Text=L.Text("Text.YouHaveUnsavedChangesHowWouldYouLikeToContinue"),TextWrapping=Avalonia.Media.TextWrapping.Wrap},new WrapPanel {Children={save,discard,stay}}}};
+        var heading = new TextBlock { Text=L.Text("Text.UnsavedChanges"), FontSize=22, FontWeight=Avalonia.Media.FontWeight.SemiBold, Margin=new Thickness(0,0,0,20) };
+        var body = new TextBlock { Text=L.Text("Text.YouHaveUnsavedChangesHowWouldYouLikeToContinue"), TextWrapping=Avalonia.Media.TextWrapping.Wrap };
+        var actions = new Grid { ColumnDefinitions=new ColumnDefinitions("Auto,*,Auto"), Margin=new Thickness(0,20,0,0) };
+        actions.Children.Add(discard);
+        var right = new StackPanel { Orientation=Avalonia.Layout.Orientation.Horizontal, Spacing=8, Children={stay,save} };
+        Grid.SetColumn(right,2); actions.Children.Add(right);
+        Grid.SetRow(body,1); Grid.SetRow(actions,2);
+        dialog.Content = new MealPrepApp.Desktop.Controls.DialogLayout { Children={heading,body,actions} };
+        MessageBinding.Set(dialog, heading, TextBlock.TextProperty, L.Message("Text.UnsavedChanges"));
         MessageBinding.Set(dialog, dialog, Window.TitleProperty, L.Message("Text.UnsavedChanges"));
         MessageBinding.Set(dialog, save, Button.ContentProperty, L.Message("Text.SaveDraft"));
         MessageBinding.Set(dialog, discard, Button.ContentProperty, L.Message("Text.DiscardChanges"));
         MessageBinding.Set(dialog, stay, Button.ContentProperty, L.Message("Text.StayHere"));
-        MessageBinding.Set(dialog, ((StackPanel)dialog.Content!).Children[0], TextBlock.TextProperty, L.Message("Text.YouHaveUnsavedChangesHowWouldYouLikeToContinue"));
-        return await dialog.ShowDialog<LeaveDecision>(owner);
+        MessageBinding.Set(dialog, body, TextBlock.TextProperty, L.Message("Text.YouHaveUnsavedChangesHowWouldYouLikeToContinue"));
+        return dialog;
     }
 
     public async Task<bool> ShowDialogAsync(object viewModel)

@@ -32,38 +32,39 @@ public partial class MessageDialog : Window
         return owner is not null && await dlg.ShowDialog<bool>(owner);
     }
 
-    public static async Task<bool> ShowModalAsync(MessageDialogKind kind, LocalizedMessage title, LocalizedMessage message)
+    public static async Task<bool> ShowModalAsync(MessageDialogKind kind, LocalizedMessage title, LocalizedMessage message, LocalizedMessage? actionLabel = null, bool destructive = false)
     {
         var dlg = new MessageDialog();
         MessageBinding.Set(dlg, dlg.HeaderText, TextBlock.TextProperty, title);
         MessageBinding.Set(dlg, dlg, Window.TitleProperty, title);
         MessageBinding.Set(dlg, dlg.MessageBody, TextBlock.TextProperty, message);
-        dlg.Configure(kind, null, null);
+        dlg.Configure(kind, null, null, destructive);
         if (kind == MessageDialogKind.Confirm)
         {
-            MessageBinding.Set(dlg, dlg.OkButton, Button.ContentProperty, L.Message("Text.Yes"));
-            MessageBinding.Set(dlg, dlg.CancelButton, Button.ContentProperty, L.Message("Text.No"));
+            MessageBinding.Set(dlg, dlg.OkButton, Button.ContentProperty, actionLabel ?? L.Message("Text.Continue"));
+            MessageBinding.Set(dlg, dlg.CancelButton, Button.ContentProperty, L.Message("Text.Cancel"));
         }
         var owner = ActiveOwner();
         return owner is not null && await dlg.ShowDialog<bool>(owner);
     }
 
-    internal void Configure(MessageDialogKind kind, string? okText, string? cancelText)
+    internal void Configure(MessageDialogKind kind, string? okText, string? cancelText, bool destructive = false)
     {
+        OkButton.Classes.Set("DialogCancel", kind != MessageDialogKind.Confirm);
+        OkButton.Classes.Set("Primary", !destructive);
+        OkButton.Classes.Set("Danger", destructive);
         switch (kind)
         {
             case MessageDialogKind.Error:
-                HeaderBorder.Bind(Border.BackgroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("Danger"));
-                HeaderText.Bind(TextBlock.ForegroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("OnDanger"));
-                HeaderGlyph.Bind(TextBlock.ForegroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("OnDanger"));
+                HeaderGlyph.Bind(TextBlock.ForegroundProperty, new Avalonia.Markup.Xaml.MarkupExtensions.DynamicResourceExtension("Danger"));
                 HeaderGlyph.IsVisible = true;
                 OkButton.Content = okText ?? "OK";
                 CancelButton.IsVisible = false;
                 break;
 
             case MessageDialogKind.Confirm:
-                OkButton.Content = okText ?? L.Text("Text.Yes");
-                CancelButton.Content = cancelText ?? L.Text("Text.No");
+                OkButton.Content = okText ?? L.Text("Text.Continue");
+                CancelButton.Content = cancelText ?? L.Text("Text.Cancel");
                 CancelButton.IsVisible = true;
                 break;
 

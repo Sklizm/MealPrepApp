@@ -79,6 +79,7 @@
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <StyleInclude Source="/Themes/Styles.axaml"/>
         <StyleInclude Source="/Themes/AppIcon.axaml"/>
+        <StyleInclude Source="/Themes/Calendar.axaml"/>
     </Application.Styles>
     <Application.DataTemplates>
         <DataTemplate DataType="{x:Type retetevm:CookingViewModel}">

@@ -340,7 +340,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         if (item is null)
             return;
 
-        if (!await _dialog.ConfirmAsync(L.Message("Text.DeleteRecipe379"), L.Message("Recipe.DeletePrompt", item.Title)))
+        if (!await _dialog.ConfirmAsync(L.Message("Text.DeleteRecipe379"), L.Message("Recipe.DeletePrompt", item.Title), L.Message("Text.Delete"), destructive: true))
             return;
 
         IsBusy = true;
@@ -384,7 +384,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             return;
 
         object title = string.IsNullOrWhiteSpace(item.Title) ? L.Message("Recipe.Untitled") : item.Title;
-        if (!await _dialog.ConfirmAsync(L.Message("Draft.Delete"), L.Message("Draft.DeletePrompt", title)))
+        if (!await _dialog.ConfirmAsync(L.Message("Draft.Delete"), L.Message("Draft.DeletePrompt", title), L.Message("Text.Delete"), destructive: true))
             return;
 
         IsBusy = true;

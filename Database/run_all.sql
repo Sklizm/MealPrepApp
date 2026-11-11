@@ -47,6 +47,10 @@
 :r 19_shopping_snapshots.sql
 :r seeds/ingredient_nutrition_seed.sql
 
+-- Retailer-backed ingredient expansion (requires categories and UTC auditing).
+:r seeds/moldova_ingredients_seed.sql
+:r seeds/catalog_nutrition_seed.sql
+
 -- ===== Phase 2 + 3 + 4 + H + N: stored-proc API =====
 :r procs/01_users.sql
 :r procs/02_recipes_write.sql

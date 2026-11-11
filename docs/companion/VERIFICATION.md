@@ -6,7 +6,7 @@ Git. Distribution is manual; automated builds do not publish releases.
 
 Verified implementation evidence:
 
-- 108 desktop/Core xUnit tests, disposable SQL migration and regression suites, and
+- 111 desktop/Core xUnit tests, disposable SQL migration and regression suites, and
   58 real HTTP/API integration checks against a disposable SQL Server.
 - Legacy WPF cross-build, Linux self-contained publish, and native X11 startup
   on NixOS with the development shell (including ICE/SM session libraries).

@@ -187,7 +187,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
         var confirmed = await _dialog.ConfirmAsync(
             L.Message("Text.DeleteRecipe379"),
-            L.Message("Recipe.DeleteFullPrompt", Recipe.Title));
+            L.Message("Recipe.DeleteFullPrompt", Recipe.Title), L.Message("Text.Delete"), destructive: true);
 
         if (!confirmed)
             return;
@@ -258,7 +258,7 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
         if (!HasPhoto)
             return;
 
-        if (!await _dialog.ConfirmAsync(L.Message("Photo.Delete"), L.Message("Text.DeleteThisRecipeSPhoto")))
+        if (!await _dialog.ConfirmAsync(L.Message("Photo.Delete"), L.Message("Text.DeleteThisRecipeSPhoto"), L.Message("Text.Delete"), destructive: true))
             return;
 
         IsBusy = true;

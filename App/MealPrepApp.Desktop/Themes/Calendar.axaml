@@ -1,0 +1,68 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="using:MealPrepApp.Desktop.Localization">
+    <Style Selector="CalendarDatePicker">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Name="PART_TextBox" Background="Transparent" BorderThickness="0" Padding="10,8" Watermark="{TemplateBinding Watermark}" HorizontalAlignment="Stretch"/>
+                            <Button Name="PART_Button" Grid.Column="1" Content="▦" Focusable="False" Background="Transparent" AutomationProperties.Name="{loc:Loc Text.Date}"/>
+                            <Popup Name="PART_Popup" PlacementTarget="{TemplateBinding}" Placement="BottomEdgeAlignedLeft" IsLightDismissEnabled="True">
+                                <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="12" Padding="12" BoxShadow="0 6 20 0 #24000000">
+                                    <StackPanel Spacing="8">
+                                        <Calendar Name="PART_Calendar" Width="296" FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}" IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}" SelectedDate="{Binding SelectedDate, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" DisplayDate="{TemplateBinding DisplayDate}" DisplayDateStart="{TemplateBinding DisplayDateStart}" DisplayDateEnd="{TemplateBinding DisplayDateEnd}"/>
+                                        <Button Name="PART_Today" Content="{loc:Loc Text.Today}" Classes="Secondary" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Calendar">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="CalendarItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="44,282" Width="294">
+                    <Grid ColumnDefinitions="36,*,36" Margin="0,0,0,8">
+                        <Button Name="PART_PreviousButton" AutomationProperties.Name="{loc:Loc Text.Previous}" Content="‹" Width="36" Padding="0" Background="Transparent" FontSize="22"/>
+                        <Button Name="PART_HeaderButton" Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch" FontSize="16" FontWeight="SemiBold" HorizontalContentAlignment="Center" Padding="4"/>
+                        <Button Name="PART_NextButton" AutomationProperties.Name="{loc:Loc Text.Next}" Grid.Column="2" Content="›" Width="36" Padding="0" Background="Transparent" FontSize="22"/>
+                    </Grid>
+                    <Grid Name="PART_MonthView" Grid.Row="1" RowDefinitions="30,42,42,42,42,42,42" ColumnDefinitions="42,42,42,42,42,42,42" IsVisible="False"/>
+                    <Grid Name="PART_YearView" Grid.Row="1" RowDefinitions="*,*,*" ColumnDefinitions="*,*,*,*" IsVisible="False"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="CalendarDayButton, CalendarButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="1"/>
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="MinWidth" Value="40"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="DaySurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                    <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="CalendarDayButton:inactive"><Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/></Style>
+    <Style Selector="CalendarDayButton:today"><Setter Property="BorderBrush" Value="{DynamicResource ActionPrimary}"/><Setter Property="BorderThickness" Value="2"/></Style>
+    <Style Selector="CalendarDayButton:pointerover, CalendarButton:pointerover"><Setter Property="Background" Value="{DynamicResource Selection}"/></Style>
+    <Style Selector="CalendarDayButton:selected, CalendarButton:selected"><Setter Property="Background" Value="{DynamicResource ActionPrimary}"/><Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/></Style>
+    <Style Selector="CalendarDayButton:selected TextBlock, CalendarButton:selected TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimary}"/></Style>
+    <Style Selector="CalendarDayButton:focus-visible, CalendarButton:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource Focus}"/><Setter Property="BorderThickness" Value="2"/></Style>
+    <Style Selector="CalendarDayButton:blackout, CalendarDayButton:disabled, CalendarButton:disabled"><Setter Property="Opacity" Value="0.4"/></Style>
+</Styles>

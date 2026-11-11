@@ -81,7 +81,7 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
             var target=MealSlots.MondayOf(CopyTarget);
             var preview=await _mealPlan.PreviewWeekCopyAsync(_session.CurrentUserId,WeekStart,target);
             if(preview.Count==0){NotificationContent = L.Message("Text.TheSourceWeekHasNoMeals");return;}
-            if(!await _dialog.ConfirmAsync(L.Message("Text.WeekCopyPreview"), L.Message("Planner.CopyPrompt", new WeekCopyText(preview)))) return;
+            if(!await _dialog.ConfirmAsync(L.Message("Text.WeekCopyPreview"), L.Message("Planner.CopyPrompt", new WeekCopyText(preview)), L.Message("Text.CopyWeek"), destructive: false)) return;
             var count=await _mealPlan.CopyWeekAsync(_session.CurrentUserId,WeekStart,target,preview[0].PreviewToken);
             NotificationContent=L.Count("Count.Copied", count);
         }

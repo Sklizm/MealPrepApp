@@ -39,6 +39,8 @@ public partial class SettingsWindow:Window
         Status.Text = _preferences.SaveError;
     }
 
+    private void CloseSettings(object? sender, RoutedEventArgs e) => Close();
+
     private async void EditConnection(object? sender, RoutedEventArgs e)
     {
         if (Avalonia.Application.Current is App app)

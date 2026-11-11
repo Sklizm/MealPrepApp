@@ -200,7 +200,7 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
         CancelRead(); IsBusy = true; IsMutating = true; ClearError();
         try
         {
-            if (!await _dialog.ConfirmAsync(L.Message("Text.RemoveFromPantry"), L.Message("Pantry.RemovePrompt", item.IngredientName))) return;
+            if (!await _dialog.ConfirmAsync(L.Message("Text.RemoveFromPantry"), L.Message("Pantry.RemovePrompt", item.IngredientName), L.Message("Text.RemoveFromPantry"), destructive: true)) return;
             if(_inventory is not null&&item.Batches.Count>0) {
                 var cleared=await _inventory.ClearAsync(_session.CurrentUserId,Guid.NewGuid(),item);
                 _services.GetService<NotificationCenter>()?.Post(L.Message("UX.StockAdjusted"),async()=>{await _inventory.UndoGroupAsync(_session.CurrentUserId,Guid.NewGuid(),cleared.EventIds);await RefreshAsync();});

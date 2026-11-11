@@ -1,4 +1,4 @@
-# Illustrated ingredient catalog
+# Ingredients, dialogs, and calendar
 
 Ingredients uses an illustrated category rail beside a virtualized ingredient list,
 with the pantry's warm theme palette, food drawings, 32px page margins, and rounded surfaces.
@@ -29,16 +29,47 @@ VirtualizingStackPanel with no surrounding ScrollViewer; only viewport rows are 
 Category and result lists support arrow-key navigation, and the compact dropdown preserves
 the same category selection when resizing. Nutrition remains a keyboard-accessible button.
 
+## Dialogs and popovers
+
+App dialogs use owned native windows, 24px margins, a heading, a scrolling form body, and
+fixed footer actions. Long forms fit within a 560px content height. Connection testing has
+its own row so translated Cancel and Save actions remain together on the right. Destructive
+confirmations use explicit action labels and danger styling. Escape cancels when available;
+Enter does not submit multiline notes or an open autocomplete selection. Notifications
+remain non-modal and OS file pickers remain native.
+
+![Nutrition editor](screenshots/nutrition-Light.png)
+
+Dropdowns, suggestions, menus, tooltips, and calendar popovers share opaque warm surfaces,
+rounded corners, and semantic theme colors. No entrance animation is required. Existing
+reduced-motion preferences and live language switching remain available.
+
+The calendar keeps Avalonia's selection logic and required template parts. It offers
+40px day targets, six weeks, month/year navigation, a selected accent, a separate today
+outline, and a localized Today action. Today obeys date limits and blackout dates. Choosing
+a date closes the picker and returns focus. Language changes preserve selected and displayed
+dates and the text editor buffer; regional formatting and week start follow system settings.
+
+![Calendar](screenshots/calendar-Light.png)
+
+Design references: [Apple alerts](https://developer.apple.com/design/human-interface-guidelines/alerts)
+and [GNOME dialogs](https://developer.gnome.org/hig/patterns/feedback/dialogs.html).
+
 ## Reproduce validation
 
 ```bash
 dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
 python3 Tests/Scripts/check_localization.py
 python3 Tests/Scripts/check_redesign_contrast.py
+dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --catalog-screenshots
 dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --ingredient-catalog-screenshots
 ```
 
-Shell captures can be refreshed with `--localization-section=ingredients`.
+The database-free capture matrix writes to `dist/catalog/screenshots/{en,ru,ro}`. It covers
+Light/Dark, 860×600 / 1280×800 / 1440×900 catalog sizes, 100% / 150% / 200% bitmap exports,
+all form types, validation, confirmations, unsaved changes, settings, connection setup,
+calendar day/month/year views, dropdowns, autocomplete, menus, and tooltips. Public dialog
+examples here are English. Shell captures can be refreshed with `--localization-section=ingredients`.
 
 The dedicated ingredient-catalog command renders 90 database-free captures to
 `dist/catalog-redesign/screenshots/{en,ro,ru}`: three languages × two themes × three sizes ×
@@ -49,7 +80,7 @@ Public examples include all 18 language/theme/size combinations plus representat
 
 The regression suite checks local intersections and sort results, complete category counts,
 custom and uncategorized entries, refresh preservation, stale reads, confirmed nutrition
-refreshes, and keyboard navigation. Existing localization checks cover dirty
+refreshes, dialog actions, and calendar constraints. Existing localization checks cover dirty
 editors and active cooking sessions.
 
 The redesign regressions also verify localized summary notifications, category illustration
@@ -59,10 +90,10 @@ than 31 realized row containers. Layout assertions cover all three languages and
 themes at the required sizes, plus 600px and the 1000px breakpoint, including long category
 titles, empty categories, uncategorized entries, errors, and visible retry controls.
 
-Validation on 2026-11-11: Release build succeeded; all 66 regression methods passed through
-the in-process runner; 475 translation keys and placeholders matched; 70 semantic text pairs
-met 4.5:1 contrast and 16 control/focus pairs met 3:1. VSTest could not start its local TCP
-listener in the restricted environment; standard xUnit execution remains a CI check.
+Validation on 2026-11-11: all 111 xUnit tests passed; 598 translation keys and
+placeholders matched; 70 semantic text pairs met 4.5:1 contrast and 16 control/focus
+pairs met 3:1. Catalog generation checks and the disposable SQL suite passed,
+including repeat imports, existing-value preservation and audited nutrition inserts.
 
 Headless exports verify layout and rendering; they do not establish native window-manager,
 DPI, keyboard, popup repositioning, or installer acceptance. Keep these acceptance gates

@@ -1,9 +1,9 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="440" MaxHeight="600" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,*,Auto">
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
-            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="520" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+    <controls:DialogLayout>
+        <Border Grid.Row="0" Classes="DialogHeading">
+            <Grid ColumnDefinitions="32,*"><Path Data="{StaticResource IconIngredient}" Width="20" Height="20" Stretch="Uniform" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" HorizontalAlignment="Left" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource TextPrimary}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/></Grid>
         </Border>
-        <ScrollViewer Grid.Row="1"><StackPanel Margin="20" Spacing="8">
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="0,0,0,8" Spacing="12">
             <TextBlock Text="{loc:Loc Text.Ingredient}" Classes="Muted"/>
             <AutoCompleteBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" IsEnabled="{Binding !IsEdit}" AutomationProperties.Name="{loc:Loc Text.Ingredient}"><AutoCompleteBox.ItemTemplate><DataTemplate x:DataType="models:Ingredient"><TextBlock Text="{Binding Name}"/></DataTemplate></AutoCompleteBox.ItemTemplate></AutoCompleteBox>
             <TextBlock Text="{loc:Loc Text.Unit}" Classes="Muted"/>
@@ -23,11 +23,11 @@
             <loc:LocalizedCalendarDatePicker SelectedDate="{Binding ExpiresOn}" IsVisible="{Binding !IsEdit}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
         </StackPanel></ScrollViewer>
-        <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
+        <Border Grid.Row="2" Classes="DialogFooter">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>
+                <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary DialogCancel" Click="OnCancelClick"/>
                 <Button Content="{loc:Loc Text.Save}" Classes="Primary" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}"/>
             </StackPanel>
         </Border>
-    </Grid>
+    </controls:DialogLayout>
 </Window>

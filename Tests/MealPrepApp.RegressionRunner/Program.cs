@@ -4,8 +4,9 @@ using System.Reflection;
 using MealPrepApp.Tests;
 using Avalonia.Headless;
 
-if(args.Contains("--ingredient-catalog-screenshots") || args.Any(a => a.StartsWith("--localization-section=")) || args.Contains("--localization-screenshots") || args.Contains("--refinement-screenshots") || args.Contains("--screenshots") || args.Contains("--alignment-screenshots") || args.Contains("--recipe-screenshots")) TestHost.BuildAvaloniaApp().SetupWithoutStarting();
+if(args.Contains("--ingredient-catalog-screenshots") || args.Contains("--catalog-screenshots") || args.Any(a => a.StartsWith("--localization-section=")) || args.Contains("--localization-screenshots") || args.Contains("--refinement-screenshots") || args.Contains("--screenshots") || args.Contains("--alignment-screenshots") || args.Contains("--recipe-screenshots")) TestHost.BuildAvaloniaApp().SetupWithoutStarting();
 if(args.Contains("--ingredient-catalog-screenshots")) { CatalogRedesignSamples.Render(Path.GetFullPath("dist/catalog-redesign/screenshots")); return 0; }
+if(args.Contains("--catalog-screenshots")) { CatalogDialogSamples.Render(Path.GetFullPath("dist/catalog/screenshots")); return 0; }
 if(args.Contains("--localization-screenshots") || args.Any(a => a.StartsWith("--localization-section=")))
 {
     foreach (var language in new[] { "en", "ru", "ro" })

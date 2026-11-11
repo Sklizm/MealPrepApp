@@ -359,7 +359,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         catch (AppDbException ex) when (ex.ErrorNumber == 50004)
         {
             if (await _dialog.ConfirmAsync(L.Message("Text.EditingConflict"),
-                    L.Message("Message.Join", L.Message("Text.TheRecipeChangedInAnotherSessionReloadTheCurrentVersion"), L.Message("Text.YourUnsavedChangesWillBeLost"))))
+                    L.Message("Message.Join", L.Message("Text.TheRecipeChangedInAnotherSessionReloadTheCurrentVersion"), L.Message("Text.YourUnsavedChangesWillBeLost")), L.Message("Text.Reload"), destructive: true))
             {
                 await ReloadAsync();
             }

@@ -178,4 +178,31 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/><Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
     <Style Selector="ProgressBar"><Setter Property="Value" Value="50"/></Style>
+    <Style Selector="Border.DialogHeading">
+        <Setter Property="Padding" Value="0,0,0,20"/>
+    </Style>
+    <Style Selector="Border.DialogFooter">
+        <Setter Property="Padding" Value="0,20,0,0"/>
+    </Style>
+    <Style Selector="Border.CatalogRow:pointerover">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondary}"/>
+    </Style>
+    <Style Selector="ListBoxItem, ComboBoxItem">
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="ComboBox /template/ Border#PopupBorder, AutoCompleteBox /template/ Border#PART_SuggestionsContainer">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+    <Style Selector="ComboBox /template/ Border#PopupBorder, AutoCompleteBox /template/ Border#PART_SuggestionsContainer">
+        <Setter Property="BoxShadow" Value="0 6 20 0 #24000000"/>
+    </Style>
+    <Style Selector="MenuFlyoutPresenter, ContextMenu, ToolTip">
+        <Setter Property="Background" Value="{DynamicResource Surface}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+    </Style>
 </Styles>

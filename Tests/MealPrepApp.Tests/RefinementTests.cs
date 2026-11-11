@@ -429,8 +429,11 @@ public sealed partial class RegressionTests
                 try
                 {
                     var header = dialog.FindControl<TextBlock>("HeaderText")!;
-                    Assert.True(app.TryFindResource("OnDanger",theme,out var expected));
+                    Assert.True(app.TryFindResource("TextPrimary",theme,out var expected));
                     Assert.Equal(((ISolidColorBrush)expected!).Color,((ISolidColorBrush)header.Foreground!).Color);
+                    var glyph = dialog.FindControl<TextBlock>("HeaderGlyph")!;
+                    Assert.True(app.TryFindResource("Danger",theme,out var danger));
+                    Assert.Equal(((ISolidColorBrush)danger!).Color,((ISolidColorBrush)glyph.Foreground!).Color);
                 }
                 finally {dialog.Close();}
             }

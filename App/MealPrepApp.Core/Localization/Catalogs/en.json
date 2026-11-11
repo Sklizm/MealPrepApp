@@ -594,5 +594,7 @@
   "UX.DiscardPrepared": "Discard prepared portions",
   "UX.PortionsEventHint": "Review the expiry and quantity. This records actual consumption or waste and does not deduct raw ingredients.",
   "UX.UsePreparedBatch": "Use unreserved prepared portions (optional)",
-  "UX.UseNewBatch": "Plan fresh cooking instead"
+  "UX.UseNewBatch": "Plan fresh cooking instead",
+  "Text.Continue": "Continue",
+  "Text.CopyWeek": "Copy week"
 }

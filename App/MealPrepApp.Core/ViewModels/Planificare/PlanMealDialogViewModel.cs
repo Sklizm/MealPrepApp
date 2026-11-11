@@ -298,7 +298,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         if (!IsEdit || !_editingEntryId.HasValue) return;
 
         if (!await _dialog.ConfirmAsync(L.Message("Text.DeletePlannedMeal"),
-                L.Message("Text.AreYouSureYouWantToDeleteThisMealFromThePlan")))
+                L.Message("Text.AreYouSureYouWantToDeleteThisMealFromThePlan"), L.Message("Text.Delete"), destructive: true))
             return;
 
         IsBusy = true;

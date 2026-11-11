@@ -1,7 +1,8 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.SettingsWindow" Title="{loc:Loc Text.Settings}" Width="520" Height="640" MinWidth="440" MinHeight="540" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
-    <ScrollViewer>
-        <StackPanel Margin="32" Spacing="16">
-            <TextBlock Text="{loc:Loc Text.Settings}" Classes="Title"/>
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:controls="using:MealPrepApp.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="MealPrepApp.Desktop.Views.SettingsWindow" Title="{loc:Loc Text.Settings}" Width="520" Height="560" MinWidth="440" MinHeight="360" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
+    <controls:DialogLayout>
+        <Border Classes="DialogHeading"><TextBlock Text="{loc:Loc Text.Settings}" Classes="Header"/></Border>
+        <ScrollViewer Grid.Row="1">
+        <StackPanel Spacing="16">
             <TextBlock Name="AppVersion" Classes="Muted"/>
             <TextBlock Text="{loc:Loc Settings.Language}" Classes="Header"/>
             <ComboBox Name="LanguagePicker" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Settings.Language}"/>
@@ -14,5 +15,7 @@
             <Button Content="{loc:Loc Text.ConfigureConnection}" Classes="Secondary" Click="EditConnection"/>
             <TextBlock Name="Status" TextWrapping="Wrap"/>
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+        <Border Grid.Row="2" Classes="DialogFooter"><Button Content="{loc:Loc Text.Close}" Classes="Secondary DialogCancel" HorizontalAlignment="Right" Click="CloseSettings"/></Border>
+    </controls:DialogLayout>
 </Window>

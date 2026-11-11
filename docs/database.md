@@ -16,6 +16,39 @@ bash scripts/update-database.sh mealprep-db 20261028_cooking_redesign.sql
 
 Each update creates a copy-only checksum backup, verifies it and copies it to gitignored `backups/` before migration. Backup failure stops the update. These migrations preserve existing users, data and login credentials; the second adds saved shopping lists and week copying. Use this path for an existing deployment. [Migration reference](redesign/README.md#database-rollout).
 
+## Moldova ingredient catalog
+
+The [retailer-backed catalog](../Database/catalog/README.md) adds 189 ingredients
+available through Moldovan retailers. New databases include it automatically.
+For an existing database, first run the disposable SQL suite, then import using
+the same verified-backup-first updater:
+
+```bash
+python3 scripts/generate-moldova-catalog.py --check
+bash scripts/test-database.sh &&
+bash scripts/update-database.sh mealprep-db 20261111_moldova_ingredients.sql
+```
+
+Run from the repository root on a Docker-capable database host. The import preserves
+existing names, IDs, units, categories, nutrition and recipe links. It inserts only
+missing names, with categories, units and UTC audit records. For reviewed nutrition,
+use the combined import below. Refresh the Ingredients page after importing;
+desktop clients need no update to see the additional database entries.
+
+The [reviewed nutrition catalog](../Database/catalog/NUTRITION.md) contains 225
+calorie and macro profiles plus available additional nutrients in its reference CSV.
+Eight unresolved entries remain explicitly unknown. To import both ingredients and
+missing nutrition rows together, use:
+
+```bash
+python3 scripts/generate-ingredient-nutrition.py --check
+bash scripts/test-database.sh &&
+bash scripts/update-database.sh mealprep-db 20261111_ingredient_nutrition.sql
+```
+
+Existing nutrition values and timestamps are preserved. Sources and preparation/basis
+notes are in the CSV; juice references per 100 g require weighed recipe quantities.
+
 ## New database
 
 Set `MSSQL_SA_PASSWORD` in the deployment environment, then start the container:

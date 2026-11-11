@@ -594,5 +594,7 @@
   "UX.DiscardPrepared": "Aruncă porții pregătite",
   "UX.PortionsEventHint": "Verificați expirarea și cantitatea. Se înregistrează consumul real sau risipa fără a scădea ingredientele crude.",
   "UX.UsePreparedBatch": "Folosește porții pregătite nealocate (opțional)",
-  "UX.UseNewBatch": "Planifică un lot nou"
+  "UX.UseNewBatch": "Planifică un lot nou",
+  "Text.Continue": "Continuă",
+  "Text.CopyWeek": "Copiază săptămâna"
 }

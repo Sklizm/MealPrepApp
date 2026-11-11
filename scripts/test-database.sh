@@ -25,6 +25,10 @@ sql -v AppPassword="$TEST_PASSWORD" -i run_all.sql
 # Re-run migrations to validate preservation/idempotency.
 sql -v AppPassword="$TEST_PASSWORD" -i run_all.sql
 sql -i /tests/regression.sql
+python3 "$REPO_ROOT/scripts/generate-moldova-catalog.py" --check
+python3 "$REPO_ROOT/scripts/generate-ingredient-nutrition.py" --check
+sql -i /tests/moldova-catalog-regression.sql
+sql -i /tests/catalog-nutrition-regression.sql
 # Simulate the relevant predecessor state with real data, then test the live migration twice.
 sql -Q "USE MealPrepDB;
 INSERT dbo.RecipePhotos (RecipeID, ImageData, ContentType)
