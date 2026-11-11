@@ -18,6 +18,10 @@ public class IngredientRepository : RepositoryBase
             IngredientCategoryID = ingredientCategoryId,
         });
 
+    public virtual Task UpdateAsync(int userId, Ingredient original, string name, int? defaultUnitId, int? categoryId) =>
+        ExecuteProcAsync("sp_UpdateIngredient", new { UserID = userId, original.IngredientID, Name = name,
+            DefaultUnitID = defaultUnitId, IngredientCategoryID = categoryId, ExpectedVersion = original.RowVersion });
+
     /// <summary><paramref name="ingredientCategoryId"/> null returns every ingredient.</summary>
     public virtual Task<IReadOnlyList<Ingredient>> GetIngredientsAsync(int? ingredientCategoryId = null, CancellationToken cancellationToken = default) =>
         QueryProcAsync<Ingredient>("sp_GetIngredients", new { IngredientCategoryID = ingredientCategoryId }, cancellationToken);

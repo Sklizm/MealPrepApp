@@ -21,6 +21,24 @@ namespace MealPrepApp.ViewModels.Planificare;
 /// </summary>
 public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
 {
+    private readonly CookingBatchRepository? _batches;
+    private Guid _operation=Guid.NewGuid();
+    private string? _submitted;
+    public ObservableCollection<CookingBatch> PreparedBatches {get;}=new();
+    [ObservableProperty] private CookingBatch? _selectedPreparedBatch;
+    [RelayCommand] private void UseNewBatch()=>SelectedPreparedBatch=null;
+    private int _preparedVersion;
+    private async Task RefreshPreparedBatchesAsync() {
+        var version=++_preparedVersion;var recipe=SelectedRecipe?.RecipeID;SelectedPreparedBatch=null;PreparedBatches.Clear();
+        if(_batches is null||recipe is null)return;
+        try {var rows=await _batches.GetCookingBatchesAsync(_session.CurrentUserId);if(version!=_preparedVersion)return;foreach(var b in rows.Where(b=>b.RecipeID==recipe&&b.CookedAt.HasValue&&b.FreePortions>0&&(b.ExpiresOn is null||b.ExpiresOn.Value.Date>=DateTime.Today)))PreparedBatches.Add(b);}
+        catch(Exception ex){AppDiagnostics.Record(ex);}
+    }
+    public ObservableCollection<DateTime> AdditionalDates {get;}=new();
+    [ObservableProperty] private bool _isBatchPlan;
+    [ObservableProperty] private decimal? _batchPortions;
+    [RelayCommand] private void AddDate() {if(!AdditionalDates.Contains(PlannedDate.Date))AdditionalDates.Add(PlannedDate.Date);}
+    [RelayCommand] private void RemoveDate(DateTime date)=>AdditionalDates.Remove(date);
     private readonly MealPlanRepository _mealPlan;
     private readonly RecipeRepository _recipes;
     private readonly LookupRepository _lookups;
@@ -74,13 +92,13 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         RecipeRepository recipes,
         LookupRepository lookups,
         IDialogService dialog,
-        ISessionService session)
+        ISessionService session,CookingBatchRepository? batches=null)
     {
         _mealPlan = mealPlan;
         _recipes = recipes;
         _lookups = lookups;
         _dialog = dialog;
-        _session = session;
+        _session = session;_batches=batches;
     }
 
     /// <summary>Opens the add flow pre-filled with a date + slot; optionally a recipe (e.g. when
@@ -91,7 +109,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(CanPickRecipe));
         Title = L.Text("Text.PlanMeal");
         _editingEntryId = null;
-        PlannedDate = date.Date;
+        PlannedDate = date.Date; AdditionalDates.Clear(); IsBatchPlan=false; BatchPortions=null;
         Servings = null;
         Notes = null;
 
@@ -209,6 +227,7 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
     partial void OnSelectedRecipeChanged(RecipeListItem? value)
     {
         if (value is null || IsEdit) return;
+        _ = RefreshPreparedBatchesAsync();
         _suppressSearch = true;
         RecipeSearchTerm = value.Title;
         _suppressSearch = false;
@@ -245,11 +264,15 @@ public sealed partial class PlanMealDialogViewModel : ViewModelBase, IDisposable
                     _editingEntryId.Value, _session.CurrentUserId,
                     SelectedCategory.CategoryID, PlannedDate, Servings, Trimmed(Notes));
             }
-            else
-            {
-                await _mealPlan.PlanMealAsync(
-                    _session.CurrentUserId, SelectedRecipe!.RecipeID,
-                    SelectedCategory.CategoryID, PlannedDate, Servings, Trimmed(Notes));
+            else if(_batches is not null) {
+                var allocations=AdditionalDates.Append(PlannedDate.Date).Distinct().OrderBy(d=>d).Select(d=>new MealAllocation(d,SelectedCategory.CategoryID,Servings??SelectedRecipe!.Servings??1,Trimmed(Notes))).ToArray();
+                var fingerprint=System.Text.Json.JsonSerializer.Serialize(new{Recipe=SelectedRecipe!.RecipeID,allocations,IsBatchPlan,BatchPortions,Prepared=SelectedPreparedBatch?.CookingBatchID,PreparedVersion=SelectedPreparedBatch?.Version});
+                if(_submitted!=fingerprint){_submitted=fingerprint;_operation=Guid.NewGuid();}
+                if(SelectedPreparedBatch is {} prepared) await _batches.AllocatePreparedAsync(_session.CurrentUserId,_operation,prepared,allocations);
+                else if(IsBatchPlan) await _batches.PlanAsync(_session.CurrentUserId,_operation,SelectedRecipe.RecipeID,BatchPortions??allocations.Sum(a=>a.Portions),allocations);
+                else await _batches.PlanSeparateAsync(_session.CurrentUserId,_operation,SelectedRecipe.RecipeID,allocations);
+            } else {
+                foreach(var date in AdditionalDates.Append(PlannedDate.Date).Distinct()) await _mealPlan.PlanMealAsync(_session.CurrentUserId,SelectedRecipe!.RecipeID,SelectedCategory.CategoryID,date,Servings,Trimmed(Notes));
             }
             SaveSucceeded?.Invoke(this, EventArgs.Empty);
         }

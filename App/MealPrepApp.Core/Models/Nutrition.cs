@@ -1,3 +1,4 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.Models;
 
 /// <summary>Optional nutrition values for one ingredient, normalized to a basis amount/unit.</summary>
@@ -17,7 +18,7 @@ public sealed class IngredientNutrition
 }
 
 /// <summary>Calculated recipe nutrition totals and per-serving values from sp_GetRecipeNutrition.</summary>
-public sealed class RecipeNutritionSummary
+public sealed class RecipeNutritionSummary : LocalizedObservableObject
 {
     public int RecipeID { get; set; }
     public int? Servings { get; set; }
@@ -32,5 +33,7 @@ public sealed class RecipeNutritionSummary
     public int MissingNutritionCount { get; set; }
     public int UnconvertibleIngredientCount { get; set; }
 
+    [LocalizedProperty] public string PerServingSummary => CaloriesPerServing is null ? L.Text("UX.NoPerServingNutrition") : L.Text("UX.PerServingNutrition",CaloriesPerServing,ProteinGramsPerServing,CarbsGramsPerServing,FatGramsPerServing);
+    [LocalizedProperty] public string CompletenessLabel => L.Text(HasCompleteNutrition ? "UX.NutritionComplete" : "UX.NutritionIncomplete");
     public bool HasCompleteNutrition => MissingNutritionCount == 0 && UnconvertibleIngredientCount == 0;
 }

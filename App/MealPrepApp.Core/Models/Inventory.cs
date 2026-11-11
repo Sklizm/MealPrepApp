@@ -1,7 +1,11 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.Models;
 
-public sealed class InventoryBatch
+public sealed class InventoryBatch : LocalizedObservableObject
 {
+    [LocalizedProperty] public string QuantitySummary => $"{RemainingQuantity:0.####} {UnitAbbreviation}";
+    [LocalizedProperty] public string ExpirySummary => ExpiresOn is { } expiry ? L.Text("UX.ExpiresDate",expiry) : L.Text("UX.UnknownExpiry");
+    public bool IsExpired => ExpiresOn?.Date < DateTime.Today;
     public int BatchID { get; set; }
     public int IngredientID { get; set; }
     public string IngredientName { get; set; } = "";
@@ -26,3 +30,9 @@ public sealed record RecipeReadiness(ReadinessStatus Status, IReadOnlyList<Ingre
 public sealed record StockDeduction(int BatchID, long ExpectedVersion, decimal Quantity);
 public sealed record ConsumptionReview(IReadOnlyList<StockDeduction> Deductions, RecipeReadiness Readiness);
 public sealed record MutationResult(int Id, long Version, int? EventId = null);
+
+public sealed record StockThreshold(int IngredientID,int UnitID,decimal Quantity,long Version);
+
+public sealed record InventorySummary(int Shortages,int ExpiringBatches,int LowStockIngredients);
+
+public sealed record StockGroupResult(int Id,long Version,int[] EventIds);

@@ -1,6 +1,10 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.Models;
-public sealed class CookingBatch
+public sealed class CookingBatch : LocalizedObservableObject
 {
+    public decimal FreePortions=>Math.Max(0,RemainingPortions-ReservedPortions);
+    [LocalizedProperty] public string PreparedSummary=>L.Text("UX.PreparedSummary",FreePortions,ExpiresOn is {} date?date.ToString("d"):L.Text("UX.UnknownExpiry"));
+    [LocalizedProperty] public string PreparedLabel=>$"{RecipeTitle} · {FreePortions:0.####}";
     public int CookingBatchID { get; set; }
     public int? RecipeID { get; set; }
     public string RecipeTitle { get; set; } = "";

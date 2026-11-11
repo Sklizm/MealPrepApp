@@ -1,8 +1,33 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteEditorView" x:DataType="vm:ReteteEditorViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:images="using:MealPrepApp.Desktop.Controls" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteEditorView" x:DataType="vm:ReteteEditorViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32" RowDefinitions="Auto,*,Auto,Auto">
         <TextBlock Grid.Row="0" Text="{Binding ScreenTitle}" Classes="Title" Margin="0,0,0,16"/>
         <ScrollViewer Grid.Row="1">
             <StackPanel MaxWidth="1024" HorizontalAlignment="Stretch" Spacing="10">
+                <Border Classes="Card" IsVisible="{Binding CanRestoreRecovery}"><StackPanel Spacing="8">
+                    <TextBlock Text="{loc:Loc UX.RecoveryAvailable}" TextWrapping="Wrap"/>
+                    <WrapPanel><Button Content="{loc:Loc UX.RestoreEdit}" Command="{Binding RestoreRecoveryCommand}" Classes="Primary" Margin="0,0,8,0"/><Button Content="{loc:Loc UX.DiscardRecovery}" Command="{Binding DismissRecoveryCommand}" Classes="Secondary"/></WrapPanel>
+                </StackPanel></Border>
+                <TextBlock Text="{loc:Loc UX.RecoverySaveFailed}" Foreground="{DynamicResource Danger}" IsVisible="{Binding RecoverySaveFailed}" TextWrapping="Wrap"/>
+                <Expander Header="{loc:Loc UX.ImportRecipe}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{loc:Loc UX.ImportHint}" Classes="Muted" TextWrapping="Wrap"/>
+                        <TextBox Text="{Binding ImportInput}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="180" MaxLength="200000" AutomationProperties.Name="{loc:Loc UX.ImportRecipe}"/>
+                        <Button Content="{loc:Loc UX.ReviewImport}" Command="{Binding ReviewImportCommand}" Classes="Secondary" IsEnabled="{Binding !IsBusy}"/>
+                        <StackPanel IsVisible="{Binding HasImportReview}" Spacing="8">
+                            <TextBlock Text="{Binding ImportReview.Title}" Classes="Header"/>
+                            <TextBlock Text="{loc:Loc UX.ImportReviewHint}" Classes="Muted" TextWrapping="Wrap"/>
+                            <ItemsControl ItemsSource="{Binding ImportReviewRows}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:RecipeIngredientRowViewModel">
+                                <Grid ColumnDefinitions="2*,100,100" Margin="0,4">
+                                    <AutoCompleteBox ItemsSource="{Binding AllIngredients}" Text="{Binding IngredientText}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" AutomationProperties.Name="{loc:Loc Text.Ingredient}"><AutoCompleteBox.ItemTemplate><DataTemplate x:DataType="models:Ingredient"><TextBlock Text="{Binding Name}"/></DataTemplate></AutoCompleteBox.ItemTemplate></AutoCompleteBox>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding AllUnits}" SelectedItem="{Binding SelectedUnit}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.Unit}"><ComboBox.ItemTemplate><DataTemplate x:DataType="models:Unit"><TextBlock Text="{Binding Abbreviation}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+                                    <NumericUpDown Grid.Column="2" Value="{Binding Quantity}" Minimum="0" Maximum="99999999" FormatString="0.####" AutomationProperties.Name="{loc:Loc Text.Quantity}"/>
+                                </Grid>
+                            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                            <Expander Header="{loc:Loc UX.OriginalText}"><TextBox Text="{Binding ImportReview.Original, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="180"/></Expander>
+                            <Button Content="{loc:Loc UX.UseReviewedDraft}" Command="{Binding ApplyImportCommand}" Classes="Primary"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
                 <!-- Title -->
                 <TextBlock Text="{loc:Loc Text.Title}" Classes="Muted"/>
                 <TextBox Text="{Binding Title}" MaxLength="150"/>
@@ -39,7 +64,8 @@
                 <Border Classes="Card">
                     <StackPanel Spacing="8">
                         <TextBlock Text="{loc:Loc Text.Photo}" Classes="Header"/>
-                        <TextBlock Text="{loc:Loc Text.AfterSavingAddOrChangeThePhotoFromTheRecipePage}" Classes="Muted" TextWrapping="Wrap"/>
+                        <images:RecipeImage Bytes="{Binding PhotoBytes}" DecodePixelWidth="400" Height="140" Stretch="Uniform"/>
+                        <WrapPanel><Button Content="{loc:Loc Text.AddPhoto}" Command="{Binding SelectPhotoCommand}" Classes="Secondary" Margin="0,0,8,0"/><Button Content="{loc:Loc UX.RemovePhoto}" Command="{Binding RemovePhotoCommand}" Classes="Secondary"/></WrapPanel>
                     </StackPanel>
                 </Border>
                 <!-- Ingredients Header -->
@@ -47,6 +73,7 @@
                     <TextBlock Text="{loc:Loc Text.Ingredients}" Classes="Header" VerticalAlignment="Center"/>
                     <Button Content="{loc:Loc Text.AddIngredient121}" Classes="Secondary" HorizontalAlignment="Right" Command="{Binding AddIngredientRowCommand}"/>
                 </Grid>
+                <Button Content="{loc:Loc UX.CreateIngredient}" Command="{Binding CreateInlineIngredientCommand}" Classes="Link" HorizontalAlignment="Left"/>
                 <!-- Ingredient Table Header -->
                 <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,4">
                     <TextBlock Grid.Column="0" Text="{loc:Loc Text.Ingredient165}" Classes="Muted"/>
@@ -59,7 +86,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:RecipeIngredientRowViewModel">
                             <Grid ColumnDefinitions="2*,110,90,3*,32" Margin="0,3">
-                                <AutoCompleteBox Grid.Column="0" ItemsSource="{Binding AllIngredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" Watermark="{loc:Loc Text.SearchIngredient}" AutomationProperties.Name="{loc:Loc Text.Ingredient165}">
+                                <AutoCompleteBox Grid.Column="0" ItemsSource="{Binding AllIngredients}" Text="{Binding IngredientText}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" Watermark="{loc:Loc Text.SearchIngredient}" AutomationProperties.Name="{loc:Loc Text.Ingredient165}">
                                     <AutoCompleteBox.ItemTemplate>
                                         <DataTemplate x:DataType="models:Ingredient">
                                             <TextBlock Text="{Binding Name}"/>
@@ -73,7 +100,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <NumericUpDown Grid.Column="2" Margin="6,0,0,0" Value="{Binding Quantity}" Minimum="0.01" Maximum="99999999" Increment="1" FormatString="0.##" AutomationProperties.Name="{loc:Loc Text.Quantity221}"/>
+                                <NumericUpDown Grid.Column="2" Margin="6,0,0,0" Value="{Binding Quantity}" Minimum="0" Maximum="99999999" Increment="1" FormatString="0.####" AutomationProperties.Name="{loc:Loc Text.Quantity221}"/>
                                 <TextBox Grid.Column="3" Margin="6,0,0,0" Text="{Binding Notes}"/>
                                 <Button Grid.Column="4" AutomationProperties.Name="{loc:Loc Text.Delete}" ToolTip.Tip="{loc:Loc Text.Delete}" Classes="Link DestructiveLink" Foreground="{DynamicResource Danger}" HorizontalAlignment="Center" Command="{Binding RemoveCommand}">
                                     <Path Data="{StaticResource IconClose}" Width="16" Height="16" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="1.7"/>
@@ -82,6 +109,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                <Expander Header="{loc:Loc UX.OriginalText}"><TextBox Text="{Binding SourceText}" IsReadOnly="True" AcceptsReturn="True" MaxHeight="180" TextWrapping="Wrap"/></Expander>
                 <TextBlock Text="{loc:Loc Text.NoIngredientsAdded}" Classes="Muted" IsVisible="{Binding IngredientRows.Count, Converter={StaticResource EmptyToBool}}"/>
             </StackPanel>
         </ScrollViewer>

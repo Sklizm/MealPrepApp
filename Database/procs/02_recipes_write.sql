@@ -50,7 +50,7 @@ BEGIN
                 WITH (
                     IngredientID INT             '$.IngredientID',
                     UnitID       INT             '$.UnitID',
-                    Quantity     DECIMAL(10,2)   '$.Quantity',
+                    Quantity     DECIMAL(18,4)   '$.Quantity',
                     Notes        NVARCHAR(255)   '$.Notes'
                 ) AS j;
         END
@@ -146,7 +146,7 @@ BEGIN
                     WITH (
                         IngredientID INT             '$.IngredientID',
                         UnitID       INT             '$.UnitID',
-                        Quantity     DECIMAL(10,2)   '$.Quantity',
+                        Quantity     DECIMAL(18,4)   '$.Quantity',
                         Notes        NVARCHAR(255)   '$.Notes'
                     ) AS j;
             END

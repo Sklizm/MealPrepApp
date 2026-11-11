@@ -248,6 +248,13 @@ public sealed partial class IngredienteListViewModel : ViewModelBase, IAsyncLoad
             await RefreshAsync();
     }
 
+    [RelayCommand] private async Task EditIngredient(Ingredient? item) {
+        if (item is null) return;
+        var editor = _services.GetRequiredService<IngredientAddDialogViewModel>();
+        await editor.InitForEditAsync(item);
+        if (await _dialog.ShowDialogAsync(editor)) await RefreshAsync();
+    }
+
     [RelayCommand]
     private async Task EditNutrition(Ingredient? item)
     {

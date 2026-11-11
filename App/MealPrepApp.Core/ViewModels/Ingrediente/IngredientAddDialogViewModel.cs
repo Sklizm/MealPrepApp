@@ -13,6 +13,16 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
 {
     private readonly IngredientRepository _ingredients;
     private readonly LookupRepository _lookups;
+    private readonly ISessionService? _session;
+    private Ingredient? _editing;
+    public bool IsEdit => _editing is not null;
+    [LocalizedProperty] public string EditorTitle => L.Text(IsEdit ? "UX.EditIngredient" : "UX.CreateIngredient");
+    public async Task InitForEditAsync(Ingredient ingredient) {
+        _editing = ingredient; await LoadAsync(); Name = ingredient.Name;
+        SelectedUnit = Units.FirstOrDefault(u=>u.UnitID==ingredient.DefaultUnitID);
+        SelectedCategory = Categories.FirstOrDefault(c=>c.IngredientCategoryID==ingredient.IngredientCategoryID);
+        OnPropertyChanged(nameof(IsEdit)); OnPropertyChanged(nameof(EditorTitle));
+    }
 
     public ObservableCollection<Unit> Units { get; } = new();
     public ObservableCollection<IngredientCategory> Categories { get; } = new();
@@ -27,12 +37,13 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
     private IngredientCategory? _selectedCategory;
 
     /// <summary>Raised when the proc returns successfully and the dialog should close.</summary>
+    public int? CreatedIngredientID { get; private set; }
     public event EventHandler? SaveSucceeded;
 
-    public IngredientAddDialogViewModel(IngredientRepository ingredients, LookupRepository lookups)
+    public IngredientAddDialogViewModel(IngredientRepository ingredients, LookupRepository lookups, ISessionService? session = null)
     {
         _ingredients = ingredients;
-        _lookups = lookups;
+        _lookups = lookups; _session = session;
     }
 
     public async Task LoadAsync()
@@ -80,10 +91,10 @@ public sealed partial class IngredientAddDialogViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            await _ingredients.AddIngredientAsync(
-                name,
-                SelectedUnit?.UnitID,
-                SelectedCategory?.IngredientCategoryID);
+            if (_editing is not null && _session is not null) {
+                await _ingredients.UpdateAsync(_session.CurrentUserId,_editing,name,SelectedUnit?.UnitID,SelectedCategory?.IngredientCategoryID);
+                CreatedIngredientID = _editing.IngredientID;
+            } else CreatedIngredientID = await _ingredients.AddIngredientAsync(name,SelectedUnit?.UnitID,SelectedCategory?.IngredientCategoryID);
             SaveSucceeded?.Invoke(this, EventArgs.Empty);
         }
         catch (AppDbException ex)

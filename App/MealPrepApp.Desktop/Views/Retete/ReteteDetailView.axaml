@@ -35,7 +35,9 @@
                 <Border Classes="Card">
                     <StackPanel Spacing="16">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="{loc:Loc Text.Ingredients}" Classes="Header"/>
+                            <TextBlock Text="{Binding ReadinessLabel}" FontWeight="SemiBold"/>
+                        <ItemsControl ItemsSource="{Binding Shortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:ReadinessDisplay"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,8,0"/><TextBlock Text="{loc:Format UX.ShortageAmount, Missing}" Margin="0,0,4,0"/><TextBlock Text="{Binding Unit}"/><TextBlock Text="{loc:Loc UX.Review}" IsVisible="{Binding NeedsReview}" Margin="8,0,0,0"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                        <TextBlock Text="{loc:Loc Text.Ingredients}" Classes="Header"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="{loc:Loc Text.Servings}" VerticalAlignment="Center"/>
                                 <NumericUpDown Value="{Binding SelectedServings}" Minimum="1" Maximum="1000" Increment="1" FormatString="0" Width="116" IsEnabled="{Binding CanScale}" AutomationProperties.Name="{loc:Loc Text.NumberOfServings}"/>

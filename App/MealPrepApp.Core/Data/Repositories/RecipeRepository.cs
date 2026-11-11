@@ -54,6 +54,18 @@ public class RecipeRepository : RepositoryBase
             RowVersion = rowVersion
         });
 
+    public virtual async Task<RecipeBundleResult?> GetSavedOperationAsync(int userId,Guid operation) {
+        var json=await ExecuteScalarProcAsync<string?>("sp_GetClientOperationResult",new {UserID=userId,OperationID=operation});
+        return json is null ? null : JsonSerializer.Deserialize<RecipeBundleResult>(json,new JsonSerializerOptions{PropertyNameCaseInsensitive=true});
+    }
+    public virtual async Task<RecipeBundleResult> SaveBundleAsync(int userId, Guid operationId, RecipeBundleInput input) =>
+        JsonSerializer.Deserialize<RecipeBundleResult>(await ExecuteScalarProcAsync<string>("sp_SaveRecipeBundle", new {
+            UserID = userId, OperationID = operationId, input.RecipeID, input.CategoryID, input.Title,
+            input.Description, input.Instructions, input.PrepTimeMinutes, input.CookTimeMinutes, input.Servings,
+            IngredientsJson = JsonSerializer.Serialize(input.Ingredients), input.ExpectedVersion, input.PhotoMode,
+            input.ImageData, input.ThumbnailData
+        }), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+
     public Task DeleteRecipeAsync(int recipeId, int userId) =>
         ExecuteProcAsync("sp_DeleteRecipe", new { RecipeID = recipeId, UserID = userId });
 

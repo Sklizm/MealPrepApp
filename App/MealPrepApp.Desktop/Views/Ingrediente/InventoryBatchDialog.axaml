@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" x:Class="MealPrepApp.Desktop.Views.Ingrediente.InventoryBatchDialog" x:DataType="vm:InventoryBatchDialogViewModel" Title="{loc:Loc UX.AdjustBatch}" Width="460" MaxHeight="600" SizeToContent="Height" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+ <StackPanel Margin="20" Spacing="10">
+  <TextBlock Text="{Binding Batch.IngredientName}" Classes="Header"/>
+  <TextBlock Text="{Binding Batch.QuantitySummary}"/>
+  <TextBlock Text="{Binding Batch.ExpirySummary}" Classes="Muted"/>
+  <TextBlock Text="{loc:Loc UX.StockDelta}" TextWrapping="Wrap"/>
+  <NumericUpDown Value="{Binding Delta}" Minimum="-99999999" Maximum="99999999" FormatString="0.####" AutomationProperties.Name="{loc:Loc UX.StockDelta}"/>
+  <CheckBox Content="{loc:Loc UX.RecordDiscard}" IsChecked="{Binding IsDiscard}"/>
+  <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" IsVisible="{Binding HasError}" TextWrapping="Wrap"/>
+  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"><Button Content="{loc:Loc Text.Cancel}" Click="Cancel" Classes="Secondary"/><Button Content="{loc:Loc Text.Save}" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}" Classes="Primary"/></StackPanel>
+ </StackPanel>
+</Window>

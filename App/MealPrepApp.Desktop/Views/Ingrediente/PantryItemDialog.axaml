@@ -1,17 +1,11 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="420" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Ingrediente" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Ingrediente.PantryItemDialog" x:DataType="vm:PantryItemDialogViewModel" Title="{Binding Title}" Width="440" MaxHeight="600" SizeToContent="Height" CanResize="False" WindowStartupLocation="CenterOwner" Background="{DynamicResource AppBackground}">
     <Grid RowDefinitions="Auto,*,Auto">
         <Border Grid.Row="0" Background="{DynamicResource SurfaceSecondary}" Height="40" Padding="16,0">
             <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextPrimary}" FontSize="{StaticResource FontSizeHeader}" FontWeight="Bold" VerticalAlignment="Center"/>
         </Border>
-        <StackPanel Grid.Row="1" Margin="20" Spacing="8">
+        <ScrollViewer Grid.Row="1"><StackPanel Margin="20" Spacing="8">
             <TextBlock Text="{loc:Loc Text.Ingredient}" Classes="Muted"/>
-            <ComboBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" IsEnabled="{Binding !IsEdit}" HorizontalAlignment="Stretch">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="models:Ingredient">
-                        <TextBlock Text="{Binding Name}"/>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+            <AutoCompleteBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" ValueMemberBinding="{Binding Name}" FilterMode="Contains" MinimumPrefixLength="0" IsEnabled="{Binding !IsEdit}" AutomationProperties.Name="{loc:Loc Text.Ingredient}"><AutoCompleteBox.ItemTemplate><DataTemplate x:DataType="models:Ingredient"><TextBlock Text="{Binding Name}"/></DataTemplate></AutoCompleteBox.ItemTemplate></AutoCompleteBox>
             <TextBlock Text="{loc:Loc Text.Unit}" Classes="Muted"/>
             <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" IsEnabled="{Binding !IsEdit}" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
@@ -21,9 +15,14 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <TextBlock Text="{loc:Loc Text.Quantity}" Classes="Muted"/>
-            <TextBox Text="{Binding Quantity}" Width="140" HorizontalAlignment="Left"/>
+            <NumericUpDown Value="{Binding Quantity}" Minimum="0.0001" Maximum="99999999" FormatString="0.####" AutomationProperties.Name="{loc:Loc Text.Quantity}"/>
+            <WrapPanel><Button Content="+1" Command="{Binding AddOneCommand}" Classes="Secondary" Margin="0,0,8,0"/><Button Content="+100" Command="{Binding AddHundredCommand}" Classes="Secondary"/></WrapPanel>
+            <TextBlock Text="{loc:Loc UX.OptionalPurchaseDate}" IsVisible="{Binding !IsEdit}"/>
+            <loc:LocalizedCalendarDatePicker SelectedDate="{Binding PurchasedOn}" IsVisible="{Binding !IsEdit}"/>
+            <TextBlock Text="{loc:Loc UX.OptionalExpiry}" IsVisible="{Binding !IsEdit}"/>
+            <loc:LocalizedCalendarDatePicker SelectedDate="{Binding ExpiresOn}" IsVisible="{Binding !IsEdit}"/>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
-        </StackPanel>
+        </StackPanel></ScrollViewer>
         <Border Grid.Row="2" Background="{DynamicResource Surface}" Padding="16,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                 <Button Content="{loc:Loc Text.Cancel}" Classes="Secondary" Click="OnCancelClick"/>

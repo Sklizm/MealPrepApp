@@ -16,16 +16,18 @@ public sealed partial class RecipeIngredientRowViewModel : ObservableObject
     public IReadOnlyList<Unit> AllUnits { get; }
 
     [ObservableProperty]
-    private Ingredient? _selectedIngredient;
+    [NotifyPropertyChangedFor(nameof(IsComplete))] private Ingredient? _selectedIngredient;
 
     [ObservableProperty]
-    private Unit? _selectedUnit;
+    [NotifyPropertyChangedFor(nameof(IsComplete))] private Unit? _selectedUnit;
 
     [ObservableProperty]
-    private decimal _quantity = 1m;
+    [NotifyPropertyChangedFor(nameof(IsComplete))] private decimal _quantity = 1m;
 
     [ObservableProperty]
     private string? _notes;
+
+    [ObservableProperty] private string _ingredientText = "";
 
     /// <summary>Raised when the user clicks the row's remove button; the editor drops the row.</summary>
     public event EventHandler? RemoveRequested;
@@ -39,6 +41,7 @@ public sealed partial class RecipeIngredientRowViewModel : ObservableObject
     /// <summary>Picking an ingredient pre-selects its default unit, if the user has not chosen one yet.</summary>
     partial void OnSelectedIngredientChanged(Ingredient? value)
     {
+        if (value is not null) IngredientText = value.Name;
         if (value?.DefaultUnitID is int unitId && SelectedUnit is null)
             SelectedUnit = AllUnits.FirstOrDefault(u => u.UnitID == unitId);
     }

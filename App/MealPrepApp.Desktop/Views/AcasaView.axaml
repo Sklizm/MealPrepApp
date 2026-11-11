@@ -20,6 +20,7 @@
                 <Button Content="{loc:Loc Text.FromThePantry}" Classes="Secondary" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Frigider" Margin="0,0,8,8"/>
                 <Button Classes="Primary" Content="{loc:Loc Text.ResumeDraft}" Command="{Binding OpenSectionCommand}" CommandParameter="Retete:Drafts" IsVisible="{Binding HasDrafts}" Margin="0,0,8,8"/>
             </WrapPanel>
+            <Border Classes="Card"><StackPanel Spacing="8"><TextBlock Text="{Binding StockSummary}" TextWrapping="Wrap"/><Button Content="{loc:Loc UX.RestoreEdit}" Command="{Binding RestoreRecipeCommand}" IsVisible="{Binding CanRestoreRecipe}" Classes="Secondary" HorizontalAlignment="Left"/></StackPanel></Border>
             <ProgressBar IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}" Height="4"/>
             <Border Classes="Card" IsVisible="{Binding HasError}">
                 <StackPanel Spacing="8">
@@ -55,6 +56,9 @@
                 <TextBlock Text="{loc:Loc Text.BackToSomethingDelicious}" Classes="Header" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="{loc:Loc Text.AllRecipes}" Classes="Link" Command="{Binding OpenSectionCommand}" CommandParameter="Retete"/>
             </Grid>
+            <Expander Header="{loc:Loc UX.PreparedPortions}" IsVisible="{Binding PreparedBatches.Count, Converter={StaticResource NonEmptyToBool}}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"><ItemsControl ItemsSource="{Binding PreparedBatches}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:CookingBatch">
+                <Border Classes="Card" Margin="0,4"><StackPanel Spacing="8"><TextBlock Text="{Binding RecipeTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding PreparedSummary}" Classes="Muted"/><WrapPanel><Button Content="{loc:Loc UX.ConsumeLeftovers}" Command="{Binding $parent[UserControl].DataContext.ConsumePreparedCommand}" CommandParameter="{Binding}" Classes="Secondary" Margin="0,0,8,0"/><Button Content="{loc:Loc UX.DiscardPrepared}" Command="{Binding $parent[UserControl].DataContext.DiscardPreparedCommand}" CommandParameter="{Binding}" Classes="Secondary"/></WrapPanel></StackPanel></Border>
+            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Expander>
             <ItemsControl ItemsSource="{Binding RecentRecipes}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -66,7 +70,7 @@
                         <Border Classes="Card" Width="272" Margin="0,0,16,16">
                             <StackPanel Spacing="12">
                                 <Border Background="{DynamicResource SurfaceSecondary}" CornerRadius="8" Height="72">
-                                    <TextBlock Text="{loc:Loc Text.FromYourCollection}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid><images:FridgeFoodIllustration Kind="Produce" Width="110" Height="65" HorizontalAlignment="Center"/><images:RecipeImage Bytes="{Binding PhotoData}" DecodePixelWidth="320" Stretch="UniformToFill"/></Grid>
                                 </Border>
                                 <Button Classes="Link" Command="{Binding DataContext.OpenRecipeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" HorizontalAlignment="Stretch" Height="56" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
                                     <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" LineHeight="24" MaxLines="2" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}"/>

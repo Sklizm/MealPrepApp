@@ -63,3 +63,6 @@ sql -i /tests/shopping-changes-regression.sql
 sql -i migrations/20261111_batch_meals.sql
 sql -i migrations/20261111_batch_meals.sql
 sql -i /tests/cooking-batches-regression.sql
+sql -i migrations/20261111_workflows.sql
+sql -i migrations/20261111_workflows.sql
+sql -i /tests/workflows-regression.sql

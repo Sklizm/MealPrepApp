@@ -34,14 +34,14 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     private IReadOnlyList<Ingredient> _allIngredients = Array.Empty<Ingredient>();
     private IReadOnlyList<Unit> _allUnits = Array.Empty<Unit>();
     private string _savedState = "";
-    private string Snapshot() => JsonSerializer.Serialize(new { Title, Description, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, Category=SelectedCategory?.CategoryID, Rows=IngredientRows.Select(r=> new { Ingredient=r.SelectedIngredient?.IngredientID, Unit=r.SelectedUnit?.UnitID, r.Quantity, r.Notes }) });
+    private string Snapshot() => JsonSerializer.Serialize(new { Extra = ExtraSnapshot(), Title, Description, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, Category=SelectedCategory?.CategoryID, Rows=IngredientRows.Select(r=> new { Ingredient=r.SelectedIngredient?.IngredientID, Unit=r.SelectedUnit?.UnitID, r.Quantity, r.Notes, r.IngredientText }) });
     public bool IsDirty => Snapshot() != _savedState;
     public async Task<bool> CanLeaveAsync()
     {
         if (IsBusy) return false;
         if (!IsDirty) return true;
         var decision=await _dialog.ChooseLeaveAsync();
-        if(decision==LeaveDecision.Discard) return true;
+        if(decision==LeaveDecision.Discard) { _recovery?.Delete(); return true; }
         if(decision==LeaveDecision.Stay) return false;
         await SaveDraft();
         return !HasError && !IsDirty;
@@ -102,6 +102,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         _dialog = dialog;
         _services = services;
         _savedState=Snapshot();
+        InitializeRecovery();
     }
 
     public async Task LoadAsync()
@@ -117,7 +118,8 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
                 Categories.Add(category);
 
             _allUnits = await _lookups.GetUnitsAsync();
-            _allIngredients = await _ingredients.GetIngredientsAsync();
+            _ingredientCatalog.Clear(); foreach (var ingredient in await _ingredients.GetIngredientsAsync()) _ingredientCatalog.Add(ingredient);
+            _allIngredients = _ingredientCatalog;
 
             if (IsEdit)
                 await PopulateFromExistingAsync(RecipeId!.Value);
@@ -127,6 +129,8 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             OnPropertyChanged(nameof(ScreenTitle));
             OnPropertyChanged(nameof(IsDraft));
             _savedState=Snapshot();
+            CanRestoreRecovery = _recovery?.Read() is not null;
+            if (RestoreOnLoad) RestoreRecovery();
         }
         catch (AppDbException ex)
         {
@@ -140,7 +144,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         }
         finally
         {
-            IsBusy = false;
+            IsBusy = false; _editorLoading = false;
         }
     }
 
@@ -162,6 +166,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         SelectedCategory = Categories.FirstOrDefault(c => c.CategoryID == recipe.CategoryID);
         _rowVersion = recipe.RowVersion;
 
+        PhotoBytes = (await _recipes.GetRecipePhotoAsync(recipeId))?.ImageData; PhotoMode = "Keep";
         IngredientRows.Clear();
         foreach (var line in recipe.Ingredients)
         {
@@ -205,6 +210,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
                 : null;
             row.Quantity = line.Quantity <= 0m ? 1m : line.Quantity;
             row.Notes = line.Notes;
+            row.IngredientText = line.IngredientText ?? row.SelectedIngredient?.Name ?? "";
             IngredientRows.Add(row);
         }
     }
@@ -248,6 +254,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         {
             var draftInputs = IngredientRows.Select(r => new DraftIngredientInput
             {
+                IngredientText = r.IngredientText,
                 IngredientID = r.SelectedIngredient?.IngredientID,
                 UnitID = r.SelectedUnit?.UnitID,
                 Quantity = r.Quantity,
@@ -269,6 +276,7 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             OnPropertyChanged(nameof(IsDraft));
             OnPropertyChanged(nameof(ScreenTitle));
             _savedState=Snapshot();
+            _editorLoading = false; SaveRecoveryNow();
             NotificationContent = L.Message("Text.DraftSaved");
         }
         catch (AppDbException ex)
@@ -333,20 +341,13 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         IsBusy = true;
         try
         {
-            int recipeId;
-            if (IsEdit)
-            {
-                recipeId = RecipeId!.Value;
-                await _recipes.UpdateRecipeAsync(
-                    recipeId, userId, categoryId, Title.Trim(), Trimmed(Description), Instructions.Trim(),
-                    PrepTimeMinutes, CookTimeMinutes, Servings, inputs, _rowVersion);
-            }
-            else
-            {
-                recipeId = await _recipes.CreateRecipeAsync(
-                    userId, categoryId, Title.Trim(), Trimmed(Description), Instructions.Trim(),
-                    PrepTimeMinutes, CookTimeMinutes, Servings, inputs);
-            }
+            if (_saveFingerprint is not null && await _recipes.GetSavedOperationAsync(userId,_saveOperation) is { } previous) { RecipeId=previous.Id; _rowVersion=previous.Version; }
+            var input = new RecipeBundleInput(RecipeId, categoryId, Title.Trim(), Trimmed(Description), Instructions.Trim(),
+                PrepTimeMinutes, CookTimeMinutes, Servings, inputs, IsEdit ? _rowVersion : null, PhotoMode,
+                PhotoMode == "Set" ? PhotoBytes : null, PhotoMode == "Set" ? _thumbnailBytes : null);
+            var result = await _recipes.SaveBundleAsync(userId, OperationForSave(input), input);
+            var recipeId = result.Id; RecipeId = recipeId; _rowVersion = result.Version; PhotoMode = "Keep";
+            _recovery?.Delete();
 
             if (DraftId.HasValue)
                 await _drafts.DeleteDraftAsync(DraftId.Value, userId);

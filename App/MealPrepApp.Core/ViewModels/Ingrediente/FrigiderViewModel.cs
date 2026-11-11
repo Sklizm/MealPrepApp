@@ -17,6 +17,7 @@ namespace MealPrepApp.ViewModels.Ingrediente;
 /// </summary>
 public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
+    private readonly InventoryRepository? _inventory;
     private readonly PantryRepository _pantry;
     private readonly IngredientRepository _ingredients;
     private readonly LookupRepository _lookups;
@@ -101,14 +102,14 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
         LookupRepository lookups,
         ISessionService session,
         IDialogService dialog,
-        IServiceProvider services)
+        IServiceProvider services, InventoryRepository? inventory = null)
     {
         _pantry = pantry;
         _ingredients = ingredients;
         _lookups = lookups;
         _session = session;
         _dialog = dialog;
-        _services = services;
+        _services = services; _inventory = inventory;
         Items.CollectionChanged += (_, _) => { if (!_populating) Rebuild(); };
         Rebuild();
     }
@@ -127,11 +128,26 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
             var user = _session.CurrentUserId;
             var stock = _pantry.GetPantryAsync(user, source.Token);
             var categories = _lookups.GetIngredientCategoriesAsync(source.Token);
-            await Task.WhenAll(stock, categories);
+            var batches = _inventory?.GetBatchesAsync(user,token:source.Token) ?? Task.FromResult<IReadOnlyList<InventoryBatch>>([]);
+            var thresholds = _inventory?.GetThresholdsAsync(user,source.Token) ?? Task.FromResult<IReadOnlyList<StockThreshold>>([]);
+            var maps = _inventory?.GetUnitMapAsync(source.Token) ?? Task.FromResult<IReadOnlyList<UnitMap>>([]);
+            await Task.WhenAll(stock, categories, batches, thresholds, maps);
             if (_disposed || version != _version) return;
             _categoryLookups = await categories;
             _populating = true;
-            try { Items.Clear(); foreach (var row in await stock) Items.Add(row); }
+            try {
+                var batchRows = await batches; var thresholdRows = await thresholds; var unitMaps = (await maps).ToDictionary(m=>m.UnitID);
+                Items.Clear(); foreach (var row in await stock) {
+                    row.Batches = batchRows.Where(b=>b.IngredientID==row.IngredientID && b.UnitID==row.UnitID).ToArray();
+                    var threshold=thresholdRows.FirstOrDefault(t=>t.IngredientID==row.IngredientID&&t.UnitID==row.UnitID);
+                    row.LowStockThreshold=threshold?.Quantity??0; row.ThresholdVersion=threshold?.Version??0;
+                    var target=unitMaps.GetValueOrDefault(row.UnitID)??new(row.UnitID,row.UnitID,1);
+                    var eligible=batchRows.Where(b=>b.IngredientID==row.IngredientID&&!b.IsExpired&& (unitMaps.GetValueOrDefault(b.UnitID)?.CanonicalUnitID??b.UnitID)==target.CanonicalUnitID)
+                        .Sum(b=>b.RemainingQuantity*(unitMaps.GetValueOrDefault(b.UnitID)?.Multiplier??1));
+                    row.IsLowStock=row.LowStockThreshold>0&&eligible<row.LowStockThreshold*target.Multiplier;
+                    Items.Add(row);
+                }
+            }
             finally { _populating = false; }
             Rebuild();
         }
@@ -150,6 +166,16 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
         }
     }
 
+    [RelayCommand] private async Task AdjustBatch(InventoryBatch? batch) {
+        if (batch is null || _inventory is null) return;
+        var vm=new InventoryBatchDialogViewModel(batch,_inventory,_session,_services.GetService<NotificationCenter>()??new(),RefreshAsync);
+        if(await _dialog.ShowDialogAsync(vm)) await RefreshAsync();
+    }
+    [RelayCommand] private async Task SaveThreshold(PantryItem? item) {
+        if(item is null||_inventory is null||item.LowStockThreshold<0)return;
+        try { await _inventory.SetThresholdAsync(_session.CurrentUserId,Guid.NewGuid(),item.IngredientID,item.UnitID,item.LowStockThreshold,item.ThresholdVersion);await RefreshAsync(); }
+        catch(Exception ex) { AppDiagnostics.Record(ex);ErrorContent=ex is AppDbException db?db.LocalizedMessage:L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog"); }
+    }
     private async Task EditStockAsync(PantryItem? item, bool add)
     {
         if (_disposed || IsBusy) return;
@@ -175,7 +201,10 @@ public sealed partial class FrigiderViewModel : ViewModelBase, IAsyncLoadable, I
         try
         {
             if (!await _dialog.ConfirmAsync(L.Message("Text.RemoveFromPantry"), L.Message("Pantry.RemovePrompt", item.IngredientName))) return;
-            await _pantry.RemovePantryItemAsync(item.UserPantryID, _session.CurrentUserId);
+            if(_inventory is not null&&item.Batches.Count>0) {
+                var cleared=await _inventory.ClearAsync(_session.CurrentUserId,Guid.NewGuid(),item);
+                _services.GetService<NotificationCenter>()?.Post(L.Message("UX.StockAdjusted"),async()=>{await _inventory.UndoGroupAsync(_session.CurrentUserId,Guid.NewGuid(),cleared.EventIds);await RefreshAsync();});
+            } else await _pantry.RemovePantryItemAsync(item.UserPantryID, _session.CurrentUserId);
             if (!_disposed) { Items.Remove(item); NotificationContent = L.Message("Text.IngredientRemovedFromPantry"); }
         }
         catch (Exception ex)

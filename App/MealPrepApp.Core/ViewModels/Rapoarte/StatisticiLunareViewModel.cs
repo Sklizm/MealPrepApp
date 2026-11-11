@@ -19,7 +19,11 @@ namespace MealPrepApp.ViewModels.Rapoarte;
 /// </summary>
 public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoadable
 {
+    private readonly CookingBatchRepository? _activity;
     private readonly ReportRepository _reports;
+    [ObservableProperty] private ActivityReport? _activityReport;
+    public ObservableCollection<ShoppingListRow> UpcomingShortages {get;}=new();
+    private readonly ShoppingListRepository? _shopping;
     private readonly ISessionService _session;
 
     public ObservableCollection<int> Years { get; } = new();
@@ -45,10 +49,10 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
     [ObservableProperty]
     private bool _showEmptyState;
 
-    public StatisticiLunareViewModel(ReportRepository reports, ISessionService session)
+    public StatisticiLunareViewModel(ReportRepository reports, ISessionService session,CookingBatchRepository? activity=null,ShoppingListRepository? shopping=null)
     {
         _reports = reports;
-        _session = session;
+        _session = session;_activity=activity;_shopping=shopping;
 
         var today = DateTime.Today;
         for (int y = today.Year - 3; y <= today.Year + 1; y++)
@@ -96,7 +100,9 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
             foreach (var i in topIngredients)
                 TopIngredients.Add(i);
 
-            HasData = stats.TotalMealsPlanned > 0;
+            if(_activity is not null) { var start=new DateTime(year,month,1);ActivityReport=await _activity.GetActivityAsync(userId,start,start.AddMonths(1).AddDays(-1)); }
+            UpcomingShortages.Clear();if(_shopping is not null)foreach(var row in await _shopping.GetShoppingListAsync(userId,DateTime.Today,DateTime.Today.AddDays(6)))UpcomingShortages.Add(row);
+            HasData = stats.TotalMealsPlanned > 0 || ActivityReport?.Summary.CookedPortions > 0 || ActivityReport?.Summary.ConsumedPortions > 0 || ActivityReport?.Summary.DiscardedPortions > 0 || UpcomingShortages.Count>0;
             ShowEmptyState = !HasData;
         }
         catch (AppDbException ex)

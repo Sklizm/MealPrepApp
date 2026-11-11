@@ -30,6 +30,15 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     /// <summary>The recipe to show. Set by the caller before <see cref="LoadAsync"/> runs.</summary>
     public int RecipeId { get; set; }
     public MealPlanEntry? PlannedMealContext { get; set; }
+    private IReadOnlyList<InventoryBatch> _stock=[];
+    private IReadOnlyList<UnitMap> _unitMap=[];
+    private IReadOnlyList<Unit> _stockUnits=[];
+    private bool _stockLoaded;
+    private RecipeReadiness Readiness => !_stockLoaded || Recipe is null ? new(ReadinessStatus.NeedsReview,[]) : InventoryCalculator.Readiness(Recipe,SelectedServings,_stock,_unitMap,DateOnly.FromDateTime(DateTime.Today));
+    [LocalizedProperty] public string ReadinessLabel => L.Text(Readiness.Status switch {ReadinessStatus.Ready=>"UX.Ready",ReadinessStatus.Missing=>"UX.Missing",_=>"UX.Review"});
+    public IReadOnlyList<ReadinessDisplay> Shortages => Readiness.Ingredients.Where(i=>i.Missing>0||i.NeedsReview).Select(i=>new ReadinessDisplay(i.Name,i.Missing,_stockUnits.FirstOrDefault(u=>u.UnitID==i.UnitID)?.Abbreviation??"",i.NeedsReview)).ToArray();
+    private void NotifyReadiness() {OnPropertyChanged(nameof(ReadinessLabel));OnPropertyChanged(nameof(Shortages));}
+
 
     [ObservableProperty]
     private RecipeFull? _recipe;
@@ -53,15 +62,15 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
     public string PhotoLabel => HasPhoto ? L.Text("Text.ChangePhoto") : L.Text("Text.AddPhoto");
     public RecipeNutritionSummary? ScaledNutrition => Nutrition is null ? null : ServingCalculator.Scale(Nutrition, CanScale ? ServingCalculator.Factor(Recipe!.Servings, SelectedServings) : 1);
     public IReadOnlyList<CookingIngredient> ScaledIngredients => Recipe?.Ingredients.Select(i=> new CookingIngredient { Name=i.IngredientName, Quantity=i.Quantity*(CanScale ? ServingCalculator.Factor(Recipe.Servings, SelectedServings) : 1), Unit=i.UnitAbbreviation, Notes=i.Notes }).ToArray() ?? Array.Empty<CookingIngredient>();
-    partial void OnSelectedServingsChanged(decimal value) { if(value is <=0 or >1000) { SelectedServings=1; return; } OnPropertyChanged(nameof(ScaledIngredients)); OnPropertyChanged(nameof(ScaledNutrition)); }
+    partial void OnSelectedServingsChanged(decimal value) { if(value is <=0 or >1000) { SelectedServings=1; return; } OnPropertyChanged(nameof(ScaledIngredients)); OnPropertyChanged(nameof(ScaledNutrition)); NotifyReadiness(); }
     partial void OnRecipeChanged(RecipeFull? value) { SelectedServings=value?.Servings is >0 ? value.Servings.Value : 1; foreach(var name in new[]{nameof(CanScale),nameof(CanEdit),nameof(ScaledIngredients)}) OnPropertyChanged(name); }
     partial void OnNutritionChanged(RecipeNutritionSummary? value) => OnPropertyChanged(nameof(ScaledNutrition));
     partial void OnIsFavoriteChanged(bool value) => OnPropertyChanged(nameof(FavoriteLabel));
     [RelayCommand] private Task Cook()
     {
         if(Recipe is null) return Task.CompletedTask;
-        Cooking.StartRecipe(Recipe,SelectedServings);
-        Cooking.CookingBatchID = PlannedMealContext?.CookingBatchID; Cooking.Save();
+        Cooking.StartRecipe(Recipe,SelectedServings,PlannedMealContext?.CookingBatchID);
+        Cooking.Save();
         return _navigation.NavigateToAsync(new CookingViewModel(Cooking, _services));
     }
     [RelayCommand] private Task Retry() => LoadAsync();
@@ -117,6 +126,10 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
             PhotoBytes = photo?.ImageData;
 
             Nutrition = await _nutritionRepository.GetRecipeNutritionAsync(RecipeId);
+            if(_services.GetService<InventoryRepository>() is {} inventory) {
+                _stock=await inventory.GetBatchesAsync(_session.CurrentUserId); _unitMap=await inventory.GetUnitMapAsync();
+                _stockUnits=await _services.GetRequiredService<LookupRepository>().GetUnitsAsync();_stockLoaded=true;NotifyReadiness();
+            }
         }
         catch (AppDbException ex)
         {
@@ -298,3 +311,5 @@ public sealed partial class ReteteDetailViewModel : ViewModelBase, IAsyncLoadabl
 
     private Task GoBackToListAsync() => _navigation.NavigateToAsync<ReteteListViewModel>();
 }
+
+public sealed record ReadinessDisplay(string Name,decimal Missing,string Unit,bool NeedsReview);

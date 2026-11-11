@@ -16,6 +16,19 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
     private readonly ISessionService _session;
     private readonly IShellNavigator _shell;
 
+    public ObservableCollection<CookingBatch> PreparedBatches {get;}=new();
+    [RelayCommand] private Task ConsumePrepared(CookingBatch? batch)=>EditPortions(batch,false);
+    [RelayCommand] private Task DiscardPrepared(CookingBatch? batch)=>EditPortions(batch,true);
+    private async Task EditPortions(CookingBatch? batch,bool discard) {
+        if(batch is null||_services?.GetService<CookingBatchRepository>() is not {} repo)return;
+        var review=new MealPrepApp.ViewModels.Retete.PortionEventDialogViewModel(batch,repo,_session,discard);
+        if(await _services.GetRequiredService<IDialogService>().ShowDialogAsync(review))await LoadAsync();
+    }
+    [ObservableProperty] private InventorySummary? _inventorySummary;
+    [LocalizedProperty] public string StockSummary => L.Text("UX.HomeStockSummary",InventorySummary?.Shortages??0,InventorySummary?.ExpiringBatches??0,InventorySummary?.LowStockIngredients??0);
+    partial void OnInventorySummaryChanged(InventorySummary? value)=>OnPropertyChanged(nameof(StockSummary));
+    public bool CanRestoreRecipe => _services?.GetService<EditorRecoveryService>()?.Read() is not null;
+    [RelayCommand] private async Task RestoreRecipe() {if(_services is null)return;var editor=_services.GetRequiredService<MealPrepApp.ViewModels.Retete.ReteteEditorViewModel>();editor.RestoreOnLoad=true;await _services.GetRequiredService<INavigationService>().NavigateToAsync(editor);}
     [ObservableProperty] private string _searchTerm="";
     public ObservableCollection<MealPlanEntry> TodayMeals { get; }=new();
     [ObservableProperty] private bool _hasDrafts;
@@ -44,7 +57,7 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
             var recipe = await _services.GetRequiredService<RecipeRepository>().GetRecipeFullAsync(entry.RecipeID);
             if (recipe is null) return;
             var cooking = _services.GetRequiredService<CookingSession>();
-            cooking.StartRecipe(recipe, entry.PlannedPortions > 0 ? entry.PlannedPortions : entry.Servings ?? recipe.Servings ?? 1);
+            cooking.StartRecipe(recipe, entry.PlannedPortions > 0 ? entry.PlannedPortions : entry.Servings ?? recipe.Servings ?? 1, entry.CookingBatchID);
             cooking.CookingBatchID = entry.CookingBatchID; cooking.Save();
             await _services.GetRequiredService<INavigationService>().NavigateToAsync(new MealPrepApp.ViewModels.Retete.CookingViewModel(cooking,_services));
         } catch (Exception ex) { AppDiagnostics.Record(ex); ErrorContent = ex is AppDbException db ? db.LocalizedMessage : L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog"); }
@@ -93,10 +106,14 @@ public sealed partial class AcasaViewModel : ViewModelBase, IAsyncLoadable, IDis
             var draftsTask = _drafts?.GetDraftsAsync(userId, token) ?? Task.FromResult<IReadOnlyList<RecipeDraftListItem>>(Array.Empty<RecipeDraftListItem>());
             var countsTask = _dashboard.GetDashboardCountsAsync(userId, token);
             var recentTask = _dashboard.GetRecentRecipesAsync(userId, cancellationToken: token);
-            await Task.WhenAll(mealsTask, draftsTask, countsTask, recentTask);
+            var inventoryTask=_services?.GetService<InventoryRepository>()?.GetSummaryAsync(userId,date,token)??Task.FromResult(new InventorySummary(0,0,0));
+            var preparedTask=_services?.GetService<CookingBatchRepository>()?.GetCookingBatchesAsync(userId,token)??Task.FromResult<IReadOnlyList<CookingBatch>>([]);
+            await Task.WhenAll(mealsTask, draftsTask, countsTask, recentTask,inventoryTask,preparedTask);
             if (version != _loadVersion || _disposed) return;
             TodayMeals.Clear(); foreach (var entry in mealsTask.Result.Where(e => e.PlannedDate.Date == date)) TodayMeals.Add(entry);
             HasDrafts = draftsTask.Result.Count > 0; Counts = countsTask.Result;
+            PreparedBatches.Clear();foreach(var batch in await preparedTask)if(batch.CookedAt.HasValue&&batch.FreePortions>0)PreparedBatches.Add(batch);
+            InventorySummary=await inventoryTask; OnPropertyChanged(nameof(CanRestoreRecipe));
             OnPropertyChanged(nameof(CanResumeCooking));
             RecentRecipes.Clear(); foreach (var recipe in recentTask.Result) RecentRecipes.Add(recipe);
         }

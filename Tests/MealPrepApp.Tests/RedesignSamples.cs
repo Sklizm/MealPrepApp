@@ -22,8 +22,30 @@ public static class RedesignSamples
         typeof(MealPrepApp.Desktop.App).GetMethod("ConfigureServices",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,new object[]{services,config});
         services.AddSingleton<IDbConnectionFactory,NoDatabase>(); services.AddSingleton<IDialogService>(dialogs ?? new NoDialogs());
         services.AddSingleton(new PresentationPreferences(Path.Combine(Path.GetTempPath(), $"mealprep-fixture-{Guid.NewGuid()}.json")));
+        services.AddScoped<EditorRecoveryService>(_ => new(null));
+        services.AddSingleton<MealPrepApp.Data.Repositories.InventoryRepository>(sp => new EmptyInventory(sp));
+        services.AddSingleton<MealPrepApp.Data.Repositories.CookingBatchRepository>(sp=>new EmptyCooking(sp));
+        services.AddSingleton<MealPrepApp.Data.Repositories.PlanningWorkflowRepository>(new EmptyPlanning());
         configure?.Invoke(services);
         return services.BuildServiceProvider();
+    }
+    public sealed class EmptyInventory(IServiceProvider services) : MealPrepApp.Data.Repositories.InventoryRepository(new NoDatabase()) {
+        public override Task<IReadOnlyList<InventoryBatch>> GetBatchesAsync(int userId,bool includeEmpty=false,CancellationToken token=default)=>Task.FromResult<IReadOnlyList<InventoryBatch>>([]);
+        public override Task<IReadOnlyList<UnitMap>> GetUnitMapAsync(CancellationToken token=default)=>Task.FromResult<IReadOnlyList<UnitMap>>([]);
+        public override Task<InventorySummary> GetSummaryAsync(int userId,DateTime today,CancellationToken token=default)=>Task.FromResult(new InventorySummary(0,0,0));
+        public override Task<IReadOnlyList<StockThreshold>> GetThresholdsAsync(int userId,CancellationToken token=default)=>Task.FromResult<IReadOnlyList<StockThreshold>>([]);
+        public override async Task<MutationResult> AddAsync(int userId,Guid operationId,int ingredientId,int unitId,decimal quantity,DateTime? purchasedOn=null,DateTime? expiresOn=null) {
+            await services.GetRequiredService<MealPrepApp.Data.Repositories.PantryRepository>().AddPantryItemAsync(userId,ingredientId,unitId,quantity);return new(1,1);
+        }
+    }
+    public sealed class EmptyCooking(IServiceProvider services) : MealPrepApp.Data.Repositories.CookingBatchRepository(new NoDatabase()) {
+        public override Task<IReadOnlyList<CookingBatch>> GetCookingBatchesAsync(int userId,CancellationToken token=default)=>Task.FromResult<IReadOnlyList<CookingBatch>>([]);
+        public override async Task<MutationResult> PlanSeparateAsync(int userId,Guid operation,int recipeId,IReadOnlyList<MealAllocation> allocations) {
+            var id=0;foreach(var a in allocations)id=await services.GetRequiredService<MealPrepApp.Data.Repositories.MealPlanRepository>().PlanMealAsync(userId,recipeId,a.CategoryID,a.PlannedDate,(int)a.Portions,a.Notes);return new(id,1);
+        }
+    }
+    public sealed class EmptyPlanning() : MealPrepApp.Data.Repositories.PlanningWorkflowRepository(new NoDatabase()) {
+        public override Task<IReadOnlyList<MealPrepApp.Data.Repositories.WeekTemplate>> GetTemplatesAsync(int userId)=>Task.FromResult<IReadOnlyList<MealPrepApp.Data.Repositories.WeekTemplate>>([]);
     }
     public static void Render(string output, bool alignmentOnly = false, bool recipeOnly = false, bool localizationOnly = false, string? onlySection = null)
     {

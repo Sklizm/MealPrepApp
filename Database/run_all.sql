@@ -73,6 +73,9 @@
 :r 22_cooking_batches.sql
 :r procs/19_cooking_batches.sql
 :r procs/20_batch_demand.sql
+:r 23_workflow_enhancements.sql
+:r procs/02_recipes_write.sql
+:r procs/21_workflow_enhancements.sql
 
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

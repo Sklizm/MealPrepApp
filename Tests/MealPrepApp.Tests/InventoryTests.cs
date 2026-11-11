@@ -50,3 +50,19 @@ public sealed class InventoryTests
         Assert.Equal(100, stock[0].RemainingQuantity);
     }
 }
+
+public sealed class PlannerPreferenceTests
+{
+    [Fact] public void ExplicitPlannerModeSurvivesResizeAndRestart() {
+        var directory=Path.Combine(Path.GetTempPath(),Guid.NewGuid().ToString());var path=Path.Combine(directory,"preferences.json");
+        try {
+            var preferences=new PresentationPreferences(path);
+            using var services=RedesignSamples.Services(configure:s=>Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton(s,preferences));using var scope=Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(services);
+            var weekly=Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<MealPrepApp.ViewModels.Planificare.PlanificareWeeklyViewModel>(scope.ServiceProvider);
+            weekly.ApplyWidth(600);Assert.True(weekly.AgendaView);Assert.Null(preferences.PlannerAgenda);
+            weekly.AgendaView=false;weekly.ApplyWidth(500);Assert.False(weekly.AgendaView);Assert.False(new PresentationPreferences(path).PlannerAgenda);
+            weekly.AgendaView=true;weekly.ApplyWidth(1400);Assert.True(weekly.AgendaView);Assert.True(new PresentationPreferences(path).PlannerAgenda);
+            weekly.AutoViewCommand.Execute(null);Assert.False(weekly.AgendaView);Assert.Null(preferences.PlannerAgenda);
+        }finally{if(Directory.Exists(directory))Directory.Delete(directory,true);}
+    }
+}

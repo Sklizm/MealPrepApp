@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareWeeklyView" x:DataType="vm:PlanificareWeeklyViewModel" Background="{DynamicResource AppBackground}">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:repo="using:MealPrepApp.Data.Repositories" xmlns:vm="using:MealPrepApp.ViewModels.Planificare" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Planificare.PlanificareWeeklyView" x:DataType="vm:PlanificareWeeklyViewModel" Background="{DynamicResource AppBackground}">
     <Grid Margin="32" RowDefinitions="Auto,Auto,*">
         <StackPanel Spacing="12"><TextBlock Text="{loc:Loc Text.Planner}" Classes="Title"/>
             <WrapPanel>
@@ -8,11 +8,15 @@
                 <TextBlock Text="{Binding WeekLabel}" Classes="Header" Margin="8"/>
                 <CheckBox Content="{loc:Loc Text.Agenda}" IsChecked="{Binding AgendaView}" Margin="8"/>
             </WrapPanel>
-            <WrapPanel>
-                <TextBlock Text="{loc:Loc Text.CopyWeekStartingOn}" VerticalAlignment="Center" Margin="0,0,8,8"/>
-                <loc:LocalizedCalendarDatePicker SelectedDate="{Binding CopyTarget}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.DestinationWeek}"/>
-                <Button Content="{loc:Loc Text.PreviewCopy}" Classes="Secondary" Command="{Binding CopyWeekCommand}" Margin="0,0,8,8"/>
-            </WrapPanel>
+            <Expander Header="{loc:Loc UX.PlannerOptions}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"><StackPanel Spacing="8">
+                <WrapPanel>
+                    <loc:LocalizedCalendarDatePicker SelectedDate="{Binding CopyTarget}" Width="152" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.DestinationWeek}"/>
+                    <Button Content="{loc:Loc Text.PreviewCopy}" Classes="Secondary" Command="{Binding CopyWeekCommand}" Margin="0,0,8,8"/>
+                    <Button Content="{loc:Loc UX.AutoView}" Classes="Secondary" Command="{Binding AutoViewCommand}" Margin="0,0,8,8"/>
+                </WrapPanel>
+                <WrapPanel><TextBox Text="{Binding TemplateName}" MaxLength="100" Watermark="{loc:Loc UX.TemplateName}" Width="200" Margin="0,0,8,8"/><Button Content="{loc:Loc UX.SaveTemplate}" Classes="Secondary" Command="{Binding SaveTemplateCommand}" Margin="0,0,8,8"/></WrapPanel>
+                <WrapPanel><ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" Width="200" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc UX.TemplateName}"><ComboBox.ItemTemplate><DataTemplate x:DataType="repo:WeekTemplate"><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox><Button Content="{loc:Loc UX.ApplyTemplate}" Classes="Secondary" Command="{Binding ApplyTemplateCommand}" Margin="0,0,8,8"/></WrapPanel>
+            </StackPanel></Expander>
             <TextBlock Text="{loc:Loc Text.MoveMealsByDraggingOrUsingOpenMoveChooseADateAndServingsWhenDuplicating}" Classes="Muted" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="1">
@@ -49,7 +53,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="vm:WeekCellViewModel">
-                                                <Border Classes="Card" Padding="8" Margin="0,0,8,0" MinHeight="100" DragDrop.AllowDrop="True" DragDrop.DragOver="OnDragOver" DragDrop.Drop="OnDrop">
+                                                <Border Classes="Card" Padding="8" Margin="0,0,8,0" MinHeight="80" DragDrop.AllowDrop="True" DragDrop.DragOver="OnDragOver" DragDrop.Drop="OnDrop">
                                                     <StackPanel Spacing="4">
                                                         <ItemsControl ItemsSource="{Binding Entries}">
                                                             <ItemsControl.ItemTemplate>
@@ -58,7 +62,7 @@
                                                                         <Button Classes="Primary" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" Foreground="{DynamicResource OnMeal}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" PointerPressed="OnMealPointerPressed">
                                                                             <StackPanel>
                                                                                 <TextBlock Text="{Binding RecipeTitle}" TextWrapping="Wrap" Foreground="{DynamicResource OnMeal}"/>
-                                                                                <TextBlock Text="{loc:Format Count.Servings, Servings}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
+                                                                                <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
                                                                             </StackPanel>
                                                                         </Button>
                                                                         <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" FontSize="12" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
@@ -99,7 +103,7 @@
                                     <TextBlock Text="{loc:Format Date.Long, PlannedDate}" Classes="Muted"/>
                                     <TextBlock Text="{loc:Display CategoryName}"/>
                                     <TextBlock Text="{Binding RecipeTitle}" Classes="Header" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{loc:Format Count.Servings, Servings}"/>
+                                    <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}"/>
                                     <WrapPanel>
                                         <Button Content="{loc:Loc Text.OpenMove}" Classes="Secondary" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,8,0"/>
                                         <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>

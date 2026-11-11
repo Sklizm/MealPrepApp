@@ -16,7 +16,15 @@ namespace MealPrepApp.ViewModels.Ingrediente;
 /// </summary>
 public sealed partial class PantryItemDialogViewModel : ViewModelBase
 {
+    private readonly InventoryRepository? _inventory;
     private readonly PantryRepository _pantry;
+    [ObservableProperty] private DateTime? _purchasedOn;
+    [ObservableProperty] private DateTime? _expiresOn;
+    private Guid _operation=Guid.NewGuid();
+    private string? _submitted;
+    partial void OnSelectedIngredientChanged(Ingredient? value) { if(!IsEdit) SelectedUnit=Units.FirstOrDefault(u=>u.UnitID==value?.DefaultUnitID); }
+    [RelayCommand] private void AddOne() => Quantity=(Quantity??0)+1;
+    [RelayCommand] private void AddHundred() => Quantity=(Quantity??0)+100;
     private readonly IngredientRepository _ingredients;
     private readonly LookupRepository _lookups;
     private readonly ISessionService _session;
@@ -47,12 +55,12 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
         PantryRepository pantry,
         IngredientRepository ingredients,
         LookupRepository lookups,
-        ISessionService session)
+        ISessionService session, InventoryRepository? inventory = null)
     {
         _pantry = pantry;
         _ingredients = ingredients;
         _lookups = lookups;
-        _session = session;
+        _session = session; _inventory = inventory;
     }
 
     public async Task InitForAddAsync()
@@ -137,6 +145,12 @@ public sealed partial class PantryItemDialogViewModel : ViewModelBase
             {
                 await _pantry.UpdatePantryQuantityAsync(
                     _editingPantryId.Value, _session.CurrentUserId, Quantity.Value);
+            }
+            else if (_inventory is not null)
+            {
+                var fingerprint=$"{SelectedIngredient.IngredientID}|{SelectedUnit.UnitID}|{Quantity.Value}|{PurchasedOn:yyyyMMdd}|{ExpiresOn:yyyyMMdd}";
+                if(_submitted!=fingerprint) { _submitted=fingerprint; _operation=Guid.NewGuid(); }
+                await _inventory.AddAsync(_session.CurrentUserId,_operation,SelectedIngredient.IngredientID,SelectedUnit.UnitID,Quantity.Value,PurchasedOn,ExpiresOn);
             }
             else
             {

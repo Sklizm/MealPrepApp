@@ -35,6 +35,18 @@
             <TextBlock Text="{loc:Loc Text.NotesOptional}" Classes="Muted"/>
             <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56"/>
             <!-- Error message -->
+            <Expander Header="{loc:Loc UX.MultipleDates}" IsVisible="{Binding !IsEdit}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="8">
+                    <Button Content="{loc:Loc UX.AddSelectedDate}" Command="{Binding AddDateCommand}" Classes="Secondary"/>
+                    <ItemsControl ItemsSource="{Binding AdditionalDates}"><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding StringFormat='{}{0:d}'}" Command="{Binding $parent[Window].DataContext.RemoveDateCommand}" CommandParameter="{Binding}" Classes="Secondary"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    <TextBlock Text="{loc:Loc UX.UsePreparedBatch}" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding PreparedBatches}" SelectedItem="{Binding SelectedPreparedBatch}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc UX.UsePreparedBatch}"><ComboBox.ItemTemplate><DataTemplate x:DataType="models:CookingBatch"><TextBlock Text="{Binding PreparedLabel}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+                    <Button Content="{loc:Loc UX.UseNewBatch}" Command="{Binding UseNewBatchCommand}" Classes="Secondary"/>
+                    <CheckBox Content="{loc:Loc UX.OneCookingBatch}" IsChecked="{Binding IsBatchPlan}"/>
+                    <TextBlock Text="{loc:Loc UX.BatchPortionsHint}" TextWrapping="Wrap" Classes="Muted"/>
+                    <NumericUpDown Value="{Binding BatchPortions}" Minimum="1" Maximum="1000" FormatString="0.####" IsEnabled="{Binding IsBatchPlan}" AutomationProperties.Name="{loc:Loc UX.ProducedPortions}"/>
+                </StackPanel>
+            </Expander>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,4,0,0"/>
         </StackPanel>
         <!-- Footer -->

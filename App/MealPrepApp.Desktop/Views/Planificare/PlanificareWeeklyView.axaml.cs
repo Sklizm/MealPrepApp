@@ -11,7 +11,7 @@ public partial class PlanificareWeeklyView:UserControl
     public PlanificareWeeklyView()
     {
         InitializeComponent();
-        SizeChanged+=(_,_)=>{if(DataContext is PlanificareWeeklyViewModel vm) vm.AgendaView=Bounds.Width<800;};
+        SizeChanged+=(_,_)=>{if(DataContext is PlanificareWeeklyViewModel vm) vm.ApplyWidth(Bounds.Width);};
         AddHandler(PointerPressedEvent,(_,e)=>
         {
             if(e.Source is Control source)

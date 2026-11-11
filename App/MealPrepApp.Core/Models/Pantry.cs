@@ -1,8 +1,14 @@
+using MealPrepApp.Services;
 namespace MealPrepApp.Models;
 
 /// <summary>A pantry ("Frigider") stock row from <c>sp_GetPantry</c>.</summary>
-public sealed class PantryItem
+public sealed class PantryItem : LocalizedObservableObject
 {
+    public IReadOnlyList<InventoryBatch> Batches { get; set; } = [];
+    public decimal LowStockThreshold { get; set; }
+    public long ThresholdVersion { get; set; }
+    public bool IsLowStock { get; set; }
+    [LocalizedProperty] public string BatchSummary => L.Text("UX.BatchCount", Batches.Count);
     public string CategoryName {get;set;}="Fără categorie";
     public int UserPantryID { get; set; }
     public int IngredientID { get; set; }

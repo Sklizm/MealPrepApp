@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels.Retete" x:Class="MealPrepApp.Desktop.Views.Retete.PortionEventDialog" x:DataType="vm:PortionEventDialogViewModel" Title="{Binding ActionLabel}" Width="460" SizeToContent="Height" MaxHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
+ <StackPanel Margin="20" Spacing="10">
+  <TextBlock Text="{Binding Batch.RecipeTitle}" Classes="Header" TextWrapping="Wrap"/>
+  <TextBlock Text="{Binding Batch.PreparedSummary}" Classes="Muted" TextWrapping="Wrap"/>
+  <TextBlock Text="{loc:Loc UX.PortionsEventHint}" Classes="Muted" TextWrapping="Wrap"/>
+  <NumericUpDown Value="{Binding Quantity}" Minimum="0.0001" Maximum="{Binding Batch.FreePortions}" FormatString="0.####" AutomationProperties.Name="{loc:Loc Text.Servings}"/>
+  <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8"><Button Content="{loc:Loc Text.Cancel}" Click="Cancel" Classes="Secondary"/><Button Content="{Binding ActionLabel}" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsBusy}" Classes="Primary"/></StackPanel>
+ </StackPanel>
+</Window>

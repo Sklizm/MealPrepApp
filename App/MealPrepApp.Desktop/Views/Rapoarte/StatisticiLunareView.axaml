@@ -43,6 +43,22 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" IsVisible="{Binding HasData}">
             <StackPanel Spacing="16">
+                <Border Classes="Card"><StackPanel Spacing="8">
+                    <TextBlock Text="{loc:Loc UX.RecordedActivity}" Classes="Header"/>
+                    <WrapPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.PlannedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.PlannedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.CookedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.CookedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.ConsumedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.ConsumedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.DiscardedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.DiscardedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
+                    </WrapPanel>
+                    <TextBlock Text="{loc:Loc UX.ActivityHint}" Classes="Muted" TextWrapping="Wrap"/>
+                    <TextBlock Text="{loc:Loc UX.StockWaste}" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding ActivityReport.Waste}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:WasteQuantity"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{Binding Quantity}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    <TextBlock Text="{loc:Loc UX.UpcomingShortages}" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding UpcomingShortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:ShoppingListRow"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{Binding ToBuyQty}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    <TextBlock Text="{loc:Loc UX.MealRepetition}" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding ActivityReport.Repetition}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:MealRepetition"><WrapPanel><TextBlock Text="{Binding RecipeTitle}" Margin="0,0,8,0"/><TextBlock Text="{Binding PlannedMeals}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                </StackPanel></Border>
                 <!-- Headline KPI tiles -->
                 <UniformGrid Rows="1" Columns="3" Margin="0,0,-16,0">
                     <Border Classes="StatCard">

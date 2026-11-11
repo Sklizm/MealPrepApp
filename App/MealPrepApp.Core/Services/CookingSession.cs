@@ -53,10 +53,10 @@ public sealed partial class CookingSession : LocalizedObservableObject
     partial void OnCurrentStepChanged(int value) { OnPropertyChanged(nameof(CurrentInstruction)); OnPropertyChanged(nameof(StepLabel)); OnPropertyChanged(nameof(HasPrevious)); OnPropertyChanged(nameof(HasNext)); Save(); }
     [RelayCommand] private void PreviousStep() { if (HasPrevious) CurrentStep--; }
     [RelayCommand] private void NextStep() { if (HasNext) CurrentStep++; }
-    public void StartRecipe(RecipeFull recipe, decimal servings) {
-        if (Recipe?.RecipeID == recipe.RecipeID) { Servings = servings; return; }
+    public void StartRecipe(RecipeFull recipe, decimal servings, int? cookingBatchId = null) {
+        if (Recipe?.RecipeID == recipe.RecipeID && (cookingBatchId is null || CookingBatchID == cookingBatchId)) { Servings = servings; return; }
         var wasRestoring = _restoring; _restoring = true;
-        _finishFingerprint = null; Recipe = recipe; Ingredients.Clear(); CurrentStep = 0; CookingBatchID = null; PlanOperation = Guid.NewGuid(); FinishOperation = Guid.NewGuid();
+        _finishFingerprint = null; Recipe = recipe; Ingredients.Clear(); CurrentStep = 0; CookingBatchID = cookingBatchId; PlanOperation = Guid.NewGuid(); FinishOperation = Guid.NewGuid();
         foreach (var line in recipe.Ingredients) {
             var ingredient = new CookingIngredient { Name = line.IngredientName, BaseQuantity = line.Quantity, Quantity = line.Quantity, Unit = line.UnitAbbreviation, Notes = line.Notes };
             ingredient.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(CookingIngredient.IsChecked)) Save(); };

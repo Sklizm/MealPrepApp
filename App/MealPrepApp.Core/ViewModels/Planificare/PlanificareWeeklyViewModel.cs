@@ -22,6 +22,26 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
     private readonly LookupRepository _lookups;
     private readonly IDialogService _dialog;
     private readonly ISessionService _session;
+    private readonly PresentationPreferences _preferences;
+    private bool _adaptive;
+    private double _width;
+    partial void OnAgendaViewChanged(bool value) { if(!_adaptive) _preferences.PlannerAgenda=value; }
+    public void ApplyWidth(double width) { _width=width;_adaptive=true;try { AgendaView=_preferences.PlannerAgenda??width<800; } finally { _adaptive=false; } }
+    [RelayCommand] private void AutoView() { _preferences.PlannerAgenda=null;ApplyWidth(_width); }
+    public ObservableCollection<WeekTemplate> Templates {get;}=new();
+    [ObservableProperty] private WeekTemplate? _selectedTemplate;
+    [ObservableProperty] private string _templateName="";
+    [RelayCommand] private async Task SaveTemplate() {
+        if(string.IsNullOrWhiteSpace(TemplateName)||_services.GetService<PlanningWorkflowRepository>() is not {} repo)return;
+        try { await repo.SaveTemplateAsync(_session.CurrentUserId,Guid.NewGuid(),TemplateName.Trim(),WeekStart);Templates.Clear();foreach(var t in await repo.GetTemplatesAsync(_session.CurrentUserId))Templates.Add(t); }
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent=ex is AppDbException db?db.LocalizedMessage:L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");}
+    }
+    [RelayCommand] private async Task ApplyTemplate() {
+        if(SelectedTemplate is null||_services.GetService<PlanningWorkflowRepository>() is not {} repo)return;
+        if(!await _dialog.ConfirmAsync(L.Message("UX.ApplyTemplate"),L.Message("UX.ApplyTemplatePrompt",SelectedTemplate.Name,WeekStart)))return;
+        try {await repo.ApplyTemplateAsync(_session.CurrentUserId,Guid.NewGuid(),SelectedTemplate,WeekStart);await RefreshAsync();}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent=ex is AppDbException db?db.LocalizedMessage:L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");}
+    }
 
     public WeekCellViewModel DefaultCell=>new(){Date=WeekStart,CategoryId=MealSlots.DefaultSlotId};
     public ObservableCollection<MealPlanEntry> AgendaEntries {get;}=new();
@@ -41,7 +61,14 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
     }
     public async Task MoveEntryAsync(MealPlanEntry entry,DateTime date,int categoryId)
     {
-        try {await _mealPlan.UpdatePlannedMealAsync(entry.MealPlanEntryID,_session.CurrentUserId,categoryId,date,entry.Servings,entry.Notes);await RefreshAsync();}
+        try {
+            if(!await _dialog.ConfirmAsync(L.Message("UX.MoveMeal"),L.Message("UX.MoveMealPrompt",entry.RecipeTitle,date)))return;
+            if(_services.GetService<PlanningWorkflowRepository>() is {} workflow) {
+                var result=await workflow.MoveAsync(_session.CurrentUserId,Guid.NewGuid(),entry,date,categoryId);
+                if(result.EventId is int move) _services.GetService<NotificationCenter>()?.Post(L.Message("UX.MealMoved"),async()=>{await workflow.UndoMoveAsync(_session.CurrentUserId,Guid.NewGuid(),move);await RefreshAsync();});
+            } else await _mealPlan.UpdatePlannedMealAsync(entry.MealPlanEntryID,_session.CurrentUserId,categoryId,date,entry.Servings,entry.Notes);
+            await RefreshAsync();
+        }
         catch(AppDbException ex) {ErrorContent = ex.LocalizedMessage;}
         catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent = L.Message("Text.TheMealCouldNotBeMovedTryAgain");}
     }
@@ -78,19 +105,21 @@ public sealed partial class PlanificareWeeklyViewModel : ViewModelBase, IAsyncLo
         MealPlanRepository mealPlan,
         LookupRepository lookups,
         IDialogService dialog,
-        ISessionService session)
+        ISessionService session,PresentationPreferences? preferences=null)
     {
         _services = services;
         _mealPlan = mealPlan;
         _lookups = lookups;
         _dialog = dialog;
-        _session = session;
+        _session = session; _preferences=preferences??new(); _agendaView=_preferences.PlannerAgenda??false;
     }
 
     public async Task LoadAsync()
     {
         await LoadSlotHeadersAsync();
         await RefreshAsync();
+        try {if(_services.GetService<PlanningWorkflowRepository>() is {} workflow) {Templates.Clear();foreach(var t in await workflow.GetTemplatesAsync(_session.CurrentUserId))Templates.Add(t);}}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent=L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");}
     }
 
     private async Task LoadSlotHeadersAsync()

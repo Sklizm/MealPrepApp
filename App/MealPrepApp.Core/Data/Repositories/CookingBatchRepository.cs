@@ -8,6 +8,10 @@ public class CookingBatchRepository(IDbConnectionFactory factory) : InventoryRep
     public virtual Task<MutationResult> PlanAsync(int userId, Guid operation, int recipeId, decimal portions, IReadOnlyList<MealAllocation> allocations) =>
         Mutation("sp_PlanCookingBatch", new { UserID = userId, OperationID = operation, RecipeID = recipeId,
             PlannedPortions = portions, AllocationsJson = JsonSerializer.Serialize(allocations) });
+    public virtual Task<MutationResult> AllocatePreparedAsync(int userId,Guid operation,CookingBatch batch,IReadOnlyList<MealAllocation> allocations)=>
+        Mutation("sp_AllocatePreparedMeals",new {UserID=userId,OperationID=operation,batch.CookingBatchID,ExpectedVersion=batch.Version,AllocationsJson=JsonSerializer.Serialize(allocations)});
+    public virtual Task<MutationResult> PlanSeparateAsync(int userId,Guid operation,int recipeId,IReadOnlyList<MealAllocation> allocations) =>
+        Mutation("sp_PlanSeparateMeals",new {UserID=userId,OperationID=operation,RecipeID=recipeId,AllocationsJson=JsonSerializer.Serialize(allocations)});
     public virtual Task<MutationResult> AllocateAsync(int userId, Guid operation, int batchId, long version, MealAllocation allocation) =>
         Mutation("sp_AllocateCookingBatch", new { UserID = userId, OperationID = operation, CookingBatchID = batchId,
             ExpectedVersion = version, allocation.PlannedDate, allocation.CategoryID, allocation.Portions });

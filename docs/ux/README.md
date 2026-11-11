@@ -45,6 +45,32 @@ ingredient demand once. Cooking records recipe/nutrition snapshots. Consuming pr
 portions never deducts raw stock, and reservations protect portions allocated to meals.
 Reports can distinguish planned, cooked, consumed and explicitly discarded activity.
 
+## Editing, pantry and planning
+
+The recipe editor selects and previews a photo, then saves it with recipe content in
+one transaction. Account-scoped recovery drafts retain unresolved ingredient text,
+selected photos and the original import text after a short idle interval. Restoring a
+draft does not publish it. Inline catalog creation preserves the rest of the editor.
+
+Paste recipes or ingredient lists, or supply HTTPS recipe pages with structured
+Recipe data. Import review retains the source and requires explicit use of the draft;
+unresolved quantities, units and ingredients must be completed before publication.
+Fractional quantities retain four decimal places. Unsupported pages fall back to paste.
+URL fetching pins validated public DNS addresses, rejects internal destinations and
+redirects to them, and limits redirects, time and response size. No paid AI is used.
+
+Pantry totals expand to purchase batches with optional dates, explicit corrections and
+waste recording. Low-stock thresholds are opt-in. Catalog edits use optimistic
+concurrency and preserve existing recipe quantities/units when defaults change.
+
+The planner supports several selected dates, independent cooking or one shared batch,
+prepared-portion allocations, reusable week templates and week copies with fresh
+planned batches. Explicit Grid/Agenda selection survives resizing and restarting.
+Confirmed moves and suitable stock corrections/removals offer audited Undo; subsequent
+usage refuses unsafe reversal. Reports keep plans separate from recorded activity,
+show upcoming shortages/repetition and group explicit stock waste by compatible units.
+The existing navigation rail and global keyboard behavior remain in place.
+
 ## Database upgrade
 
 On a database host, after the disposable suite passes:
@@ -54,6 +80,7 @@ bash scripts/test-database.sh
 bash scripts/update-database.sh mealprep-db 20261111_inventory.sql
 bash scripts/update-database.sh mealprep-db 20261111_shopping.sql
 bash scripts/update-database.sh mealprep-db 20261111_batch_meals.sql
+bash scripts/update-database.sh mealprep-db 20261111_workflows.sql
 ```
 
 Apply the existing compatibility and cooking-redesign migrations first when needed.
@@ -70,5 +97,4 @@ and verifies quantities, known timestamps and unknown dates across repeated upgr
 incompatible units, mixed expiry and consumption-review ordering.
 
 These checks do not establish native desktop, physical Android or live deployment
-acceptance. The wider desktop, cooking, batch planning and companion upgrade is still
-in development.
+acceptance. Companion development and native/device acceptance are tracked separately.

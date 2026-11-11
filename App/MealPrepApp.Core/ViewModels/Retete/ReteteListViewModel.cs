@@ -210,8 +210,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             HasNextPage = rows.Count > 0 && page * PageSize < rows[0].TotalCount;
 
             Recipes.Clear();
-            foreach (var row in rows)
-                Recipes.Add(row);
+            foreach (var row in rows) { if(filter==RecipeFilterIds.Favorites)row.IsFavorite=true; Recipes.Add(row); }
 
             _loaded = true;
         }
@@ -315,6 +314,17 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         return _navigation.NavigateToAsync(detail);
     }
 
+    [RelayCommand] private async Task FavoriteRecipe(RecipeListItem? item) {
+        if(item is null)return;
+        try {item.IsFavorite=await _favorites.ToggleFavoriteAsync(_session.CurrentUserId,item.RecipeID);}
+        catch(Exception ex){AppDiagnostics.Record(ex);ErrorContent=L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");}
+    }
+    [RelayCommand] private async Task PlanRecipe(RecipeListItem? item) {
+        if(item is null)return;
+        var editor=_services.GetRequiredService<MealPrepApp.ViewModels.Planificare.PlanMealDialogViewModel>();
+        await editor.InitForAddAsync(DateTime.Today,MealPrepApp.ViewModels.Planificare.MealSlots.DefaultSlotId,item);
+        await _dialog.ShowDialogAsync(editor);
+    }
     [RelayCommand]
     private Task CreateRecipe()
     {

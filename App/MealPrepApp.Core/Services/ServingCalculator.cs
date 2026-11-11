@@ -11,6 +11,8 @@ public static class ServingCalculator
     public static RecipeNutritionSummary Scale(RecipeNutritionSummary value, decimal factor) => new()
     {
         RecipeID=value.RecipeID, Servings=value.Servings,
+        CaloriesPerServing=value.CaloriesPerServing, ProteinGramsPerServing=value.ProteinGramsPerServing,
+        CarbsGramsPerServing=value.CarbsGramsPerServing, FatGramsPerServing=value.FatGramsPerServing,
         TotalCalories=value.TotalCalories*factor, TotalProteinGrams=value.TotalProteinGrams*factor,
         TotalCarbsGrams=value.TotalCarbsGrams*factor, TotalFatGrams=value.TotalFatGrams*factor,
         MissingNutritionCount=value.MissingNutritionCount, UnconvertibleIngredientCount=value.UnconvertibleIngredientCount

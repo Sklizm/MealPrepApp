@@ -86,7 +86,10 @@
                                             <TextBlock Text="{loc:Loc Catalog.NutritionAvailable}" Foreground="{DynamicResource ActionPrimary}" FontSize="12" IsVisible="{Binding HasNutrition}" TextWrapping="Wrap"/>
                                             <TextBlock Text="{loc:Loc Catalog.NutritionMissing}" Classes="Muted" FontSize="12" IsVisible="{Binding !HasNutrition}" TextWrapping="Wrap"/>
                                         </StackPanel>
-                                        <Button Grid.Column="1" Content="{loc:Loc Text.Nutrition}" Classes="Secondary" VerticalAlignment="Center" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <StackPanel Grid.Column="1" Spacing="6">
+                                        <Button Content="{loc:Loc UX.EditIngredient}" Classes="Link" Command="{Binding DataContext.EditIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <Button Content="{loc:Loc Text.Nutrition}" Classes="Secondary" VerticalAlignment="Center" Command="{Binding DataContext.EditNutritionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

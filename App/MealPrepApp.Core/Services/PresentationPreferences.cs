@@ -10,6 +10,7 @@ public sealed partial class PresentationPreferences : ObservableObject
     [ObservableProperty] private Appearance _theme;
     [ObservableProperty] private bool _recipeListView;
     [ObservableProperty] private bool _reducedMotion;
+    [ObservableProperty] private bool? _plannerAgenda;
     private bool _saveFailed;
     [LocalizedProperty]
     public string? SaveError => _saveFailed ? L.Text("Text.PreferencesCouldNotBeSaved") : null;
@@ -27,6 +28,7 @@ public sealed partial class PresentationPreferences : ObservableObject
                     if (data.TryGetProperty("Theme", out var theme) && theme.ValueKind == JsonValueKind.Number && theme.TryGetInt32(out var number) && Enum.IsDefined((Appearance)number)) _theme = (Appearance)number;
                     if (data.TryGetProperty("RecipeListView", out var list)) _recipeListView = list.ValueKind == JsonValueKind.True;
                     if (data.TryGetProperty("ReducedMotion", out var motion)) _reducedMotion = motion.ValueKind == JsonValueKind.True;
+                    if (data.TryGetProperty("PlannerAgenda", out var agenda) && agenda.ValueKind is JsonValueKind.True or JsonValueKind.False) _plannerAgenda = agenda.GetBoolean();
                     if (data.TryGetProperty("Language", out var language)) _language = LocalizationService.Normalize(language.ValueKind == JsonValueKind.String ? language.GetString() : null);
                 }
             }
@@ -36,8 +38,8 @@ public sealed partial class PresentationPreferences : ObservableObject
     }
     private void Save()
     {
-        try { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_path))!); var temporary = _path + ".tmp"; File.WriteAllText(temporary, JsonSerializer.Serialize(new Data(Theme, RecipeListView, ReducedMotion, Language))); File.Move(temporary, _path, true); _saveFailed = false; }
+        try { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_path))!); var temporary = _path + ".tmp"; File.WriteAllText(temporary, JsonSerializer.Serialize(new Data(Theme, RecipeListView, ReducedMotion, Language, PlannerAgenda))); File.Move(temporary, _path, true); _saveFailed = false; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _saveFailed = true; AppDiagnostics.Record(ex); }
     }
-    private sealed record Data(Appearance Theme, bool RecipeListView, bool ReducedMotion, string? Language = null);
+    private sealed record Data(Appearance Theme, bool RecipeListView, bool ReducedMotion, string? Language = null, bool? PlannerAgenda = null);
 }

@@ -54,6 +54,8 @@ public sealed class DesktopDialogService : IDialogService
         {
             PlanMealDialogViewModel => new PlanMealDialog(),
             MealPrepApp.ViewModels.Retete.FinishCookingDialogViewModel => new MealPrepApp.Desktop.Views.Retete.FinishCookingDialog(),
+            MealPrepApp.ViewModels.Retete.PortionEventDialogViewModel => new MealPrepApp.Desktop.Views.Retete.PortionEventDialog(),
+            InventoryBatchDialogViewModel => new InventoryBatchDialog(),
             ShoppingItemDialogViewModel => new ShoppingItemDialog(),
             PantryItemDialogViewModel => new PantryItemDialog(),
             IngredientAddDialogViewModel => new IngredientAddDialog(),

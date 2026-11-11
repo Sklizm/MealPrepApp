@@ -1,12 +1,15 @@
 using MealPrepApp.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 namespace MealPrepApp.Models;
 
 /// <summary>
 /// List row from <c>sp_GetRecipes</c>, <c>sp_SearchRecipesByTitle</c> and <c>sp_GetFavoriteRecipes</c>.
 /// Search results omit the time/serving columns (left null); favorites set <see cref="FavoritedAt"/>.
 /// </summary>
-public sealed class RecipeListItem : LocalizedObservableObject
+public sealed partial class RecipeListItem : LocalizedObservableObject
 {
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FavoriteButtonLabel))] private bool _isFavorite;
+    [LocalizedProperty] public string FavoriteButtonLabel => L.Text(IsFavorite ? "Text.RemoveFromFavorites" : "Text.AddToFavorites");
     public int RecipeID { get; set; }
     public string Title { get; set; } = "";
     public int UserID { get; set; }
@@ -89,6 +92,7 @@ public sealed class RecipeFindResult
 /// <summary>Row from <c>sp_GetRecentRecipes</c> — the Acasa "Recent recipes" grid.</summary>
 public sealed class RecentRecipe
 {
+    public byte[]? PhotoData { get; set; }
     public int RecipeID { get; set; }
     public string Title { get; set; } = "";
     public int? CategoryID { get; set; }

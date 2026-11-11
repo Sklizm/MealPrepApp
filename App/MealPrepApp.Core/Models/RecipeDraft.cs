@@ -32,6 +32,7 @@ public sealed class RecipeDraftFull
 /// ingredient and unit are nullable so a half-filled editor row can be saved and restored.</summary>
 public sealed class DraftIngredientInput
 {
+    public string? IngredientText { get; set; }
     public int? IngredientID { get; set; }
     public int? UnitID { get; set; }
     public decimal Quantity { get; set; }

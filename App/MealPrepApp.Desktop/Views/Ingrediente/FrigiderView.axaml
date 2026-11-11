@@ -87,7 +87,7 @@
                                 <StackPanel>
                                 <TextBlock Text="{loc:Display Item.CategoryName}" IsVisible="{Binding StartsCategory}" Classes="Muted" FontWeight="SemiBold" Margin="4,8,0,6"/>
                                 <Border Classes="Card" Margin="0,0,0,6" Padding="12">
-                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                         <TextBlock Text="{Binding Item.IngredientName}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                         <StackPanel Grid.Row="1" Spacing="2" Margin="0,4,8,0">
                                             <TextBlock Text="{loc:Display Item.CategoryName}" Classes="Muted" FontSize="11"/>
@@ -99,6 +99,19 @@
                                                 <Path Data="{StaticResource IconClose}" Width="12" Height="12" Stretch="Uniform" Stroke="{DynamicResource OnDanger}" StrokeThickness="1.7"/>
                                             </Button>
                                         </StackPanel>
+                                        <Expander Grid.Row="2" Grid.ColumnSpan="2" Header="{Binding Item.BatchSummary}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="{loc:Loc UX.LowStock}" IsVisible="{Binding Item.IsLowStock}" Foreground="{DynamicResource Danger}"/>
+                                                <ItemsControl ItemsSource="{Binding Item.Batches}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:InventoryBatch">
+                                                    <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                                                        <StackPanel><TextBlock Text="{Binding QuantitySummary}"/><TextBlock Text="{Binding ExpirySummary}" Classes="Muted"/></StackPanel>
+                                                        <Button Grid.Column="1" Content="{loc:Loc UX.AdjustBatch}" Classes="Secondary" Command="{Binding $parent[UserControl].DataContext.AdjustBatchCommand}" CommandParameter="{Binding}"/>
+                                                    </Grid>
+                                                </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                                                <TextBlock Text="{loc:Loc UX.ThresholdHint}" Classes="Muted" TextWrapping="Wrap"/>
+                                                <WrapPanel><NumericUpDown Value="{Binding Item.LowStockThreshold}" Minimum="0" Maximum="99999999" FormatString="0.####" Width="130" AutomationProperties.Name="{loc:Loc UX.LowStock}"/><Button Content="{loc:Loc Text.Save}" Command="{Binding $parent[UserControl].DataContext.SaveThresholdCommand}" CommandParameter="{Binding Item}" Classes="Secondary"/></WrapPanel>
+                                            </StackPanel>
+                                        </Expander>
                                     </Grid>
                                 </Border>
                                 </StackPanel>

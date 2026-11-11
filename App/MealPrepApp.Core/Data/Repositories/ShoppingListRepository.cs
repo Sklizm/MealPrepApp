@@ -9,7 +9,7 @@ public class ShoppingListRepository : RepositoryBase
 {
     public ShoppingListRepository(IDbConnectionFactory factory) : base(factory) { }
 
-    public Task<IReadOnlyList<ShoppingListRow>> GetShoppingListAsync(
+    public virtual Task<IReadOnlyList<ShoppingListRow>> GetShoppingListAsync(
         int userId, DateTime startDate, DateTime endDate) =>
         QueryProcAsync<ShoppingListRow>("sp_GetShoppingList",
             new { UserID = userId, StartDate = startDate.Date, EndDate = endDate.Date });
