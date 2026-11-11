@@ -8,7 +8,8 @@ Verified implementation evidence:
 
 - 108 desktop/Core xUnit tests, disposable SQL migration and regression suites, and
   58 real HTTP/API integration checks against a disposable SQL Server.
-- Legacy WPF cross-build and Linux self-contained publish.
+- Legacy WPF cross-build, Linux self-contained publish, and native X11 startup
+  on NixOS with the development shell (including ICE/SM session libraries).
 - Desktop headless screenshot matrix: English, Romanian and Russian; Light/Dark;
   860×600, 1280×800 and 1440×900, with additional scale captures at 1280×800.
 - 13 Android JVM tests covering ordered durable operations, lost responses, expired

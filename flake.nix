@@ -22,6 +22,8 @@
           fontconfig
           freetype
           libX11
+          libICE
+          libSM
           libXcursor
           libXext
           libXi
