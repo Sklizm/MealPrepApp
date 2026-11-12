@@ -2,6 +2,8 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# CI starts from a clean checkout; build the checks and their API dependency first.
+dotnet build "$REPO_ROOT/Tests/MealPrepApp.ApiChecks" -c Release
 TEST_CONTAINER="mealprep-api-test-$(date +%s)-$$"
 TEST_PASSWORD="Test-$(openssl rand -hex 16)!"
 cleanup(){ docker rm -f "$TEST_CONTAINER" >/dev/null 2>&1 || true; }

@@ -117,6 +117,7 @@ jobs:
       - run: python3 Tests/Scripts/check_redesign_contrast.py
       - run: python3 Tests/Scripts/check_localization.py
       - run: python3 Tests/Scripts/test_database_update.py
+      - run: python3 Tests/Scripts/test_api_runner.py
       - run: python3 scripts/generate-ingredient-nutrition.py --check
       - run: python3 Tests/Scripts/test_ingredient_nutrition.py
       - run: python3 Tests/Scripts/test_release_package.py
