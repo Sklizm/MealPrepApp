@@ -121,6 +121,7 @@ jobs:
       - run: python3 scripts/generate-ingredient-nutrition.py --check
       - run: python3 Tests/Scripts/test_ingredient_nutrition.py
       - run: python3 Tests/Scripts/test_release_package.py
+      - run: python3 Tests/Scripts/test_release_candidate.py
       - run: python3 Tests/Scripts/test_app_icons.py
       - run: python3 Tests/Scripts/test_windows_packaging.py
       - run: python3 Tests/Scripts/test_branch_consolidation.py

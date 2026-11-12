@@ -108,6 +108,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_repository_versions_are_consistent(self):
         config = json.loads((ROOT / 'release.json').read_text())
+        self.assertTrue((ROOT / f'docs/releases/v{config["version"]}.md').is_file(), 'Current release notes are required')
         props = ET.parse(ROOT / 'App/MealPrepApp.Desktop/Version.props')
         self.assertEqual(props.findtext('.//Version'), config['version'])
         with (ROOT / 'App/MealPrepApp.Desktop/Assets/Info.plist').open('rb') as stream:

@@ -49,6 +49,7 @@ dotnet test Tests/MealPrepApp.Tests/MealPrepApp.Tests.csproj -c Release
 python3 Tests/Scripts/test_database_update.py
 python3 Tests/Scripts/test_api_runner.py
 python3 Tests/Scripts/test_release_package.py
+python3 Tests/Scripts/test_release_candidate.py
 python3 Tests/Scripts/test_windows_packaging.py
 python3 Tests/Scripts/check_repository_paths.py
 python3 Tests/Scripts/test_branch_consolidation.py

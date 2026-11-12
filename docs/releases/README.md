@@ -10,13 +10,49 @@ checks prevent version drift. Never reuse or overwrite a published version/tag.
 
 1. Work on `main`. Update release metadata, assembly/plist versions, and `docs/releases/v<version>.md` when preparing a new version. Numeric installer/file versions have four components; macOS bundle versions remain numeric.
 2. Push `main` and inspect **Compatibility**. Independent jobs run desktop tests on all three OSes, compile WPF, create self-contained platform packages, test Windows installation, and run presentation, packaging, updater, and disposable SQL checks. A WPF failure does not hide installer or application-test results. Combined release integrity is checked after all platform packages succeed.
-3. Run **Draft release candidate** manually on `main`. It reruns Compatibility for that exact dispatch SHA, collects all three packages, verifies matching source/version/migrations, and creates a tag plus a **draft** release. It does not publish automatically. Prerelease flags follow the version suffix.
+3. For desktop packages, run **Draft release candidate** manually on `main`. It reruns Compatibility for that exact dispatch SHA, collects all three packages, verifies matching source/version/migrations, and creates a tag plus a **draft** release. For a combined release with the signed Android APK, use the helper below instead. Neither path publishes automatically. Prerelease flags follow the version suffix.
 4. Download the assets, verify their hashes, and perform native acceptance. Record the tested commit/version, OS, scaling, result, and defects. Publish the draft manually only when the required checks pass.
 
 An existing tag aborts the workflow. If tag creation succeeds but upload fails, inspect
 the tag's SHA and any draft first; remove only the failed candidate after verifying it
 was never published, then retry. Do not silently replace tags or published downloads.
 The workflow must be registered on GitHub's default branch before manual dispatch works.
+
+## Bundle desktop packages and the signed Android APK
+
+Use a clean, pushed `main` checkout, authenticated GitHub CLI with release-write access,
+Python 3.11+, and Android SDK build tools containing `apksigner` and `aapt2`:
+
+```bash
+python3 scripts/create-release-candidate.py \
+  --apk /path/to/MealPrepApp-Android-1.0.1.apk \
+  --android-metadata /path/to/android-build-record.json \
+  --android-build-tools "$ANDROID_HOME/build-tools/35.0.0"
+```
+
+The helper waits for an existing Compatibility run for the exact pushed commit,
+requires success, downloads its Windows installer and Linux/macOS archives, and
+verifies desktop source/version/migration metadata. It verifies the APK's hash,
+package, version, and original signing certificate against its build record. An
+existing APK can be reused only when its committed Android source tree matches the
+selected release. Otherwise, rebuild with the original dedicated signing key.
+
+The private build record must contain `package`, `version`, `versionCode`,
+`sourceCommit` (full Git commit), `apkSha256`, and `signerCertificateSha256`.
+Keep the record with the verified signed build. Only public provenance fields are
+included in the uploaded Android metadata; private notes are excluded. The Android
+app version is independent of the desktop release version.
+
+Use the same command with `--check-only` to verify the Android artifact and release
+notes locally without contacting GitHub. The full command creates a draft containing
+four installable assets, metadata sidecars, `SHA256SUMS`, and `release-manifest.json`.
+It downloads the uploaded files again and compares every uploaded asset's hash.
+Local copies remain under `dist/release-candidates/`.
+
+A retry may resume an unpublished draft for the exact same tag and source commit.
+Published releases, mismatched tags, and tags without a matching draft are rejected.
+The helper never publishes; perform native acceptance before publishing the draft.
+No private signing key or server configuration is uploaded or added to GitHub secrets.
 
 ## Build the same files locally
 
