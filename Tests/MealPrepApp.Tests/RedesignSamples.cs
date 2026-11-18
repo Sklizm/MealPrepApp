@@ -73,6 +73,16 @@ public static class RedesignSamples
         var recipes=provider.GetRequiredService<ReteteListViewModel>();
         recipes.Categories.Add(new Category {CategoryID=0, Name="Toate categoriile"}); recipes.SelectedCategory=recipes.Categories[0];
         foreach(var title in new[]{"Tomato and basil pasta","Baked salmon","Chickpea salad","Vegetable soup","Apple oatmeal","Baked apples"}) recipes.Recipes.Add(new RecipeListItem {RecipeID=1,Title=title,CategoryName="Prânz",Servings=2,PrepTimeMinutes=10,CookTimeMinutes=20});
+        var editor = provider.GetRequiredService<ReteteEditorViewModel>();
+        editor.Title = "Tomato and basil pasta";
+        editor.Description = detail.Recipe.Description;
+        editor.Servings = 2;
+        editor.PrepTimeMinutes = 10;
+        editor.CookTimeMinutes = 20;
+        editor.Instructions = detail.Recipe.Instructions;
+        editor.AddIngredientRowCommand.Execute(null);
+        editor.IngredientRows[0].IngredientText = "Tomatoes";
+        editor.IngredientRows[0].Quantity = 400;
         var pantry=provider.GetRequiredService<MealPrepApp.ViewModels.Ingrediente.FrigiderViewModel>(); pantry.UseGrouping=true;
         var ingredients=new MealPrepApp.ViewModels.Ingrediente.IngredienteListViewModel(new CatalogFixtureRepository(),new CatalogFixtureLookups(),new NoDialogs(),provider);
         ingredients.LoadAsync().GetAwaiter().GetResult();
@@ -100,23 +110,26 @@ public static class RedesignSamples
             Application.Current!.RequestedThemeVariant=theme;
             foreach(var sample in new (string Name,Control View)[]{("home",new AcasaView{DataContext=home}),("recipe",new MealPrepApp.Desktop.Views.Retete.ReteteDetailView{DataContext=detail}),("planner",new MealPrepApp.Desktop.Views.Planificare.PlanificareRootView{DataContext=plannerRoot}),("components",new ComponentGallery()),
                 ("recipes",new MealPrepApp.Desktop.Views.Retete.ReteteListView{DataContext=recipes}),
+                ("recipe-list",new MealPrepApp.Desktop.Views.Retete.ReteteListView{DataContext=recipes}),
+                ("recipe-editor",new MealPrepApp.Desktop.Views.Retete.ReteteEditorView{DataContext=editor}),
                 ("pantry",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
                 ("pantry-selected",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
                 ("pantry-empty",new MealPrepApp.Desktop.Views.Ingrediente.FrigiderView{DataContext=pantry}),
                 ("shopping",new MealPrepApp.Desktop.Views.Ingrediente.ShoppingListView{DataContext=shopping}),
                 ("ingredients",new MealPrepApp.Desktop.Views.Ingrediente.IngredienteListView{DataContext=ingredients}),
                 ("reports",new MealPrepApp.Desktop.Views.Rapoarte.RapoarteRootView{DataContext=reportRoot}),
-                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => onlySection is not null ? sample.Name == onlySection : localizationOnly ? sample.Name is "home" or "recipes" or "planner" or "pantry" or "shopping" or "ingredients" or "reports" or "cooking" or "recipe" : recipeOnly ? sample.Name=="recipe" : !alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home"))
+                ("cooking",new MealPrepApp.Desktop.Views.Retete.CookingView{DataContext=new CookingViewModel(cooking)})}.Where(sample => onlySection is not null ? sample.Name == onlySection : localizationOnly ? sample.Name is "home" or "recipes" or "planner" or "pantry" or "shopping" or "ingredients" or "reports" or "cooking" or "recipe" : recipeOnly ? sample.Name is "recipe" or "recipes" or "recipe-list" or "recipe-editor" : sample.Name is not ("recipe-list" or "recipe-editor") && (!alignmentOnly || sample.Name.StartsWith("pantry") || sample.Name is "recipes" or "home")))
             foreach(var size in new[]{new PixelSize(860,600),new PixelSize(1280,800),new PixelSize(1440,900)})
             {
                 foreach(var scale in localizationOnly && size.Width != 1280 ? new[]{1d} : new[]{1d,1.5d,2d})
                 {
                     var vm=provider.GetRequiredService<MealPrepApp.ViewModels.Shell.ShellViewModel>();
+                    if (sample.Name is "recipes" or "recipe-list") recipes.ListView = sample.Name == "recipe-list";
                     if(sample.Name.StartsWith("pantry")) pantry.SelectedCategory=sample.Name=="pantry-selected" ? "Produse" : sample.Name=="pantry-empty" ? "Altele" : null;
                     var window=new ShellWindow {Width=size.Width,Height=size.Height};
                     // Assign the fixture after Opened so production initialization cannot query or replace it.
                     window.Show();window.DataContext=vm;Dispatcher.UIThread.RunJobs();vm.CurrentView=sample.View;
-                    vm.ActiveTab=sample.Name switch {"recipe" or "recipes" or "cooking"=>"Retete","planner"=>"Planificare","pantry" or "pantry-selected" or "pantry-empty"=>"Frigider","shopping"=>"Cumparaturi","ingredients"=>"Ingrediente","reports"=>"Rapoarte",_=>"Acasa"};
+                    vm.ActiveTab=sample.Name switch {"recipe" or "recipes" or "recipe-list" or "recipe-editor" or "cooking"=>"Retete","planner"=>"Planificare","pantry" or "pantry-selected" or "pantry-empty"=>"Frigider","shopping"=>"Cumparaturi","ingredients"=>"Ingrediente","reports"=>"Rapoarte",_=>"Acasa"};
                     Dispatcher.UIThread.RunJobs();window.UpdateLayout();
                     using var bitmap=new RenderTargetBitmap(new PixelSize((int)(size.Width*scale),(int)(size.Height*scale)),new Vector(96*scale,96*scale));
                     bitmap.Render(window);bitmap.Save(Path.Combine(output,$"{sample.Name}-{theme}-{size.Width}-{scale*100:0}.png"));
@@ -124,10 +137,40 @@ public static class RedesignSamples
                 }
             }
         }
+        if (recipeOnly) RenderAssistantReview(provider, output);
         if (!alignmentOnly && !recipeOnly && onlySection is null) { if (!localizationOnly) RenderIconFrames(output); RenderAuxiliary(provider,output); }
         var manifest=Directory.GetFiles(output,"*.png").Order().Select(path => new {File=Path.GetFileName(path),Bytes=new FileInfo(path).Length,SHA256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant()});
         File.WriteAllText(Path.Combine(output,"manifest.json"),System.Text.Json.JsonSerializer.Serialize(manifest,new System.Text.Json.JsonSerializerOptions {WriteIndented=true}));
     }
+    private static void RenderAssistantReview(IServiceProvider provider, string output)
+    {
+        foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+        {
+            Application.Current!.RequestedThemeVariant = theme;
+            var assistant = provider.GetRequiredService<AssistantViewModel>();
+            var draft = new AssistantRecipeRow
+            {
+                Title = "Fried rice with chicken",
+                Description = "A quick dinner with leftover rice, chicken and vegetables.",
+                Servings = 4, PrepMinutes = 10, CookMinutes = 15,
+                Instructions = "Cook the chicken until done. Sauté the vegetables, then toss with the rice."
+            };
+            draft.Ingredients.Add(new AssistantIngredientRow { Original = "150 g cooked rice", Name = "Cooked rice", Quantity = 150 });
+            var window = new AssistantWindow { Width = 860, Height = 680 };
+            window.Show();
+            window.DataContext = assistant;
+            assistant.Recipes.Add(draft);
+            assistant.SelectedRecipe = draft;
+            assistant.SelectedTab = 2;
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            using var bitmap = new RenderTargetBitmap(new PixelSize(860, 680), new Vector(96, 96));
+            bitmap.Render(window);
+            bitmap.Save(Path.Combine(output, $"assistant-review-{theme}-860-100.png"));
+            window.Close();
+        }
+    }
+
     private static void RenderAuxiliary(IServiceProvider provider,string output)
     {
         foreach(var theme in new[]{ThemeVariant.Light,ThemeVariant.Dark})

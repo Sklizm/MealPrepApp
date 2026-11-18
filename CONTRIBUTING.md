@@ -64,7 +64,7 @@ The SQL suite uses a disposable container. Never reset a deployed database to ru
 If VSTest cannot open its local TCP listener, the direct runner invokes the same test methods in process, with an isolated Avalonia dispatcher for each UI test:
 
 ```bash
-dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release
+dotnet run --project Tests/MealPrepApp.RegressionRunner -c Release -- --all
 ```
 
 This does not replace standard xUnit discovery in CI. To run one matching test, pass `--filter=<name>` after `--`. For builds that cannot create MSBuild worker sockets, use `-m:1 -p:UseSharedCompilation=false`.

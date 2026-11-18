@@ -10,13 +10,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import org.junit.*
+import org.junit.Assert.assertTrue
 import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class VisualTests {
  @get:Rule val compose=createAndroidComposeRule<MainActivity>()
- @Test fun shoppingPantryAndSettingsInEveryLanguageAndTheme() {
+ @Test fun navigationRemainsAlignedInEveryLanguageAndTheme() {
   val app=ApplicationProvider.getApplicationContext<MealPrepApplication>();val graph=app.graph
   val session=Session("visual",990,"Test kitchen","fixture","2099-01-01T00:00:00Z","https://example.test")
   runBlocking {
@@ -31,9 +32,25 @@ class VisualTests {
    for(language in listOf("en","ro","ru"))for(theme in listOf("light","dark")){
     runBlocking{graph.update(language=language,theme=theme)}
     compose.waitForIdle()
-    for((page,label)in listOf("shopping" to R.string.shopping,"pantry" to R.string.pantry,"settings" to R.string.settings)){
-     val text=compose.activity.getString(label)
-     compose.onAllNodesWithText(text).onLast().performClick();compose.waitForIdle()
+    val destinations = listOf(
+     "shopping" to R.string.shopping, "pantry" to R.string.pantry,
+     "recipes" to R.string.nav_recipes, "plan" to R.string.nav_plan, "settings" to R.string.settings
+    )
+    val inNavigation = hasAnyAncestor(hasTestTag("companion-navigation"))
+    for ((page, label) in destinations) {
+     val text = compose.activity.getString(label)
+     compose.onNode(hasText(text) and inNavigation).performClick().assertIsSelected()
+     compose.waitForIdle()
+     val labels = destinations.map { (_, id) ->
+      compose.onNode(hasText(compose.activity.getString(id)) and inNavigation, useUnmergedTree = true)
+       .fetchSemanticsNode().boundsInRoot.top
+     }
+     val icons = destinations.indices.map { index ->
+      compose.onNodeWithTag("companion-nav-icon-$index", useUnmergedTree = true)
+       .fetchSemanticsNode().boundsInRoot.top
+     }
+     assertTrue("Navigation labels have different baselines: $labels", labels.max() - labels.min() <= 1f)
+     assertTrue("Navigation icons have different top edges: $icons", icons.max() - icons.min() <= 1f)
      val bitmap=InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot();try{File(target,"$page-$language-$theme.png").outputStream().use{bitmap.compress(Bitmap.CompressFormat.PNG,100,it)}}finally{bitmap.recycle()}
     }
    }

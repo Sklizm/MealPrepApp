@@ -15,4 +15,5 @@ public partial class FrigiderView : UserControl
         Grid.SetColumn(StockPanel, narrow ? 0 : 2);
         Grid.SetRow(StockPanel, narrow ? 2 : 0);
     }
+    private void OpenAssistant(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => MealPrepApp.Desktop.Views.AssistantWindow.Open(this,"suggest");
 }

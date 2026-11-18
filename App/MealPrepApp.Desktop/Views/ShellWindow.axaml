@@ -6,6 +6,7 @@
                     <NativeMenuItem Header="{loc:Loc Text.Settings}" Command="{Binding ShowSettingsCommand}"/>
                     <NativeMenuItem Header="{loc:Loc Text.Profile}" Command="{Binding ShowProfileCommand}"/>
                     <NativeMenuItem Header="{loc:Loc Text.SignOut253}" Command="{Binding SignOutCommand}"/>
+                    <NativeMenuItem Header="{loc:Loc Ai.Title}" Click="OpenAssistant"/>
                 </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="{loc:Loc Text.Navigation}">

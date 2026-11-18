@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0-rc.2",
-  "macBundleVersion": "2",
+  "version": "1.1.0-rc.1",
+  "macBundleVersion": "3",
   "requiredMigrations": [
     "20261028_compatibility.sql",
     "20261028_cooking_redesign.sql",
@@ -8,6 +8,7 @@
     "20261111_shopping.sql",
     "20261111_batch_meals.sql",
     "20261111_workflows.sql",
-    "20261111_companion.sql"
+    "20261111_companion.sql",
+    "20261113_assistant.sql"
   ]
 }

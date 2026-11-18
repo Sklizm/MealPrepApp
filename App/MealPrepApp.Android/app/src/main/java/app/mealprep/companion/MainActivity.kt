@@ -28,8 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -64,24 +66,59 @@ private fun errorText(context:android.content.Context,error:Throwable)=context.g
  val active=session!!;val repository=remember(active.accountKey){graph.repository()!!}
  key(active.accountKey){
   val items by repository.items.collectAsState(initial=emptyList());val cache by repository.cache.collectAsState(initial=emptyList());val pending by repository.outbox.collectAsState(initial=emptyList());val sync by repository.state.collectAsState()
-  var page by rememberSaveable{mutableIntStateOf(if(startPantry)1 else 0)};var showLogin by remember{mutableStateOf(false)};var signOut by remember{mutableStateOf(false)}
-  val reviews=remember(cache){cache.records<OnlineReview>("review")};var recovery by remember{mutableStateOf<OnlineReview?>(null)};val pendingCount=pending.size+reviews.size
+  var page by rememberSaveable{mutableIntStateOf(if(startPantry)1 else 0)};var assistant by rememberSaveable{mutableStateOf(false)};var showLogin by remember{mutableStateOf(false)};var signOut by remember{mutableStateOf(false)}
+  val reviews=remember(cache){cache.records<OnlineReview>("review")};var recovery by remember{mutableStateOf<OnlineReview?>(null)};val assistantDraft by repository.dao.observeAssistant().collectAsState(initial=null);val hasDraft=assistantDraft?.payload?.let{runCatching{WireJson.decodeFromString<AWorkspace>(it)}.getOrNull()}?.let{it.pending!=null||it.recipes.isNotEmpty()||it.meals.isNotEmpty()||it.selectedPurchases.isNotEmpty()}==true;val pendingCount=pending.size+reviews.size+if(hasDraft)1 else 0
   var busy by remember{mutableStateOf(false)}
   fun action(block:suspend()->Unit){scope.launch{busy=true;try{block()}catch(e:Exception){if(e is kotlinx.coroutines.CancellationException)throw e;error=errorText(context,e)}finally{busy=false}}}
   Scaffold(containerColor=MaterialTheme.colorScheme.background,contentWindowInsets=WindowInsets.safeDrawing,
-   bottomBar={NavigationBar{listOf(R.string.shopping,R.string.pantry,R.string.settings).forEachIndexed{index,title->NavigationBarItem(selected=page==index,onClick={page=index},icon={Icon(when(index){0->Icons.Default.ShoppingCart;1->Icons.Default.Home;else->Icons.Default.Settings},null)},label={Text(stringResource(title))})}}}){padding->
+   bottomBar = {
+    CompanionNavigation(page) { destination ->
+     assistant = false
+     page = destination
+    }
+   }
+  ){padding->
    Column(Modifier.padding(padding).fillMaxSize()){
     Row(Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=8.dp),verticalAlignment=Alignment.CenterVertically){Image(painterResource(R.drawable.mealprep_icon),null,Modifier.size(40.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text(stringResource(R.string.app_name),style=MaterialTheme.typography.titleLarge);Text(active.username,style=MaterialTheme.typography.bodySmall)};TextButton(onClick={graph.requestSync()},enabled=!busy){Text(stringResource(R.string.refresh))}}
     Row(Modifier.fillMaxWidth().padding(horizontal=16.dp),verticalAlignment=Alignment.CenterVertically){Text(stringResource(when(sync){SyncState.Syncing->R.string.syncing;SyncState.Current->R.string.synced;SyncState.AuthenticationRequired->R.string.session_expired;SyncState.Conflict->R.string.conflict_pending;else->R.string.cached_offline}),Modifier.weight(1f),style=MaterialTheme.typography.bodySmall);if(sync==SyncState.AuthenticationRequired)TextButton(onClick={showLogin=true}){Text(stringResource(R.string.sign_in))}}
     if(sync==SyncState.Syncing||busy)LinearProgressIndicator(Modifier.fillMaxWidth())
     if(reviews.isNotEmpty())TextButton(onClick={recovery=reviews.first()},enabled=!busy){Text(stringResource(R.string.pending_review))}
-    when(page){0->ShoppingScreen(graph,repository,items,cache,pending,busy,{action(it)},{error=it});1->PantryScreen(repository,cache,busy,{action(it)});else->SettingsScreen(graph,settings,pendingCount,{signOut=true})}
+    if(assistant)MealWorkspaceScreen(graph,repository,settings,0,{assistant=false})else {
+    if(page==1)TextButton(onClick={assistant=true}){Text(stringResource(R.string.ai_title))}
+    when(page){0->ShoppingScreen(graph,repository,items,cache,pending,busy,{action(it)},{error=it});1->PantryScreen(repository,cache,busy,{action(it)});2->MealWorkspaceScreen(graph,repository,settings,1);3->MealWorkspaceScreen(graph,repository,settings,2);else->SettingsScreen(graph,settings,pendingCount,{signOut=true})}
+    }
    }
   }
   recovery?.let{review->AlertDialog(onDismissRequest={recovery=null},title={Text(stringResource(R.string.pending_review))},text={Column{Text(stringResource(R.string.pending_review_hint));Text(review.summary)}},confirmButton={TextButton(onClick={action{repository.resumeReview(review);recovery=null}},enabled=!busy){Text(stringResource(R.string.save))}},dismissButton={TextButton(onClick={recovery=null}){Text(stringResource(R.string.cancel))}})}
   if(showLogin)AlertDialog(onDismissRequest={showLogin=false},title={Text(stringResource(R.string.sign_in))},text={LoginScreen(active.baseUrl,onLogin={server,user,password->graph.login(server,user,password);showLogin=false})},confirmButton={},dismissButton={TextButton(onClick={showLogin=false}){Text(stringResource(R.string.cancel))}})
   if(signOut)AlertDialog(onDismissRequest={signOut=false},title={Text(stringResource(R.string.sign_out))},text={Text(stringResource(if(pendingCount==0)R.string.sign_out_clear else R.string.sign_out_pending,pendingCount))},confirmButton={TextButton(onClick={action{graph.signOut()};signOut=false}){Text(stringResource(R.string.sign_out_and_clear))}},dismissButton={TextButton(onClick={signOut=false}){Text(stringResource(R.string.cancel))}})
   if(error!=null)AlertDialog(onDismissRequest={error=null},text={Text(error!!)},confirmButton={TextButton(onClick={error=null}){Text(stringResource(R.string.close))}})
+ }
+}
+@Composable
+private fun CompanionNavigation(page: Int, onSelect: (Int) -> Unit) {
+ val destinations = listOf(R.string.shopping, R.string.pantry, R.string.nav_recipes, R.string.nav_plan, R.string.settings)
+ NavigationBar(Modifier.testTag("companion-navigation")) {
+  destinations.forEachIndexed { index, title ->
+   NavigationBarItem(
+    selected = page == index,
+    onClick = { onSelect(index) },
+    icon = {
+     Box(Modifier.size(24.dp).testTag("companion-nav-icon-$index"), contentAlignment = Alignment.Center) {
+      when (title) {
+       R.string.shopping -> Icon(Icons.Default.ShoppingCart, null)
+       R.string.pantry -> Icon(Icons.Default.Home, null)
+       R.string.nav_recipes -> Icon(painterResource(R.drawable.ic_recipes), null)
+       R.string.nav_plan -> Icon(painterResource(R.drawable.ic_plan), null)
+       else -> Icon(Icons.Default.Settings, null)
+      }
+     }
+    },
+    label = {
+     Text(stringResource(title), maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+   )
+  }
  }
 }
 @Composable private fun LoginScreen(initialServer:String,onLogin:suspend(String,String,String)->Unit){

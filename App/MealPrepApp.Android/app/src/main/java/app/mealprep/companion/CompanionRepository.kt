@@ -120,6 +120,6 @@ class CompanionRepository(val session:Session,val database:ShoppingDatabase,priv
  suspend fun signOut(){gate.withLock{
   val current=vault.read();check(current?.accountKey==session.accountKey)
   try{api().revoke(current!!.sessionId)}catch(error:java.io.IOException){}
-  localGate.withLock{database.withTransaction{dao.clearOutbox();dao.clearItems();dao.clearAllCache()};vault.clear()}
+  localGate.withLock{database.withTransaction{dao.clearOutbox();dao.clearItems();dao.clearAllCache();dao.clearAssistant()};vault.clear()}
  }}
 }

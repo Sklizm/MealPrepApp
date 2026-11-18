@@ -24,6 +24,13 @@ Checking a shopping item or a cooking ingredient does not change pantry quantiti
 
 See [inventory, batch cooking and recovery](docs/WORKFLOWS.md) for the desktop workflows and the [Android companion guide](docs/companion/ANDROID.md) for offline Shopping and Pantry. The [private API guide](docs/companion/API.md) covers server setup.
 
+## Optional meal assistant
+
+The meal assistant adds reviewed recipe imports and drafts, pantry suggestions, weekly
+planning, and recipe/receipt photos on desktop and Android. Cloud assistance is disabled
+by default and targets a dedicated Gemini free-tier project without linked billing.
+See [setup, workflows, and verification](docs/AI.md).
+
 ## Install and run
 
 | Platform | Download | Guide |
@@ -42,8 +49,8 @@ Quit the app before updating. Connection settings and preferences are stored sep
 
 The companion supports Android 8 and later and uses your existing MealPrepApp account
 through a private HTTPS API. Ask the server administrator for its address and connect
-to the required private network or VPN before signing in. Recipe editing, meal planning,
-cooking, and reports remain desktop workflows.
+to the required private network or VPN before signing in. Recipes and meal planning are available in the updated companion; cooking and reports
+remain desktop workflows. AI generation and publication require connectivity.
 
 Open a saved shopping list while connected, then edit its checklist, actual purchased
 quantities, and manual groceries offline. Changes are stored locally and queued for

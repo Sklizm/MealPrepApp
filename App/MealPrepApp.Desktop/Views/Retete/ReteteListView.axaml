@@ -1,46 +1,83 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:images="using:MealPrepApp.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteListView" x:DataType="vm:ReteteListViewModel" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,*" Margin="32">
-        <StackPanel Spacing="16">
-            <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="{loc:Loc Text.Recipes}" Classes="Title"/>
-                <Button Classes="Primary" Grid.Column="1" Content="{loc:Loc Text.AddRecipe}" Command="{Binding CreateRecipeCommand}"/>
-            </Grid>
-            <WrapPanel>
-                <RadioButton Content="{loc:Loc Text.All}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowToateCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Toate, Mode=OneWay}"/>
-                <RadioButton Content="{loc:Loc Text.Favorites}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowFavoriteCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Favorite, Mode=OneWay}"/>
-                <RadioButton Content="{loc:Loc Text.Recent}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowRecenteCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Recente, Mode=OneWay}"/>
-                <RadioButton Content="{loc:Loc Text.Drafts}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowDraftsCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Drafts, Mode=OneWay}"/>
-                <Button Content="{loc:Loc Text.FromThePantry}" Classes="Secondary" Command="{Binding ShowPantryCommand}"/>
-            </WrapPanel>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:images="using:MealPrepApp.Desktop.Controls"
+             xmlns:conv="using:Avalonia.Data.Converters" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models"
+             x:Class="MealPrepApp.Desktop.Views.Retete.ReteteListView" x:DataType="vm:ReteteListViewModel"
+             Background="{DynamicResource AppBackground}">
+    <UserControl.Styles>
+        <Style Selector="Button.RecipeTitle">
+            <Setter Property="Padding" Value="0,4"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Button.RecipeIcon">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="DockPanel.RecipeCardLayout Border.Cover">
+            <Setter Property="DockPanel.Dock" Value="Top"/>
+            <Setter Property="Height" Value="152"/>
+        </Style>
+        <Style Selector="DockPanel.RecipeCardLayout.list Border.Cover">
+            <Setter Property="DockPanel.Dock" Value="Left"/>
+            <Setter Property="Width" Value="152"/>
+            <Setter Property="Height" Value="NaN"/>
+        </Style>
+        <Style Selector="Path.Favorite.saved">
+            <Setter Property="Fill" Value="{DynamicResource ActionPrimary}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12" Margin="24,20">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Text="{loc:Loc Text.Recipes}" Classes="Title" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Classes="Secondary" Content="{loc:Loc Ai.Title}" Click="OpenAssistant"/>
+                <Button Classes="Primary" Content="{loc:Loc Text.AddRecipe}" Command="{Binding CreateRecipeCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Classes="Card" Padding="12">
+            <StackPanel Spacing="10">
+                <WrapPanel>
+                    <RadioButton Content="{loc:Loc Text.All}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowToateCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Toate, Mode=OneWay}"/>
+                    <RadioButton Content="{loc:Loc Text.Favorites}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowFavoriteCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Favorite, Mode=OneWay}"/>
+                    <RadioButton Content="{loc:Loc Text.Recent}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowRecenteCommand}" IsChecked="{Binding ActiveFilter, Converter={StaticResource StringEquals}, ConverterParameter=Recente, Mode=OneWay}"/>
+                    <RadioButton Content="{loc:Loc Text.FromThePantry}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowPantryCommand}" IsChecked="{Binding IsPantryFilter, Mode=OneWay}"/>
+                    <RadioButton Content="{loc:Loc Text.Drafts}" Classes="Tab" GroupName="ReteteFilter" Command="{Binding ShowDraftsCommand}" IsChecked="{Binding IsShowingDrafts, Mode=OneWay}"/>
+                </WrapPanel>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0" IsVisible="{Binding IsShowingRecipes}">
+                        <ComboBox ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" Width="144" AutomationProperties.Name="{loc:Loc Text.SortRecipes}">
+                            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:Display}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <CheckBox Content="{loc:Loc Recipe.ListView}" IsChecked="{Binding ListView}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="156" Margin="8,0,0,0" AutomationProperties.Name="{loc:Loc Text.Category}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Category"><TextBlock Text="{loc:Display Name}" TextTrimming="CharacterEllipsis"/></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox Name="SearchBox" Watermark="{loc:Loc Text.SearchRecipes229}" Text="{Binding SearchTerm}"
+                             AutomationProperties.Name="{loc:Loc Text.SearchRecipes}"/>
+                </DockPanel>
+                <StackPanel IsVisible="{Binding IsPantryFilter}" Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{loc:Loc UX.Servings}" VerticalAlignment="Center"/>
+                    <NumericUpDown Value="{Binding ReadinessServings}" Minimum="1" Maximum="1000" Width="116" AutomationProperties.Name="{loc:Loc UX.Servings}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Spacing="6" IsVisible="{Binding HasError}">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+            <Button Content="{loc:Loc Text.Reload}" Classes="Secondary" Command="{Binding RetryCommand}"/>
         </StackPanel>
-        <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="0,16,0,0" RowDefinitions="Auto,Auto,Auto,* ,Auto">
-            <!-- Toolbar -->
-            <WrapPanel Grid.Row="0">
-                <TextBox Name="SearchBox" Watermark="{loc:Loc Text.SearchRecipes229}" Text="{Binding SearchTerm}" Width="208" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.SearchRecipes}"/>
-                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="168" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.Category}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:Category">
-                            <TextBlock Text="{loc:Display Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <ComboBox ItemsSource="{Binding SortOrders}" SelectedItem="{Binding SortOrder}" Width="168" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.SortRecipes}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:Display}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
-                <NumericUpDown Value="{Binding ReadinessServings}" Minimum="1" Maximum="1000" Width="120" Margin="0,0,8,8" IsVisible="{Binding IsPantryFilter}" AutomationProperties.Name="{loc:Loc UX.Servings}" ToolTip.Tip="{loc:Loc UX.Servings}"/>
-                <CheckBox Content="{loc:Loc Text.List}" IsChecked="{Binding ListView}" Margin="0,0,8,8"/>
-            </WrapPanel>
-            <ProgressBar Grid.Row="2" IsVisible="{Binding IsBusy}" IsIndeterminate="{DynamicResource MotionEnabled}" Height="4"/>
-            <WrapPanel Grid.Row="4" Margin="0,16,0,0">
-                <Button Content="{loc:Loc Text.PreviousPage}" Classes="Secondary" Command="{Binding PreviousPageCommand}"/>
-                <TextBlock Text="{Binding PageNumber}" Margin="16,8"/>
-                <Button Content="{loc:Loc Text.NextPage}" Classes="Secondary" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"/>
-                <Button Content="{loc:Loc Text.Reload}" Classes="Link" Command="{Binding RetryCommand}"/>
-            </WrapPanel>
-            <!-- Error message -->
-            <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8" IsVisible="{Binding HasError}"/>
-            <!-- Recipes List -->
-            <Grid Grid.Row="3" IsVisible="{Binding IsShowingRecipes}">
-                <ScrollViewer IsVisible="{Binding Recipes.Count, Converter={StaticResource NonEmptyToBool}}">
+
+        <Grid Grid.Row="3">
+            <Grid IsVisible="{Binding IsShowingRecipes}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding Recipes.Count, Converter={StaticResource NonEmptyToBool}}">
                     <ItemsControl ItemsSource="{Binding Recipes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -49,111 +86,114 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:RecipeListItem">
-                                <Border Classes="Card" Margin="0" Padding="14" PointerReleased="OpenCard">
-                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                                        <!-- Photo -->
-                                        <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Height="110" Margin="0,0,0,10" Background="{DynamicResource SurfaceSecondary}">
+                                <Border Name="RecipeCard" Classes="Card" Padding="0" ClipToBounds="True" PointerReleased="OpenCard">
+                                    <DockPanel Classes="RecipeCardLayout" Classes.list="{Binding $parent[UserControl].DataContext.ListView}">
+                                        <Border Name="RecipeCover" Classes="Cover" Background="{DynamicResource SurfaceSecondary}" ClipToBounds="True">
                                             <Grid>
-                                                <images:FridgeFoodIllustration Kind="Produce" HorizontalAlignment="Center" VerticalAlignment="Center" Width="130" Height="85"/>
-                                                <images:RecipeImage DecodePixelWidth="320" Bytes="{Binding PhotoData}" Stretch="UniformToFill"/>
+                                                <Border Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" Opacity="0.30"
+                                                        IsVisible="{Binding CategoryID, Converter={StaticResource NotNullToBool}}"/>
+                                                <Border Width="60" Height="60" CornerRadius="16" Background="{DynamicResource Surface}"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Path Data="{StaticResource IconRecipe}" Stroke="{DynamicResource ActionPrimary}" StrokeThickness="1.6"
+                                                          Width="24" Height="26" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <images:RecipeImage DecodePixelWidth="480" Bytes="{Binding PhotoData}" Stretch="UniformToFill"/>
                                             </Grid>
                                         </Border>
-                                        <!-- Title & actions -->
-                                        <Grid Grid.Row="1" ColumnDefinitions="*,36" MinHeight="56">
-                                            <Button Grid.Column="0"  Classes="Link" Padding="0,6,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalAlignment="Top" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenRecipeCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" LineHeight="24" FontSize="20" FontWeight="SemiBold"/></Button>
-                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" Width="36" Height="36" Padding="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Right" AutomationProperties.Name="{loc:Loc Text.RecipeActions}" ToolTip.Tip="{loc:Loc Text.RecipeActions}">
-                                                <Button.ContextMenu>
-                                                    <ContextMenu>
-                                                        <MenuItem Header="{loc:Loc Text.Delete}" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteRecipeCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                    </ContextMenu>
-                                                </Button.ContextMenu>
-                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" StrokeLineCap="Round" Width="18" Height="4" Stretch="Uniform"/>
-                                            </Button>
+                                        <Grid RowDefinitions="*,Auto" RowSpacing="12" Margin="14,10,14,12">
+                                            <StackPanel Spacing="4">
+                                                <Button Name="RecipeTitleButton" Classes="Link RecipeTitle" Command="{Binding $parent[UserControl].DataContext.OpenRecipeCommand}" CommandParameter="{Binding}">
+                                                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                </Button>
+                                                <TextBlock Text="{loc:Display CategoryName}" Classes="Muted" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Classes="Muted" Text="{Binding TimingSummary}" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding MatchLabel}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" IsVisible="{Binding MatchLabel, Converter={StaticResource NotNullToBool}}"/>
+                                            </StackPanel>
+                                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="4">
+                                                <Button Content="{loc:Loc Text.PlanMeal}" Classes="Secondary" Command="{Binding $parent[UserControl].DataContext.PlanRecipeCommand}" CommandParameter="{Binding}"/>
+                                                <Button Grid.Column="2" Name="FavoriteRecipeButton" Classes="Link RecipeIcon" Command="{Binding $parent[UserControl].DataContext.FavoriteRecipeCommand}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding FavoriteButtonLabel}" ToolTip.Tip="{Binding FavoriteButtonLabel}">
+                                                    <Path Classes="Favorite" Classes.saved="{Binding IsFavorite}" Data="{StaticResource IconHeart}" Stroke="{DynamicResource ActionPrimary}" StrokeThickness="1.6" Width="18" Height="18" Stretch="Uniform"/>
+                                                </Button>
+                                                <Button Grid.Column="3" Name="RecipeMenuButton" Classes="Link RecipeIcon" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" AutomationProperties.Name="{loc:Loc Text.RecipeActions}" ToolTip.Tip="{loc:Loc Text.RecipeActions}">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="{loc:Loc Text.Delete}" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteRecipeCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                    <Path Data="{StaticResource IconMore}" Stroke="{DynamicResource TextPrimary}" StrokeThickness="2" StrokeLineCap="Round" Width="16" Height="4" Stretch="Uniform"/>
+                                                </Button>
+                                            </Grid>
                                         </Grid>
-                                        <!-- Category -->
-                                        <Border Grid.Row="2" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" CornerRadius="8" Padding="6,2" HorizontalAlignment="Left" Margin="0,6,0,0" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}">
-                                            <TextBlock Text="{loc:Display CategoryName}" Foreground="{DynamicResource OnMeal}" FontSize="11"/>
-                                        </Border>
-                                        <!-- Times & Servings -->
-                                        <StackPanel Grid.Row="3" Margin="0,8,0,0" Spacing="2">
-                                            <TextBlock Text="{Binding MatchLabel}" TextWrapping="Wrap" Classes="Muted"/>
-                                            <TextBlock Classes="Muted" Text="{Binding TimingSummary}"/>
-                                        </StackPanel>
-                                        <WrapPanel Grid.Row="4" Margin="0,10,0,0">
-                                            <Button Content="{Binding FavoriteButtonLabel}" FontSize="12" Classes="Link" Command="{Binding $parent[UserControl].DataContext.FavoriteRecipeCommand}" CommandParameter="{Binding}" Margin="0,0,8,0"/>
-                                            <Button Content="{loc:Loc Text.PlanMeal}" FontSize="12" Classes="Secondary" Command="{Binding $parent[UserControl].DataContext.PlanRecipeCommand}" CommandParameter="{Binding}"/>
-                                        </WrapPanel>
-                                    </Grid>
+                                    </DockPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <!-- Empty state -->
-                <Border Name="RecipeEmptyState" Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Name="RecipeEmptyState" Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400">
                     <Border.IsVisible>
                         <MultiBinding Converter="{StaticResource ShowEmpty}">
-                            <Binding Path="Recipes.Count"/>
-                            <Binding Path="IsBusy"/>
-                            <Binding Path="HasError"/>
+                            <Binding Path="Recipes.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/>
                         </MultiBinding>
                     </Border.IsVisible>
-                    <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                        <TextBlock Text="{Binding EmptyTitle}" Classes="Header" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding EmptyHint}" Classes="Muted" HorizontalAlignment="Center"/>
-                        <Button Content="{loc:Loc Text.AddRecipe238}" Classes="Primary" HorizontalAlignment="Center" Margin="0,10,0,0" Command="{Binding CreateRecipeCommand}"/>
+                    <StackPanel Margin="12" Spacing="8">
+                        <TextBlock Text="{Binding EmptyTitle}" Classes="Header" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <TextBlock Text="{Binding EmptyHint}" Classes="Muted" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <Button Content="{loc:Loc Text.AddRecipe}" Classes="Primary" HorizontalAlignment="Center" Margin="0,6,0,0" Command="{Binding CreateRecipeCommand}"/>
                     </StackPanel>
                 </Border>
             </Grid>
-            <!-- Drafts List -->
-            <Grid Grid.Row="3" IsVisible="{Binding IsShowingDrafts}">
-                <ScrollViewer IsVisible="{Binding Drafts.Count, Converter={StaticResource NonEmptyToBool}}">
+
+            <Grid IsVisible="{Binding IsShowingDrafts}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding Drafts.Count, Converter={StaticResource NonEmptyToBool}}">
                     <ItemsControl ItemsSource="{Binding Drafts}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <images:RecipeCardPanel ListView="{Binding DataContext.ListView, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:RecipeDraftListItem">
-                                <Border Classes="Card" Margin="0" Padding="14">
-                                    <Grid RowDefinitions="Auto,Auto,Auto">
-                                        <Grid Grid.Row="0" ColumnDefinitions="*,36" MinHeight="56">
-                                            <Button Grid.Column="0"  Classes="Link" Padding="0,6,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalAlignment="Top" FontWeight="SemiBold" Command="{Binding $parent[ItemsControl].DataContext.OpenDraftCommand}" CommandParameter="{Binding}"><TextBlock Text="{Binding Title, TargetNullValue='Ciornă fără titlu'}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" LineHeight="24" FontSize="20" FontWeight="SemiBold"/></Button>
-                                            <Button Grid.Column="1" Classes="Link" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" Width="36" Height="36" Padding="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Right" AutomationProperties.Name="{loc:Loc Text.RecipeActions}" ToolTip.Tip="{loc:Loc Text.RecipeActions}">
-                                                <Button.ContextMenu>
-                                                    <ContextMenu>
-                                                        <MenuItem Header="{loc:Loc Text.Delete}" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteDraftCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                    </ContextMenu>
-                                                </Button.ContextMenu>
-                                                <Path Data="{StaticResource IconMore}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" StrokeThickness="2" StrokeLineCap="Round" Width="18" Height="4" Stretch="Uniform"/>
-                                            </Button>
-                                        </Grid>
-                                        <Border Grid.Row="1" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" CornerRadius="8" Padding="6,2" HorizontalAlignment="Left" Margin="0,6,0,0" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}">
-                                            <TextBlock Text="{loc:Display CategoryName}" Foreground="{DynamicResource OnMeal}" FontSize="11"/>
-                                        </Border>
-                                        <TextBlock Grid.Row="2" Classes="Muted" Margin="0,8,0,0" Text="{loc:Format Draft.Updated, UpdatedAt}"/>
+                                <Border Classes="Card" Padding="14" Margin="0,0,0,8">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" IsVisible="{Binding Title, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{loc:Loc Recipe.Untitled}" IsVisible="{Binding Title, Converter={x:Static conv:StringConverters.IsNullOrEmpty}}" FontSize="17" FontWeight="SemiBold"/>
+                                            <TextBlock Classes="Muted" Text="{loc:Display CategoryName}" IsVisible="{Binding CategoryName, Converter={StaticResource NotNullToBool}}"/>
+                                            <TextBlock Classes="Muted" Text="{loc:Format Draft.Updated, UpdatedAt}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="Secondary" VerticalAlignment="Center" Content="{loc:Loc Text.ResumeDraft}" Command="{Binding $parent[UserControl].DataContext.OpenDraftCommand}" CommandParameter="{Binding}"/>
+                                        <Button Grid.Column="2" Classes="Link RecipeIcon" VerticalAlignment="Center" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}" Click="OpenRecipeMenu" AutomationProperties.Name="{loc:Loc Text.RecipeActions}" ToolTip.Tip="{loc:Loc Text.RecipeActions}">
+                                            <Button.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="{loc:Loc Text.Delete}" Classes="Destructive" Command="{Binding PlacementTarget.Tag.DeleteDraftCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                            <Path Data="{StaticResource IconMore}" Stroke="{DynamicResource TextPrimary}" StrokeThickness="2" StrokeLineCap="Round" Width="16" Height="4" Stretch="Uniform"/>
+                                        </Button>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <!-- Empty draft state -->
-                <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Classes="Card" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400">
                     <Border.IsVisible>
                         <MultiBinding Converter="{StaticResource ShowEmpty}">
-                            <Binding Path="Drafts.Count"/>
-                            <Binding Path="IsBusy"/>
-                            <Binding Path="HasError"/>
+                            <Binding Path="Drafts.Count"/><Binding Path="IsBusy"/><Binding Path="HasError"/>
                         </MultiBinding>
                     </Border.IsVisible>
-                    <StackPanel Margin="16" HorizontalAlignment="Center" Spacing="6">
-                        <TextBlock Text="{loc:Loc Text.NoDrafts}" Classes="Header" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{loc:Loc Text.SaveARecipeAsADraftInTheEditorAndReturnHereToFinishIt}" Classes="Muted" HorizontalAlignment="Center" MaxWidth="320" TextWrapping="Wrap"/>
+                    <StackPanel Margin="12" Spacing="8">
+                        <TextBlock Text="{Binding DraftEmptyTitle}" Classes="Header" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <TextBlock Text="{Binding DraftEmptyHint}" Classes="Muted" TextWrapping="Wrap" TextAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Grid>
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="{DynamicResource MotionEnabled}" Height="3" VerticalAlignment="Top" IsHitTestVisible="False"/>
+        </Grid>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding !HasError}">
+            <Button Content="{loc:Loc Text.Reload}" Classes="Link" Command="{Binding RetryCommand}" IsEnabled="{Binding !IsBusy}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasMultiplePages}" IsEnabled="{Binding !IsBusy}">
+                <Button Content="{loc:Loc Text.PreviousPage}" Classes="Secondary" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}"/>
+                <TextBlock Text="{loc:Format Recipe.Page, PageNumber}" VerticalAlignment="Center"/>
+                <Button Content="{loc:Loc Text.NextPage}" Classes="Secondary" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

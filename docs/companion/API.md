@@ -68,8 +68,8 @@ the backend port. `GET /health` returns protocol availability without account da
 
 The versioned endpoints cover authentication, device sessions, saved shopping lists,
 manual and mapped groceries, purchase import, batch stock adjustments, opt-in low-stock
-thresholds, catalog lookup and synchronization. Recipe editing, planning, cooking and
-reports remain desktop workflows.
+thresholds, catalog lookup and synchronization. Recipe editing and planning endpoints are also available for the updated companion.
+Cooking and reports remain desktop workflows. See [the meal assistant guide](../AI.md).
 
 ## Verification
 

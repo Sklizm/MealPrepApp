@@ -1,8 +1,8 @@
 # Android companion
 
 The native Android app supports Android 8 and later. Shopping and Pantry use the
-same account as the desktop app, through a private HTTPS API. Recipe editing,
-planning, cooking and reports stay on desktop. Connect to the private network or
+same account as the desktop app, through a private HTTPS API. Recipes and weekly planning are available in the updated companion, including local
+drafts and optional reviewed AI assistance. Cooking and reports stay on desktop. Connect to the private network or
 VPN before signing in; ask the server administrator for the HTTPS address.
 
 ## Shopping offline
@@ -72,3 +72,5 @@ SHA-256 before delivery. An unsigned release is not a distributable update.
 Device credentials use Android Keystore-backed AES-GCM encryption. Passwords are
 used for login only. SQL credentials and the server token key never belong in the
 APK. Backup is disabled; local pending work is specific to that installation.
+
+See [meal assistant setup, offline drafts, photo review, and acceptance requirements](../AI.md).

@@ -11,5 +11,6 @@
     <StreamGeometry x:Key="IconClose">M5,5 L19,19 M19,5 L5,19</StreamGeometry>
     <StreamGeometry x:Key="IconBack">M15,5 L8,12 15,19</StreamGeometry>
     <StreamGeometry x:Key="IconNext">M9,5 L16,12 9,19</StreamGeometry>
+    <StreamGeometry x:Key="IconHeart">M12,20 L5,13 C-1,7 7,1 12,7 C17,1 25,7 19,13 Z</StreamGeometry>
     <StreamGeometry x:Key="IconMore">M5,11 V13 M12,11 V13 M19,11 V13</StreamGeometry>
 </ResourceDictionary>

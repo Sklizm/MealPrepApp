@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -132,6 +133,94 @@ public sealed partial class RegressionTests
             recipes.IsBusy=false;recipes.ErrorMessage="Load failed";Dispatcher.UIThread.RunJobs();Assert.False(empty.IsVisible);
         }finally{host.Close();}
     }
+    [AvaloniaFact]
+    public void RecipeLibraryKeepsCardActionsAlignedInGridAndList()
+    {
+        using var provider = RedesignSamples.Services();
+        using var scope = provider.CreateScope();
+        var vm = scope.ServiceProvider.GetRequiredService<ReteteListViewModel>();
+        vm.Recipes.Add(new RecipeListItem { RecipeID = 1, Title = "Soup", Servings = 2 });
+        var recipe = new RecipeListItem
+        {
+            RecipeID = 2, Title = "Fried rice with lemon, roast chicken and vegetables from the pantry",
+            CategoryName = "Prânz", Servings = 4, MatchLabel = "One ingredient missing"
+        };
+        vm.Recipes.Add(recipe);
+        var view = new MealPrepApp.Desktop.Views.Retete.ReteteListView { DataContext = vm };
+        var window = new Window { Content = view, Width = 710, Height = 600 };
+        var originalLanguage = L.Current.Language;
+        window.Show();
+        try
+        {
+            foreach (var language in new[] { "en", "ru", "ro" })
+            {
+                L.Current.Language = language;
+                foreach (var listView in new[] { false, true })
+                {
+                    vm.ListView = listView;
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    var cards = view.GetVisualDescendants().OfType<Border>().Where(control => control.Name == "RecipeCard").ToArray();
+                    Assert.Equal(2, cards.Length);
+                    Assert.Equal(listView, cards[0].TranslatePoint(default, view)!.Value.X == cards[1].TranslatePoint(default, view)!.Value.X);
+                    Assert.Equal(cards[0].Bounds.Width, cards[1].Bounds.Width);
+                    var card = cards[1];
+                    var cover = card.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "RecipeCover");
+                    var title = card.GetVisualDescendants().OfType<Button>().Single(control => control.Name == "RecipeTitleButton");
+                    var favorite = card.GetVisualDescendants().OfType<Button>().Single(control => control.Name == "FavoriteRecipeButton");
+                    var menu = card.GetVisualDescendants().OfType<Button>().Single(control => control.Name == "RecipeMenuButton");
+                    Assert.Same(vm.OpenRecipeCommand, title.Command);
+                    Assert.Same(recipe, title.CommandParameter);
+                    Assert.Same(vm.FavoriteRecipeCommand, favorite.Command);
+                    Assert.Same(recipe, favorite.CommandParameter);
+                    Assert.Equal(favorite.Bounds.Top, menu.Bounds.Top);
+                    Assert.True(menu.TranslatePoint(default, card)!.Value.X + menu.Bounds.Width <= card.Bounds.Width);
+                    var titleOrigin = title.TranslatePoint(default, card)!.Value;
+                    var coverOrigin = cover.TranslatePoint(default, card)!.Value;
+                    Assert.True(listView ? titleOrigin.X >= coverOrigin.X + cover.Bounds.Width : titleOrigin.Y >= coverOrigin.Y + cover.Bounds.Height);
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
+            L.Current.Language = originalLanguage;
+        }
+    }
+
+    [AvaloniaFact]
+    public void AssistantRecipeReviewUsesTheActiveDraftAndKeepsSaveVisible()
+    {
+        using var provider = RedesignSamples.Services();
+        var assistant = provider.GetRequiredService<AssistantViewModel>();
+        var window = new MealPrepApp.Desktop.Views.AssistantWindow { DataContext = assistant, Width = 820, Height = 600 };
+        window.Show();
+        try
+        {
+            assistant.SelectedTab = 2;
+            Dispatcher.UIThread.RunJobs();
+            var tabs = window.FindControl<TabControl>("AssistantTabs")!;
+            Assert.Equal(2, tabs.SelectedIndex);
+            Assert.DoesNotContain(window.GetVisualDescendants().OfType<Button>(),
+                button => button.IsEffectivelyVisible && ReferenceEquals(button.Command, assistant.SaveRecipeCommand));
+
+            var recipe = new AssistantRecipeRow { Title = "Fried rice with chicken" };
+            recipe.Ingredients.Add(new AssistantIngredientRow { Name = "Rice", Original = "150 g rice", Quantity = 150 });
+            assistant.Recipes.Add(recipe);
+            assistant.SelectedRecipe = recipe;
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+
+            var picker = window.FindControl<ComboBox>("ReviewRecipePicker")!;
+            Assert.Same(recipe, picker.SelectedItem);
+            var save = window.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, assistant.SaveRecipeCommand));
+            Assert.True(save.IsEffectivelyVisible);
+            Assert.True(save.TranslatePoint(default, window)!.Value.Y + save.Bounds.Height <= window.Bounds.Height);
+            Assert.Contains(window.GetVisualDescendants().OfType<TextBox>(), box => box.IsEffectivelyVisible && box.Text == recipe.Title);
+        }
+        finally { window.Close(); }
+    }
+
     private sealed class SaveDraftDialogs:IDialogService
     {
         public Task<LeaveDecision> ChooseLeaveAsync()=>Task.FromResult(LeaveDecision.SaveDraft);

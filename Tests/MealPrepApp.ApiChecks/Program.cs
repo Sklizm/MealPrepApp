@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using MealPrepApp.Api;
+using MealPrepApp.Api.Ai;
+using Microsoft.Extensions.DependencyInjection;
 using MealPrepApp.Data;
 using MealPrepApp.Data.Repositories;
 using MealPrepApp.Models;
@@ -13,7 +15,7 @@ var container=Environment.GetEnvironmentVariable("MEALPREP_TEST_CONTAINER")??"";
 if(!container.StartsWith("mealprep-api-test-",StringComparison.Ordinal))throw new InvalidOperationException("A disposable API test container is required.");
 var json=new JsonSerializerOptions(JsonSerializerDefaults.Web);json.Converters.Add(new DecimalStringConverter());
 var checks=0;void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);checks++;Console.WriteLine("PASS "+name);}
-await using var app=ApiHost.Build([],new Dictionary<string,string?>{["ConnectionStrings:MealPrepDB"]=connection,["Api:TokenKey"]=Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),["Api:Port"]="0"});
+await using var app=ApiHost.Build([],new Dictionary<string,string?>{["ConnectionStrings:MealPrepDB"]=connection,["Api:TokenKey"]=Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),["Api:Port"]="0",["Ai:Enabled"]="true",["Ai:FreeTierVerified"]="true",["Ai:ApiKey"]="synthetic-not-a-provider-key"},services=>services.AddSingleton<IAiProvider,FixtureAiProvider>());
 await app.StartAsync();
 try{
  using var client=new HttpClient{BaseAddress=new Uri(app.Urls.Single()),Timeout=TimeSpan.FromSeconds(20)};
@@ -55,6 +57,44 @@ try{
  Check((await Sync(a.Token)).Items.Single(i=>i.ItemId==freeItem.Id).IsDeleted,"deleted items retain synchronization identity");
  var isolated=await Sync(b.Token);Check(isolated.Lists.Count==0&&isolated.Items.Count==0&&isolated.Batches.Count==0&&isolated.Thresholds.Count==0,"account data isolation");
  using(var raw=await Send(HttpMethod.Get,"/v1/sync",null,a.Token)){using var document=JsonDocument.Parse(await raw.Content.ReadAsStringAsync());Check(document.RootElement.GetProperty("batches")[0].GetProperty("remainingQuantity").ValueKind==JsonValueKind.String,"decimal transport uses exact strings");}
+ // AI tests always use a local fake provider; CI never spends a model quota.
+ using(var capabilities=await Send(HttpMethod.Get,"/v1/ai/capabilities",null,a.Token))Check((await Read<AiCapabilities>(capabilities)).FreeOnly,"assistant advertises free-only configuration");
+ using(var accepted=await Send(HttpMethod.Post,"/v1/ai/consent",new AiConsent("gemini-free-1",true),a.Token))Check(accepted.IsSuccessStatusCode,"assistant consent recorded");
+ var aiRequest=new AiRequest(Guid.NewGuid(),"suggest","en","Synthetic dinner",today,new AiPreferences());
+ using(var missingConsent=await Send(HttpMethod.Post,"/v1/ai/jobs",aiRequest with{OperationId=Guid.NewGuid()},b.Token))Check(missingConsent.StatusCode==HttpStatusCode.Forbidden,"assistant requires each account's consent");
+ AiJob aiJob;using(var submitted=await Send(HttpMethod.Post,"/v1/ai/jobs",aiRequest,a.Token))aiJob=await Read<AiJob>(submitted);
+ using(var replayed=await Send(HttpMethod.Post,"/v1/ai/jobs",aiRequest,a.Token))Check((await Read<AiJob>(replayed)).JobId==aiJob.JobId,"job submission retries preserve identity");
+ using(var foreignJob=await Send(HttpMethod.Get,$"/v1/ai/jobs/{aiJob.JobId}",null,b.Token))Check(foreignJob.StatusCode==HttpStatusCode.NotFound,"AI results remain account owned");
+ for(var attempt=0;attempt<30&&aiJob.State is "Queued" or "Running";attempt++){await Task.Delay(250);using var response=await Send(HttpMethod.Get,$"/v1/ai/jobs/{aiJob.JobId}",null,a.Token);aiJob=await Read<AiJob>(response);}
+ Check(aiJob.State=="Completed"&&AiJson.Read<AiProposal>(aiJob.ResultJson!).Suggestions.Length==0,"fake-provider job completes without external requests");
+ AiContext assistantContext;
+ using(var contextResult=await Send(HttpMethod.Get,$"/v1/ai/context?date={today:yyyy-MM-dd}&servings=2",null,a.Token))
+ {
+  assistantContext=await Read<AiContext>(contextResult);
+  Check(assistantContext.DatabaseId!=Guid.Empty,"AI context carries stable deployment identity");
+ }
+ var slotId=assistantContext.Categories.First().CategoryID;
+ var recipeInput=new RecipeBundleInput(null,slotId,"Reviewed API recipe","Synthetic source","Heat water.",
+  1,2,2,[new RecipeIngredientInput{IngredientID=ingredient.IngredientId,UnitID=ml,Quantity=500}],null,"Keep",null,null);
+ var recipeSave=new AiRecipeSave(Guid.NewGuid(),recipeInput,"Synthetic recipe provenance","import");
+ RecipeBundleResult recipe;
+ using(var created=await Send(HttpMethod.Post,"/v1/recipes/save",recipeSave,a.Token))
+  recipe=await Read<RecipeBundleResult>(created);
+ using(var replay=await Send(HttpMethod.Post,"/v1/recipes/save",recipeSave,a.Token))
+  Check((await Read<RecipeBundleResult>(replay)).Id==recipe.Id,"reviewed recipe save replays without duplication");
+ var mealDate=today.AddDays(1);
+ var applyPlan=new AiPlanApply(Guid.NewGuid(),null,[new AiPlanMeal(mealDate,slotId,recipe.Id,null,2,"fixture","")],[],
+  new(){{recipe.Id,"0x"+Convert.ToHexString(recipe.Version)}},new(),new());
+ using(var stale=await Send(HttpMethod.Post,"/v1/plans/apply",
+  applyPlan with{OperationId=Guid.NewGuid(),RecipeVersions=new(){{recipe.Id,"0x0000000000000000"}}},a.Token))
+  Check(stale.StatusCode==HttpStatusCode.Conflict,"reviewed plan rejects stale recipe version");
+ using(var applied=await Send(HttpMethod.Post,"/v1/plans/apply",applyPlan,a.Token))
+  Check((await Read<MutationResult>(applied)).Id==1,"reviewed plan applies through the API");
+ using(var replay=await Send(HttpMethod.Post,"/v1/plans/apply",applyPlan,a.Token))
+  Check((await Read<MutationResult>(replay)).Id==1,"reviewed plan apply is idempotent");
+ using(var planned=await Send(HttpMethod.Get,$"/v1/plans?date={mealDate:yyyy-MM-dd}",null,a.Token))
+  Check((await Read<MealPlanEntry[]>(planned)).Single().RecipeID==recipe.Id,"only one reviewed meal exists after retry");
+ Check((await Sync(a.Token)).Batches.Single().RemainingQuantity==1.125m,"reviewed plan leaves pantry stock available");
  using(var revokeForeign=await Send(HttpMethod.Post,$"/v1/sessions/{a.SessionId}/revoke",new OperationRequest(Guid.NewGuid()),b.Token))Check(revokeForeign.StatusCode==HttpStatusCode.Forbidden,"device-session ownership enforced");
  using(var revoke=await Send(HttpMethod.Post,$"/v1/sessions/{a2.SessionId}/revoke",new OperationRequest(Guid.NewGuid()),a.Token))await Read<MutationResult>(revoke);
  using(var revoked=await Send(HttpMethod.Get,"/v1/sync",null,a2.Token))Check(revoked.StatusCode==HttpStatusCode.Unauthorized,"revocation takes effect immediately");
@@ -71,3 +111,8 @@ try{
  using(var invalidated=await Send(HttpMethod.Get,"/v1/sync",null,a.Token))Check(invalidated.StatusCode==HttpStatusCode.Unauthorized,"password changes invalidate device sessions");
  Console.WriteLine($"{checks} API integration checks passed against disposable SQL Server.");
 }finally{await app.StopAsync();}
+
+sealed class FixtureAiProvider:IAiProvider
+{
+ public Task<AiProviderResult> GenerateAsync(AiWork work,byte[]? image,CancellationToken token)=>Task.FromResult(new AiProviderResult(AiProposal.Empty,12,4));
+}

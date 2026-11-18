@@ -1,6 +1,6 @@
 namespace MealPrepApp.Services;
 
-public sealed class SessionService : ISessionService
+public sealed class SessionService(IApiSession? api = null) : ISessionService
 {
     private int? _userId;
 
@@ -20,6 +20,7 @@ public sealed class SessionService : ISessionService
     public void SignOut()
     {
         _userId = null;
+        api?.Clear();
         CurrentUsername = "";
     }
 }

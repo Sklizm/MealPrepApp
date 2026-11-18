@@ -83,5 +83,8 @@
 :r 24_device_sessions.sql
 :r procs/22_companion.sql
 
+:r 25_assistant.sql
+:r procs/23_assistant.sql
+
 -- ===== Phase 2: app login + role (run last; depends on procs + IntList type) =====
 :r 09_app_role.sql

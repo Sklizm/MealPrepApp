@@ -33,6 +33,7 @@
         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
             <StackPanel Spacing="2"><TextBlock Text="{loc:Loc Text.Pantry}" Classes="Title"/><TextBlock Text="{Binding StockSummary}" Classes="Muted"/></StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                <Button Content="{loc:Loc Ai.Title}" Click="OpenAssistant" Margin="0,0,8,0"/>
                 <Button Content="{loc:Loc Text.WhatCanICook}" Classes="Secondary" Command="{Binding CookCommand}" Margin="0,0,8,0" IsEnabled="{Binding !IsBusy}"/>
                 <Button Content="{loc:Loc Text.Add}" Classes="Primary" Command="{Binding AddItemCommand}" IsEnabled="{Binding !IsBusy}"/>
             </WrapPanel>

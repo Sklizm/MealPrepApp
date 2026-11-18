@@ -26,7 +26,7 @@ END;
 GO
 CREATE OR ALTER PROCEDURE dbo.sp_SaveRecipeBundle @UserID INT,@OperationID UNIQUEIDENTIFIER,@RecipeID INT=NULL,@CategoryID INT=NULL,
  @Title NVARCHAR(150),@Description NVARCHAR(MAX)=NULL,@Instructions NVARCHAR(MAX),@PrepTimeMinutes INT=NULL,@CookTimeMinutes INT=NULL,@Servings INT=NULL,
- @IngredientsJson NVARCHAR(MAX),@ExpectedVersion BINARY(8)=NULL,@PhotoMode NVARCHAR(10)=N'Keep',@ImageData VARBINARY(MAX)=NULL,@ThumbnailData VARBINARY(MAX)=NULL
+ @IngredientsJson NVARCHAR(MAX),@ExpectedVersion BINARY(8)=NULL,@PhotoMode NVARCHAR(10)=N'Keep',@ImageData VARBINARY(MAX)=NULL,@ThumbnailData VARBINARY(MAX)=NULL,@ResultOutput NVARCHAR(MAX)=NULL OUTPUT,@SuppressResult BIT=0
 AS BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
  IF @PhotoMode NOT IN(N'Keep',N'Set',N'Delete') OR (@PhotoMode=N'Set' AND (@ImageData IS NULL OR DATALENGTH(@ImageData)=0 OR DATALENGTH(@ImageData)>10485760)) THROW 50000,N'Invalid photo',1;
@@ -48,7 +48,7 @@ AS BEGIN
   SET @Result=(SELECT @ID AS id,RowVersion AS version FROM dbo.Recipes WHERE RecipeID=@ID FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
   EXEC dbo.sp_CompleteClientOperation @UserID,@OperationID,@Request,@Result;
  END;
- COMMIT; SELECT @Result;
+ COMMIT; SET @ResultOutput=@Result; IF @SuppressResult=0 SELECT @Result;
  END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;
 END;
 GO

@@ -11,6 +11,7 @@
         <!-- Segmented toggle: Lunar / Saptamanal -->
         <Border Grid.Row="0" Margin="32,16,32,8">
             <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{loc:Loc Ai.Title}" Click="OpenAssistant" Margin="0,0,8,0"/>
                 <RadioButton Content="{loc:Loc Text.Monthly}" Classes="Tab" GroupName="PlanView" Command="{Binding ShowLunarCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Lunar, Mode=OneWay}"/>
                 <RadioButton Content="{loc:Loc Text.Weekly}" Classes="Tab" GroupName="PlanView" Command="{Binding ShowSaptamanalCommand}" IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Saptamanal, Mode=OneWay}"/>
             </StackPanel>

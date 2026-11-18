@@ -26,7 +26,7 @@ class AppGraph(val context:Context){
  val settings:StateFlow<PreferencesState?> = context.preferences.data.map{p->PreferencesState(p[stringPreferencesKey("language")]?:"en",p[stringPreferencesKey("theme")]?:"system",p[booleanPreferencesKey("reminders")]?:true,(p[intPreferencesKey("expiryDays")]?:3).coerceIn(0,30),p[stringPreferencesKey("server")]?:"")}.stateIn(scope,SharingStarted.Eagerly,null)
  private val syncRequests=kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED)
  private val repositories=java.util.concurrent.ConcurrentHashMap<String,CompanionRepository>()
- fun repository():CompanionRepository?{val active=session.value?:return null;return repositories.getOrPut(active.accountKey){val db=Room.databaseBuilder(context,ShoppingDatabase::class.java,"companion-${active.accountKey}.db").build();CompanionRepository(active,db,vault,schedule={requestSync()})}}
+ fun repository():CompanionRepository?{val active=session.value?:return null;return repositories.getOrPut(active.accountKey){val db=Room.databaseBuilder(context,ShoppingDatabase::class.java,"companion-${active.accountKey}.db").addMigrations(ASSISTANT_MIGRATION).build();CompanionRepository(active,db,vault,schedule={requestSync()})}}
  suspend fun login(baseUrl:String,identifier:String,password:String){
   val base=baseUrl.trim().trimEnd('/');val result=WireJson.decodeFromString<Session>(ApiClient(base).call("POST","/v1/auth/login",WireJson.encodeToString(LoginRequest(UUID.randomUUID().toString(),identifier.trim(),password,android.os.Build.MODEL.take(80))))).copy(baseUrl=base)
   require(result.protocolVersion==1);vault.save(result);session.value=result

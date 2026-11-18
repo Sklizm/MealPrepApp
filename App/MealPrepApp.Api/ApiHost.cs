@@ -1,4 +1,5 @@
 using System.Globalization;
+using MealPrepApp.Api.Ai;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace MealPrepApp.Api;
 public static class ApiHost
 {
- public static WebApplication Build(string[] args,IDictionary<string,string?>? configuration=null){
+ public static WebApplication Build(string[] args,IDictionary<string,string?>? configuration=null,Action<IServiceCollection>? configureServices=null){
   var builder=WebApplication.CreateBuilder(args);
   builder.Configuration.AddJsonFile("appsettings.Local.json",optional:true);
   if(Environment.GetEnvironmentVariable("MEALPREP_API_SETTINGS") is {} settings)builder.Configuration.AddJsonFile(Path.GetFullPath(settings),optional:false);
@@ -32,10 +33,22 @@ public static class ApiHost
    options.AddPolicy("login",context=>RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString()??"loopback",_=>new(){PermitLimit=20,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));
    options.AddPolicy("account",context=>RateLimitPartition.GetFixedWindowLimiter(context.User.FindFirstValue(ClaimTypes.NameIdentifier)??"anonymous",_=>new(){PermitLimit=180,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));
   });
+  builder.Services.AddAssistant(builder.Configuration);
+  builder.Services.AddSingleton<AiDomainRepository>();
+  configureServices?.Invoke(builder.Services);
   var app=builder.Build();
   app.Use(async(context,next)=>{
    context.Response.Headers.CacheControl="no-store";
-   try{await next();}
+   try{
+    var limit=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+    if(limit is {IsReadOnly:false}) {
+     if(context.Request.Path=="/v1/ai/uploads")limit.MaxRequestBodySize=8388608;
+     else if(context.Request.Path.StartsWithSegments("/v1/ai/jobs")||context.Request.Path.StartsWithSegments("/v1/recipes"))limit.MaxRequestBodySize=1048576;
+    }
+    await next();
+   }
+   catch(InvalidDataException){context.Response.StatusCode=400;await context.Response.WriteAsJsonAsync(new{errorCode="InvalidInput"});}
+   catch(AiProviderException ex){context.Response.StatusCode=ex.Code=="QuotaExceeded"?429:503;await context.Response.WriteAsJsonAsync(new{errorCode=ex.Code,retryAfter=ex.RetryAfter});}
    catch(AppDbException ex){
     context.Response.StatusCode=ex.ErrorNumber switch{50004 or 2601 or 2627 or 547=>409,50002=>403,50003=>404,50000=>400,_=>503};
     await context.Response.WriteAsJsonAsync(new{errorCode=context.Response.StatusCode==409?"VersionConflict":context.Response.StatusCode==503?"StorageUnavailable":"RequestRejected"},cancellationToken:context.RequestAborted);
@@ -74,6 +87,7 @@ public static class ApiHost
   api.MapPost("/pantry/batches/{batchId:int}/adjust",async(int batchId,StockAdjustment input,ClaimsPrincipal user,InventoryRepository data)=>input.OperationId==Guid.Empty||input.ExpectedVersion<1||input.Delta==0||!Quantity(Math.Abs(input.Delta))||input.Kind is not("Correction" or "Discard")||(input.Kind=="Discard"&&input.Delta>0)?Results.BadRequest():Results.Ok(await data.AdjustAsync(UserId(user),input.OperationId,batchId,input.ExpectedVersion,input.Delta,input.Kind)));
   api.MapPut("/pantry/thresholds/{ingredientId:int}",async(int ingredientId,SetThreshold input,ClaimsPrincipal user,InventoryRepository data)=>input.OperationId==Guid.Empty||input.ExpectedVersion<0||input.Quantity<0||input.Quantity>99999999||decimal.Round(input.Quantity,4)!=input.Quantity?Results.BadRequest():Results.Ok(await data.SetThresholdAsync(UserId(user),input.OperationId,ingredientId,input.UnitId,input.Quantity,input.ExpectedVersion)));
   api.MapGet("/catalog",async(ClaimsPrincipal user,CompanionRepository data,CancellationToken token)=>{var all=await data.SnapshotAsync(UserId(user),token);return Results.Ok(new{all.Ingredients,all.Units,all.UnitMap});});
+  api.MapAssistant();
   return app;
  }
  private static int UserId(ClaimsPrincipal user)=>int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!,CultureInfo.InvariantCulture);

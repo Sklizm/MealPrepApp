@@ -40,8 +40,15 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
     private bool _loaded;
     private int _requestVersion;
     private CancellationTokenSource? _loadCts;
-    [ObservableProperty] private int _pageNumber = 1;
-    [ObservableProperty] private bool _hasNextPage;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreviousPage), nameof(HasMultiplePages))]
+    private int _pageNumber = 1;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMultiplePages))]
+    private bool _hasNextPage;
+
+    public bool HasPreviousPage => PageNumber > 1;
+    public bool HasMultiplePages => IsShowingRecipes && (HasPreviousPage || HasNextPage);
 
     [RelayCommand]
     private Task PreviousPage()
@@ -94,9 +101,18 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         var rows=sorted.ToArray(); Recipes.Clear(); foreach(var row in rows) Recipes.Add(row);
     }
     public bool IsPantryFilter => ActiveFilter == RecipeFilterIds.Pantry;
-    [LocalizedProperty] public string EmptyTitle => L.Text(SearchTerm.Length > 0 || SelectedCategory?.CategoryID > 0 || ActiveFilter != RecipeFilterIds.All ? "UX.NoMatches" : "Text.NoRecipes");
-    [LocalizedProperty] public string EmptyHint => L.Text(SearchTerm.Length > 0 || SelectedCategory?.CategoryID > 0 || ActiveFilter != RecipeFilterIds.All ? "UX.ChangeFilters" : "Text.AddYourFirstRecipeToGetStarted");
-    private void NotifyEmpty() { OnPropertyChanged(nameof(EmptyTitle)); OnPropertyChanged(nameof(EmptyHint)); }
+    private bool HasSearchFilters => !string.IsNullOrWhiteSpace(SearchTerm) || SelectedCategory?.CategoryID > 0;
+    [LocalizedProperty] public string EmptyTitle => L.Text(HasSearchFilters || ActiveFilter != RecipeFilterIds.All ? "UX.NoMatches" : "Text.NoRecipes");
+    [LocalizedProperty] public string EmptyHint => L.Text(HasSearchFilters || ActiveFilter != RecipeFilterIds.All ? "UX.ChangeFilters" : "Text.AddYourFirstRecipeToGetStarted");
+    [LocalizedProperty] public string DraftEmptyTitle => L.Text(HasSearchFilters ? "UX.NoMatches" : "Text.NoDrafts");
+    [LocalizedProperty] public string DraftEmptyHint => L.Text(HasSearchFilters ? "UX.ChangeFilters" : "Text.SaveARecipeAsADraftInTheEditorAndReturnHereToFinishIt");
+    private void NotifyEmpty()
+    {
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyHint));
+        OnPropertyChanged(nameof(DraftEmptyTitle));
+        OnPropertyChanged(nameof(DraftEmptyHint));
+    }
     public bool IsShowingDrafts => ActiveFilter == RecipeFilterIds.Drafts;
     public bool IsShowingRecipes => !IsShowingDrafts;
 
@@ -106,6 +122,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         NotifyEmpty();
         OnPropertyChanged(nameof(IsShowingDrafts));
         OnPropertyChanged(nameof(IsShowingRecipes));
+        OnPropertyChanged(nameof(HasMultiplePages));
     }
 
     [ObservableProperty]

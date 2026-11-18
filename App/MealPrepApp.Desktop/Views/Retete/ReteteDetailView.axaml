@@ -1,81 +1,115 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:MealPrepApp.ViewModels.Retete" xmlns:models="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls" x:Class="MealPrepApp.Desktop.Views.Retete.ReteteDetailView" x:DataType="vm:ReteteDetailViewModel" Background="{DynamicResource AppBackground}">
-    <Grid RowDefinitions="Auto,Auto,*" Margin="32">
-        <WrapPanel>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels.Retete"
+             xmlns:services="using:MealPrepApp.Services" xmlns:images="using:MealPrepApp.Desktop.Controls"
+             x:Class="MealPrepApp.Desktop.Views.Retete.ReteteDetailView" x:DataType="vm:ReteteDetailViewModel"
+             Background="{DynamicResource AppBackground}">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12" Margin="24,20">
+        <Grid ColumnDefinitions="*,Auto">
             <Button Content="{loc:Loc Text.BackToRecipes}" Classes="Link" Command="{Binding BackCommand}"/>
-            <Button Content="{Binding FavoriteLabel}" Classes="Secondary" Command="{Binding ToggleFavoriteCommand}" Margin="8,0,0,8"/>
-            <Button Content="{loc:Loc Text.Edit}" Classes="Secondary" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
-            <Button Content="{loc:Loc Text.DeleteRecipe}" Classes="Link DestructiveLink" Command="{Binding DeleteCommand}" IsVisible="{Binding CanEdit}" Margin="8,0,0,8"/>
-        </WrapPanel>
-        <StackPanel Grid.Row="1">
-            <ProgressBar Height="4" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding Recipe, Converter={StaticResource NotNullToBool}}">
+                <Button Content="{Binding FavoriteLabel}" Classes="Secondary" Command="{Binding ToggleFavoriteCommand}"/>
+                <Button Content="{loc:Loc Text.Edit}" Classes="Secondary" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}"/>
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="1" Spacing="6">
+            <ProgressBar Height="3" IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}"/>
             <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="{DynamicResource Danger}" IsVisible="{Binding HasError}"/>
-            <Button Classes="Primary" Content="{loc:Loc Text.Reload}" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
+            <Button Classes="Secondary" Content="{loc:Loc Text.Reload}" Command="{Binding RetryCommand}" IsVisible="{Binding HasError}"/>
         </StackPanel>
-        <ScrollViewer Grid.Row="2">
-            <StackPanel Spacing="24" MaxWidth="1024" HorizontalAlignment="Stretch">
-                <StackPanel Spacing="12">
-                    <TextBlock Text="{loc:Display Recipe.CategoryName}" Foreground="{DynamicResource Accent}"/>
-                    <TextBlock Text="{Binding Recipe.Title}" Classes="Title" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Recipe.Description}" TextWrapping="Wrap"/>
-                    <WrapPanel>
-                        <TextBlock Text="{loc:Format Recipe.PrepTime, Recipe.PrepTimeMinutes}" Classes="Muted" Margin="0,0,24,0"/>
-                        <TextBlock Text="{loc:Format Recipe.CookTime, Recipe.CookTimeMinutes}" Classes="Muted" Margin="0,0,24,0"/>
-                        <TextBlock Text="{loc:Format Recipe.Author, Recipe.AuthorUsername}" Classes="Muted"/>
-                    </WrapPanel>
-                </StackPanel>
-                <WrapPanel>
-                    <Button Classes="Primary" Content="{loc:Loc Text.Cook}" Command="{Binding CookCommand}" Margin="0,0,8,8"/>
-                    <Button Content="{loc:Loc Text.AddToPlan}" Classes="Secondary" Command="{Binding AddToPlanCommand}" Margin="0,0,8,8"/>
-                    <Button Content="{Binding PhotoLabel}" Classes="Link" Command="{Binding ChoosePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
-                    <Button Content="{loc:Loc Text.RemovePhoto}" Classes="Link DestructiveLink" Command="{Binding DeletePhotoCommand}" IsVisible="{Binding CanEdit}" Margin="0,0,8,8"/>
-                </WrapPanel>
-                <Border Classes="Card" Padding="0" Height="240" ClipToBounds="True" IsVisible="{Binding HasPhoto}">
-                    <images:RecipeImage Bytes="{Binding PhotoBytes}" Stretch="UniformToFill"/>
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding Recipe, Converter={StaticResource NotNullToBool}}">
+            <StackPanel Spacing="16" MaxWidth="1024" Margin="0,0,4,8">
+                <Border Classes="Card" Padding="20">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="10" VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Display Recipe.CategoryName}" Classes="Muted" IsVisible="{Binding Recipe.CategoryName, Converter={StaticResource NotNullToBool}}"/>
+                            <TextBlock Text="{Binding Recipe.Title}" Classes="Title" FontSize="32" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Recipe.Description}" TextWrapping="Wrap"/>
+                            <WrapPanel>
+                                <TextBlock Text="{loc:Format Recipe.PrepTime, Recipe.PrepTimeMinutes}" Classes="Muted" Margin="0,0,16,6"/>
+                                <TextBlock Text="{loc:Format Recipe.CookTime, Recipe.CookTimeMinutes}" Classes="Muted" Margin="0,0,16,6"/>
+                                <TextBlock Text="{loc:Format Recipe.Author, Recipe.AuthorUsername}" Classes="Muted" Margin="0,0,0,6"/>
+                            </WrapPanel>
+                            <WrapPanel>
+                                <Button Classes="Primary" Content="{loc:Loc Text.Cook}" Command="{Binding CookCommand}" Margin="0,0,8,0"/>
+                                <Button Classes="Secondary" Content="{loc:Loc Text.AddToPlan}" Command="{Binding AddToPlanCommand}"/>
+                            </WrapPanel>
+                        </StackPanel>
+                        <Border Grid.Column="1" Width="256" Height="188" Margin="20,0,0,0" CornerRadius="8" ClipToBounds="True"
+                                Background="{DynamicResource SurfaceSecondary}" IsVisible="{Binding HasPhoto}">
+                            <images:RecipeImage Bytes="{Binding PhotoBytes}" DecodePixelWidth="640" Stretch="UniformToFill"/>
+                        </Border>
+                    </Grid>
                 </Border>
-                <Border Classes="Card">
-                    <StackPanel Spacing="16">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="{Binding ReadinessLabel}" FontWeight="SemiBold"/>
-                        <ItemsControl ItemsSource="{Binding Shortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:ReadinessDisplay"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,8,0"/><TextBlock Text="{loc:Format UX.ShortageAmount, Missing}" Margin="0,0,4,0"/><TextBlock Text="{Binding Unit}"/><TextBlock Text="{loc:Loc UX.Review}" IsVisible="{Binding NeedsReview}" Margin="8,0,0,0"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-                        <TextBlock Text="{loc:Loc Text.Ingredients}" Classes="Header"/>
+
+                <Border Classes="Card" Padding="20">
+                    <StackPanel Spacing="12">
+                        <Grid Name="IngredientsHeader" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Name="IngredientsTitle" Text="{loc:Loc Text.Ingredients}" Classes="Header" VerticalAlignment="Center" TextWrapping="Wrap"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="{loc:Loc Text.Servings}" VerticalAlignment="Center"/>
-                                <NumericUpDown Value="{Binding SelectedServings}" Minimum="1" Maximum="1000" Increment="1" FormatString="0" Width="116" IsEnabled="{Binding CanScale}" AutomationProperties.Name="{loc:Loc Text.NumberOfServings}"/>
+                                <NumericUpDown Name="RecipeServings" Value="{Binding SelectedServings}" Minimum="1" Maximum="1000" Increment="1" FormatString="0" Width="116" IsEnabled="{Binding CanScale}" AutomationProperties.Name="{loc:Loc Text.NumberOfServings}"/>
                             </StackPanel>
                         </Grid>
-                        <TextBlock Text="{loc:Loc Text.ScalingRequiresAValidBaseServingCount}" Classes="Muted" IsVisible="{Binding CanScale, Converter={StaticResource InverseBool}}" TextWrapping="Wrap"/>
+                        <Border Background="{DynamicResource SurfaceSecondary}" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="6">
+                                <TextBlock Name="ReadinessStatus" Text="{Binding ReadinessLabel}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <ItemsControl ItemsSource="{Binding Shortages}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ReadinessDisplay">
+                                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6" Margin="0,2">
+                                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                                <TextBlock Grid.Column="1" Text="{loc:Format UX.ShortageAmount, Missing}"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Unit}"/>
+                                                <TextBlock Grid.Column="3" Text="{loc:Loc UX.Review}" IsVisible="{Binding NeedsReview}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="{loc:Loc Text.ScalingRequiresAValidBaseServingCount}" Classes="Muted" IsVisible="{Binding !CanScale}" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding ScaledIngredients}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="services:CookingIngredient">
-                                    <Grid ColumnDefinitions="*,Auto,80" Margin="0,8">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Name}"/>
-                                            <TextBlock Text="{Binding Notes}" Classes="Muted" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" FontWeight="SemiBold"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding Unit}" Margin="8,0,0,0" Classes="Muted"/>
-                                    </Grid>
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SurfaceSecondary}" Padding="0,10">
+                                        <Grid ColumnDefinitions="*,80,72" ColumnSpacing="10">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding Notes}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding Notes, Converter={StaticResource NotNullToBool}}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0:0.##}'}" FontWeight="SemiBold" TextAlignment="Right"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Unit}" Classes="Muted" TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-                <StackPanel Spacing="12">
-                    <TextBlock Text="{loc:Loc Text.Instructions}" Classes="Header"/>
-                    <TextBlock Text="{Binding Recipe.Instructions}" TextWrapping="Wrap" FontSize="16" LineHeight="28"/>
-                </StackPanel>
-                <Border Classes="Card" IsVisible="{Binding ScaledNutrition, Converter={StaticResource NotNullToBool}}">
+
+                <Border Classes="Card" Padding="20">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{loc:Loc Text.Instructions}" Classes="Header"/>
+                        <TextBlock Text="{Binding Recipe.Instructions}" TextWrapping="Wrap" FontSize="16" LineHeight="26"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="Card" Padding="20" IsVisible="{Binding ScaledNutrition, Converter={StaticResource NotNullToBool}}">
                     <StackPanel Spacing="12">
                         <TextBlock Text="{loc:Loc Text.EstimatedNutritionTotalForSelectedServings}" Classes="Header" TextWrapping="Wrap"/>
                         <WrapPanel>
-                            <TextBlock Text="{loc:Format Nutrition.Calories, ScaledNutrition.TotalCalories}" Margin="0,0,24,0"/>
-                            <TextBlock Text="{loc:Format Nutrition.Protein, ScaledNutrition.TotalProteinGrams}" Margin="0,0,24,0"/>
-                            <TextBlock Text="{loc:Format Nutrition.Carbs, ScaledNutrition.TotalCarbsGrams}" Margin="0,0,24,0"/>
-                            <TextBlock Text="{loc:Format Nutrition.Fat, ScaledNutrition.TotalFatGrams}"/>
+                            <TextBlock Text="{loc:Format Nutrition.Calories, ScaledNutrition.TotalCalories}" Margin="0,0,24,4"/>
+                            <TextBlock Text="{loc:Format Nutrition.Protein, ScaledNutrition.TotalProteinGrams}" Margin="0,0,24,4"/>
+                            <TextBlock Text="{loc:Format Nutrition.Carbs, ScaledNutrition.TotalCarbsGrams}" Margin="0,0,24,4"/>
+                            <TextBlock Text="{loc:Format Nutrition.Fat, ScaledNutrition.TotalFatGrams}" Margin="0,0,0,4"/>
                         </WrapPanel>
-                        <TextBlock Text="{loc:Loc Text.IncompleteEstimateSomeIngredientsLackNutritionDataOrCompatibleUnits}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding ScaledNutrition.HasCompleteNutrition, Converter={StaticResource InverseBool}}"/>
+                        <TextBlock Text="{loc:Loc Text.IncompleteEstimateSomeIngredientsLackNutritionDataOrCompatibleUnits}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding !ScaledNutrition.HasCompleteNutrition}"/>
                     </StackPanel>
                 </Border>
+                <WrapPanel IsVisible="{Binding CanEdit}">
+                    <Button Content="{Binding PhotoLabel}" Classes="Secondary" Command="{Binding ChoosePhotoCommand}" Margin="0,0,8,6"/>
+                    <Button Content="{loc:Loc Text.RemovePhoto}" Classes="Link DestructiveLink" Command="{Binding DeletePhotoCommand}" IsVisible="{Binding HasPhoto}" Margin="0,0,8,6"/>
+                    <Button Content="{loc:Loc Text.DeleteRecipe}" Classes="Link DestructiveLink" Command="{Binding DeleteCommand}" Margin="0,0,0,6"/>
+                </WrapPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

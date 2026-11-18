@@ -102,6 +102,10 @@ public partial class App : Application
         services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionString));
 
         // Repositories
+        services.AddSingleton<AiRepository>();
+        services.AddSingleton<AiClient>();
+        services.AddSingleton<IApiSession>(sp=>sp.GetRequiredService<AiClient>());
+        services.AddTransient<MealPrepApp.ViewModels.AssistantViewModel>();
         services.AddSingleton<UserRepository>();
         services.AddSingleton<RecipeRepository>();
         services.AddSingleton<IngredientRepository>();

@@ -9,7 +9,13 @@ data class ItemEntity(@PrimaryKey val localId:String,val serverId:Int?,val snaps
 data class OutboxEntity(@PrimaryKey(autoGenerate=true)val sequence:Long=0,val operationId:String,val localId:String,val kind:String,val payload:String,val state:String="queued")
 @Entity(tableName="cache",primaryKeys=["kind","id"])
 data class CacheEntity(val kind:String,val id:String,val payload:String)
+@Entity(tableName="assistant_state")
+data class AssistantStateEntity(@PrimaryKey val id:Int=1,val payload:String)
 @Dao interface CompanionDao {
+ @Query("SELECT * FROM assistant_state WHERE id=1")suspend fun assistantState():AssistantStateEntity?
+ @Query("SELECT * FROM assistant_state WHERE id=1")fun observeAssistant():Flow<AssistantStateEntity?>
+ @Insert(onConflict=OnConflictStrategy.REPLACE)suspend fun putAssistant(row:AssistantStateEntity)
+ @Query("DELETE FROM assistant_state")suspend fun clearAssistant()
  @Query("SELECT * FROM shopping_items ORDER BY localId")fun observeItems():Flow<List<ItemEntity>>
  @Query("SELECT * FROM outbox ORDER BY sequence")fun observeOutbox():Flow<List<OutboxEntity>>
  @Query("SELECT * FROM cache ORDER BY kind,id")fun observeCache():Flow<List<CacheEntity>>
@@ -33,5 +39,7 @@ data class CacheEntity(val kind:String,val id:String,val payload:String)
  @Query("DELETE FROM outbox")suspend fun clearOutbox()
  @Query("SELECT * FROM cache WHERE kind=:kind")suspend fun cache(kind:String):List<CacheEntity>
 }
-@Database(entities=[ItemEntity::class,OutboxEntity::class,CacheEntity::class],version=1,exportSchema=true)
+@Database(entities=[ItemEntity::class,OutboxEntity::class,CacheEntity::class,AssistantStateEntity::class],version=2,exportSchema=true)
 abstract class ShoppingDatabase:RoomDatabase(){abstract fun dao():CompanionDao}
+
+val ASSISTANT_MIGRATION=object:androidx.room.migration.Migration(1,2){override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){db.execSQL("CREATE TABLE IF NOT EXISTS `assistant_state` (`id` INTEGER NOT NULL, `payload` TEXT NOT NULL, PRIMARY KEY(`id`))")}}

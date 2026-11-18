@@ -11,6 +11,7 @@ public sealed partial class LoginViewModel : ViewModelBase
     private readonly UserRepository _users;
     private readonly IPasswordHasher _hasher;
     private readonly ISessionService _session;
+    private readonly IApiSession? _api;
 
     /// <summary>Raised when the user clicks the "Inregistreaza-te" link.</summary>
     public event EventHandler? SwitchToRegisterRequested;
@@ -24,11 +25,12 @@ public sealed partial class LoginViewModel : ViewModelBase
     [ObservableProperty]
     private string _identifier = "";
 
-    public LoginViewModel(UserRepository users, IPasswordHasher hasher, ISessionService session)
+    public LoginViewModel(UserRepository users, IPasswordHasher hasher, ISessionService session, IApiSession? api = null)
     {
         _users = users;
         _hasher = hasher;
         _session = session;
+        _api = api;
     }
 
     [RelayCommand]
@@ -76,6 +78,7 @@ public sealed partial class LoginViewModel : ViewModelBase
 
             await _users.RecordLoginSuccessAsync(user.UserID);
             _session.SignIn(user.UserID, user.Username);
+            if (_api is not null) await _api.TrySignInAsync(identifier, password, user.UserID);
             LoginSucceeded?.Invoke(this, EventArgs.Empty);
         }
         catch (AppDbException ex)

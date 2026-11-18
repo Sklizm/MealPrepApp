@@ -110,4 +110,5 @@ public partial class ShellWindow : Window
         };
         _ = UiOperation.RunAsync(() => dialog.ShowDialog(this));
     }
+    private void OpenAssistant(object? sender, EventArgs e) => AssistantWindow.Open(this,"suggest");
 }
