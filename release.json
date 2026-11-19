@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0-rc.1",
-  "macBundleVersion": "3",
+  "version": "1.1.0-rc.2",
+  "macBundleVersion": "4",
   "requiredMigrations": [
     "20261028_compatibility.sql",
     "20261028_cooking_redesign.sql",
