@@ -21,7 +21,13 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
 {
     private readonly CookingBatchRepository? _activity;
     private readonly ReportRepository _reports;
-    [ObservableProperty] private ActivityReport? _activityReport;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRecordedActivity), nameof(HasWaste), nameof(HasRepetition))]
+    private ActivityReport? _activityReport;
+
+    public bool HasRecordedActivity => ActivityReport is not null;
+    public bool HasWaste => ActivityReport?.Waste.Count > 0;
+    public bool HasRepetition => ActivityReport?.Repetition.Count > 0;
     public ObservableCollection<ShoppingListRow> UpcomingShortages {get;}=new();
     private readonly ShoppingListRepository? _shopping;
     private readonly ISessionService _session;
@@ -39,7 +45,10 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
     private MonthOption? _selectedMonth;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPlannedMeals))]
     private MonthlyStats? _stats;
+
+    public bool HasPlannedMeals => Stats?.TotalMealsPlanned > 0;
 
     /// <summary>True once a month has data to display — drives the content panel.</summary>
     [ObservableProperty]
@@ -80,6 +89,12 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
             int year = SelectedYear, month = SelectedMonth.Number;
 
             var stats = await _reports.GetMonthlyStatsAsync(userId, year, month);
+            var topRecipes = await _reports.GetTopRecipesAsync(userId, year, month, topN: 5);
+            var topIngredients = await _reports.GetTopIngredientsAsync(userId, year, month, topN: 10);
+            var start = new DateTime(year, month, 1);
+            var activity = _activity is null ? null : await _activity.GetActivityAsync(userId, start, start.AddMonths(1).AddDays(-1));
+            var shortages = _shopping is null ? null : await _shopping.GetShoppingListAsync(userId, DateTime.Today, DateTime.Today.AddDays(6));
+
             Stats = stats;
 
             SlotCounts.Clear();
@@ -90,19 +105,18 @@ public sealed partial class StatisticiLunareViewModel : ViewModelBase, IAsyncLoa
             SlotCounts.Add(new SlotCount("Desert", stats.DessertCount));
             SlotCounts.Add(new SlotCount("Băutură", stats.DrinkCount));
 
-            var topRecipes = await _reports.GetTopRecipesAsync(userId, year, month, topN: 5);
             TopRecipes.Clear();
             foreach (var r in topRecipes)
                 TopRecipes.Add(r);
 
-            var topIngredients = await _reports.GetTopIngredientsAsync(userId, year, month, topN: 10);
             TopIngredients.Clear();
             foreach (var i in topIngredients)
                 TopIngredients.Add(i);
 
-            if(_activity is not null) { var start=new DateTime(year,month,1);ActivityReport=await _activity.GetActivityAsync(userId,start,start.AddMonths(1).AddDays(-1)); }
-            UpcomingShortages.Clear();if(_shopping is not null)foreach(var row in await _shopping.GetShoppingListAsync(userId,DateTime.Today,DateTime.Today.AddDays(6)))UpcomingShortages.Add(row);
-            HasData = stats.TotalMealsPlanned > 0 || ActivityReport?.Summary.CookedPortions > 0 || ActivityReport?.Summary.ConsumedPortions > 0 || ActivityReport?.Summary.DiscardedPortions > 0 || UpcomingShortages.Count>0;
+            ActivityReport = activity;
+            UpcomingShortages.Clear();
+            if (shortages is not null) foreach (var row in shortages) UpcomingShortages.Add(row);
+            HasData = stats.TotalMealsPlanned > 0 || ActivityReport?.Summary.CookedPortions > 0 || ActivityReport?.Summary.ConsumedPortions > 0 || ActivityReport?.Summary.DiscardedPortions > 0 || ActivityReport?.Waste.Count > 0 || UpcomingShortages.Count>0;
             ShowEmptyState = !HasData;
         }
         catch (AppDbException ex)

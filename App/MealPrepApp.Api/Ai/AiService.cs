@@ -50,24 +50,27 @@ public sealed class AiService(AiOptions options, AiRepository data, RecipeReposi
             throw new InvalidDataException("InvalidReplacement");
         if (request.UploadId is {} upload && await data.UploadAsync(userId, upload) is null) throw new InvalidDataException("ImageUnavailable");
         string? extracted = null;
+        string[]? photoCandidates = null;
         if (request.Kind == "import" && Uri.TryCreate(request.Source?.Trim(), UriKind.Absolute, out var uri))
         {
-            var html = await RecipePageFetcher.FetchAsync(uri, token);
+            var (pageUri, html) = await RecipePageFetcher.FetchDocumentAsync(uri, token);
             try
             {
                 var parsed = RecipeImportParser.ParseStructuredPage(html, context.Ingredients, context.Units);
+                photoCandidates = RecipeLinkImporter.GetPhotoCandidates(pageUri, html, parsed);
                 // Preserve source URL; use extracted structured content rather than arbitrary page markup.
                 extracted = AiJson.Write(parsed);
             }
             catch (InvalidDataException)
             {
+                photoCandidates = RecipeLinkImporter.GetPhotoCandidates(pageUri, html, null);
                 // Unsupported pages retain visible text only, within the same source limit.
                 var text = System.Text.RegularExpressions.Regex.Replace(html, @"<(script|style)\b[^>]*>.*?</\1>", " ", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline, TimeSpan.FromMilliseconds(250));
                 text = System.Text.RegularExpressions.Regex.Replace(text, "<[^>]+>", " ", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
                 text = System.Net.WebUtility.HtmlDecode(text); extracted = text[..Math.Min(180000, text.Length)];
             }
         }
-        return await data.JobAsync("create", userId, request.OperationId, sessionId, request.Kind, AiJson.Write(new AiWork(request, context, extracted)));
+        return await data.JobAsync("create", userId, request.OperationId, sessionId, request.Kind, AiJson.Write(new AiWork(request, context, extracted, photoCandidates)));
     }
     public static byte[] NormalizeImage(byte[] bytes)
     {
@@ -143,7 +146,22 @@ public sealed class AiWorker(AiOptions options, AiService service, AiRepository 
                         }
                         var response = await inference;
                         var validated = AiValidation.Proposal(response.Proposal, work);
-                        validated=validated with{Recipes=validated.Recipes.Select(r=>r with{Source=work.Request.Kind=="generate"?"AI-generated draft":work.Request.Kind=="recipe-photo"?"Reviewed photo extraction":work.Request.Source}).ToArray()};
+                        var photo = work.Request.Kind == "import" && work.PhotoCandidates is { Length: > 0 }
+                            ? await RecipeLinkImporter.FetchPhotoAsync(work.PhotoCandidates, stoppingToken)
+                            : null;
+                        validated = validated with
+                        {
+                            Recipes = validated.Recipes.Select(recipe => recipe with
+                            {
+                                Source = work.Request.Kind switch
+                                {
+                                    "generate" => "AI-generated draft",
+                                    "recipe-photo" => "Reviewed photo extraction",
+                                    _ => work.Request.Source
+                                },
+                                Photo = photo
+                            }).ToArray()
+                        };
                         await data.JobAsync("complete", job.UserId, job.JobId, result: AiJson.Write(validated), input: response.InputTokens, output: response.OutputTokens);
                     }
                 }

@@ -38,12 +38,47 @@ object Quantities {
   require(value.abs()<=BigDecimal("99999999"));require(if(allowNegative)value.compareTo(BigDecimal.ZERO)!=0 else if(allowZero)value>=BigDecimal.ZERO else value>BigDecimal.ZERO)
   return value.stripTrailingZeros().toPlainString()
  }
- fun input(text:String,allowZero:Boolean=false,allowNegative:Boolean=false):String {
-  val separator=java.text.DecimalFormatSymbols(java.util.Locale.getDefault()).decimalSeparator
-  val normalized=text.trim().let { if(separator==',')it.replace(',','.') else it }
-  return validate(normalized,allowZero,allowNegative)
+ // The app language can override Locale.getDefault() on Android.
+ var deviceRegion: java.util.Locale? = null
+ fun region(): java.util.Locale = deviceRegion ?: java.util.Locale.getDefault()
+
+ fun input(text: String, allowZero: Boolean = false, allowNegative: Boolean = false): String {
+  val separator = java.text.DecimalFormatSymbols(region()).decimalSeparator
+  val normalized = text.trim().replace(separator, '.')
+  require(separator == '.' || '.' !in text)
+  require(Regex("[+-]?(?:[0-9]+(?:[.][0-9]*)?|[.][0-9]+)").matches(normalized))
+  return validate(normalized, allowZero, allowNegative)
  }
- fun format(text:String):String = java.text.NumberFormat.getNumberInstance().apply{maximumFractionDigits=4}.format(text.toBigDecimal())
+
+ fun editor(text: String?): String = text.orEmpty().replace('.', java.text.DecimalFormatSymbols(region()).decimalSeparator)
+
+ fun format(text: String, calories: Boolean = false): String {
+  val value = decimal(text)
+  val format = java.text.NumberFormat.getNumberInstance(region()).apply {
+   isGroupingUsed = false
+   maximumFractionDigits = if (calories) 0 else 2
+   roundingMode = java.math.RoundingMode.HALF_UP
+  }
+  if (!calories && value.signum() != 0 && value.abs() < BigDecimal("0.01")) {
+   val threshold = "< ${format.format(BigDecimal("0.01"))}"
+   val sign = java.text.DecimalFormatSymbols(region()).minusSign
+   return if (value.signum() < 0) "$sign($threshold)" else threshold
+  }
+  return format.format(value)
+ }
+
+ fun date(text: String?): String? = text?.let {
+  LocalDate.parse(it.take(10)).format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.SHORT).withLocale(region()))
+ }
+
+ fun event(text: String): String? = runCatching {
+  val instant = runCatching { java.time.Instant.parse(text) }.getOrElse {
+   java.time.LocalDateTime.parse(text).toInstant(java.time.ZoneOffset.UTC)
+  }
+  java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.SHORT)
+   .withLocale(region()).withZone(java.time.ZoneId.systemDefault()).format(instant)
+ }.getOrNull()
+
 }
 data class PantryGroup(val ingredientId:Int,val unitId:Int,val name:String,val unit:String,val total:BigDecimal,val available:BigDecimal,val batches:List<StockBatch>,val low:Boolean)
 fun pantryGroups(batches:List<StockBatch>,thresholds:List<Threshold>,units:List<CatalogUnit>,mappings:List<UnitMapping>,today:LocalDate=LocalDate.now()):List<PantryGroup> {

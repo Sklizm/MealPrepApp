@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using MealPrepApp.Services;
 
 namespace MealPrepApp.Models;
 
@@ -17,7 +19,8 @@ public sealed record AiRequest(Guid OperationId, string Kind, string Language, s
 public sealed record AiIngredient(string Original, string Name, decimal? Quantity, int? IngredientId, int? UnitId,
     string? Unit = null, string? Notes = null);
 public sealed record AiRecipe(string Title, string Description, string Instructions, int? Servings,
-    int? PrepMinutes, int? CookMinutes, int? CategoryId, AiIngredient[] Ingredients, string? Source = null);
+    int? PrepMinutes, int? CookMinutes, int? CategoryId, AiIngredient[] Ingredients, string? Source = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ProcessedRecipeImage? Photo = null);
 public sealed record AiSuggestion(int RecipeId, string Reason, string? Title = null);
 public sealed record AiPlanMeal(DateOnly Date, int SlotId, int? RecipeId, int? DraftIndex, decimal Portions,
     string BatchKey, string Reason, int? PreparedBatchId = null);
@@ -33,7 +36,8 @@ public sealed record AiCandidate(int RecipeId, string Title, string Instructions
     RecipeReadiness Readiness, RecipeNutritionSummary? Nutrition);
 public sealed record AiContext(Guid DatabaseId, Ingredient[] Ingredients, Unit[] Units, UnitMap[] UnitMap,
     Category[] Categories, AiCandidate[] Candidates, InventoryBatch[] Stock, MealPlanEntry[] Plan, CookingBatch[] Batches);
-public sealed record AiWork(AiRequest Request, AiContext Context, string? ExtractedSource = null);
+public sealed record AiWork(AiRequest Request, AiContext Context, string? ExtractedSource = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string[]? PhotoCandidates = null);
 public sealed record AiJob(Guid JobId, int UserId, Guid SessionId, string Kind, string State, long Version,
     string? WorkJson, string? ResultJson, string? ErrorCode, DateTime CreatedAt, DateTime ExpiresAt,
     int InputTokens = 0, int OutputTokens = 0);

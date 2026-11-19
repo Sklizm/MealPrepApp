@@ -18,7 +18,7 @@ data class AssistantStateEntity(@PrimaryKey val id:Int=1,val payload:String)
  @Query("DELETE FROM assistant_state")suspend fun clearAssistant()
  @Query("SELECT * FROM shopping_items ORDER BY localId")fun observeItems():Flow<List<ItemEntity>>
  @Query("SELECT * FROM outbox ORDER BY sequence")fun observeOutbox():Flow<List<OutboxEntity>>
- @Query("SELECT * FROM cache ORDER BY kind,id")fun observeCache():Flow<List<CacheEntity>>
+ @Query("SELECT * FROM cache WHERE kind!='recipe-photo' ORDER BY kind,id")fun observeCache():Flow<List<CacheEntity>>
  @Query("SELECT * FROM shopping_items")suspend fun items():List<ItemEntity>
  @Query("SELECT * FROM shopping_items WHERE localId=:id")suspend fun item(id:String):ItemEntity?
  @Query("SELECT * FROM shopping_items WHERE serverId=:id")suspend fun serverItem(id:Int):ItemEntity?
@@ -32,11 +32,15 @@ data class AssistantStateEntity(@PrimaryKey val id:Int=1,val payload:String)
  @Query("DELETE FROM outbox WHERE sequence=:sequence")suspend fun acknowledge(sequence:Long)
  @Query("DELETE FROM outbox WHERE localId=:localId")suspend fun clearOperations(localId:String)
  @Insert(onConflict=OnConflictStrategy.REPLACE)suspend fun putCache(rows:List<CacheEntity>)
- @Query("DELETE FROM cache WHERE kind!='review'")suspend fun clearCache()
+ @Query("DELETE FROM cache WHERE kind NOT IN ('review', 'recipe-photo', 'recipe-search')")suspend fun clearCache()
  @Query("DELETE FROM cache")suspend fun clearAllCache()
  @Query("DELETE FROM cache WHERE kind='review' AND id=:subject")suspend fun clearReview(subject:String)
  @Query("DELETE FROM shopping_items")suspend fun clearItems()
  @Query("DELETE FROM outbox")suspend fun clearOutbox()
+ @Query("SELECT payload FROM cache WHERE kind='recipe-photo' AND id=:id")
+ suspend fun recipePhoto(id:String):String?
+ @Query("DELETE FROM cache WHERE kind='recipe-photo' AND id IN (:ids)")
+ suspend fun removeRecipePhotos(ids:List<String>)
  @Query("SELECT * FROM cache WHERE kind=:kind")suspend fun cache(kind:String):List<CacheEntity>
 }
 @Database(entities=[ItemEntity::class,OutboxEntity::class,CacheEntity::class,AssistantStateEntity::class],version=2,exportSchema=true)

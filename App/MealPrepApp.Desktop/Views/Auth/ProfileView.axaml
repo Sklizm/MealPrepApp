@@ -9,9 +9,9 @@
                     <TextBlock Text="{loc:Loc Text.Email}" Classes="Muted"/>
                     <TextBlock Text="{Binding Email}" Classes="Body" Margin="0,0,0,8"/>
                     <TextBlock Text="{loc:Loc Text.AccountCreated}" Classes="Muted"/>
-                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:g}'}" Classes="Body" Margin="0,0,0,8"/>
+                    <TextBlock Text="{loc:Number CreatedAt, Style=Event}" Classes="Body" Margin="0,0,0,8"/>
                     <TextBlock Text="{loc:Loc Text.LastSignIn}" Classes="Muted"/>
-                    <TextBlock Text="{Binding LastLoginAt, StringFormat='{}{0:g}'}" Classes="Body"/>
+                    <TextBlock Text="{loc:Number LastLoginAt, Style=Event}" Classes="Body"/>
                 </StackPanel>
             </Border>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}" Margin="0,8,0,0"/>

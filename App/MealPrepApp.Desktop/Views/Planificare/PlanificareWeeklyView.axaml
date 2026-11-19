@@ -62,7 +62,7 @@
                                                                         <Button Classes="Primary" Background="{Binding CategoryID, Converter={StaticResource CategoryIdToBrush}}" Foreground="{DynamicResource OnMeal}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" PointerPressed="OnMealPointerPressed">
                                                                             <StackPanel>
                                                                                 <TextBlock Text="{Binding RecipeTitle}" TextWrapping="Wrap" Foreground="{DynamicResource OnMeal}"/>
-                                                                                <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
+                                                                                <TextBlock Text="{loc:Format Recipe.ServingsValue, AllocatedPortions, Style=Quantity}" Foreground="{DynamicResource OnMeal}" FontSize="12"/>
                                                                             </StackPanel>
                                                                         </Button>
                                                                         <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" FontSize="12" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
@@ -103,7 +103,7 @@
                                     <TextBlock Text="{loc:Format Date.Long, PlannedDate}" Classes="Muted"/>
                                     <TextBlock Text="{loc:Display CategoryName}"/>
                                     <TextBlock Text="{Binding RecipeTitle}" Classes="Header" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}"/>
+                                    <TextBlock Text="{loc:Format Recipe.ServingsValue, AllocatedPortions, Style=Quantity}"/>
                                     <WrapPanel>
                                         <Button Content="{loc:Loc Text.OpenMove}" Classes="Secondary" Command="{Binding DataContext.EditEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,8,0"/>
                                         <Button Content="{loc:Loc Text.Duplicate}" Classes="Link" Command="{Binding DataContext.DuplicateEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>

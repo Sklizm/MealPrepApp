@@ -33,7 +33,7 @@ public sealed class RecipeNutritionSummary : LocalizedObservableObject
     public int MissingNutritionCount { get; set; }
     public int UnconvertibleIngredientCount { get; set; }
 
-    [LocalizedProperty] public string PerServingSummary => CaloriesPerServing is null ? L.Text("UX.NoPerServingNutrition") : L.Text("UX.PerServingNutrition",CaloriesPerServing,ProteinGramsPerServing,CarbsGramsPerServing,FatGramsPerServing);
+    [LocalizedProperty] public string PerServingSummary => CaloriesPerServing is null ? L.Text("UX.NoPerServingNutrition") : L.Text("UX.PerServingNutrition",PresentationValues.Calories(CaloriesPerServing),PresentationValues.Quantity(ProteinGramsPerServing),PresentationValues.Quantity(CarbsGramsPerServing),PresentationValues.Quantity(FatGramsPerServing));
     [LocalizedProperty] public string CompletenessLabel => L.Text(HasCompleteNutrition ? "UX.NutritionComplete" : "UX.NutritionIncomplete");
     public bool HasCompleteNutrition => MissingNutritionCount == 0 && UnconvertibleIngredientCount == 0;
 }

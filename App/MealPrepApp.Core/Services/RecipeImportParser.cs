@@ -7,7 +7,11 @@ using MealPrepApp.Models;
 namespace MealPrepApp.Services;
 public sealed record ImportedIngredient(string Original, string IngredientText, decimal? Quantity, int? UnitID, int? IngredientID);
 public sealed record ImportedRecipe(string Original, string? Title, string? Description, string Instructions,
-    int? Servings, int? PrepMinutes, int? CookMinutes, IReadOnlyList<ImportedIngredient> Ingredients);
+    int? Servings, int? PrepMinutes, int? CookMinutes, IReadOnlyList<ImportedIngredient> Ingredients)
+{
+    [System.Text.Json.Serialization.JsonIgnore]
+    public IReadOnlyList<string> ImageUrls { get; init; } = [];
+}
 public static class RecipeImportParser
 {
     private static readonly TimeSpan RegexLimit = TimeSpan.FromMilliseconds(250);
@@ -69,14 +73,79 @@ public static class RecipeImportParser
                 string? String(string key) => r.TryGetProperty(key,out var v) && v.ValueKind==JsonValueKind.String ? Clean(v.GetString()!) : null;
                 var recipeLines=r.TryGetProperty("recipeIngredient",out var il) && il.ValueKind==JsonValueKind.Array ? il.EnumerateArray().Where(v=>v.ValueKind==JsonValueKind.String).Take(300).Select(v=>ParseIngredient(Clean(v.GetString()!),ingredients,units)).ToArray() : [];
                 var instructions=r.TryGetProperty("recipeInstructions",out var ins) ? string.Join("\n\n",Instructions(ins).Take(300)) : "";
-                var yieldText=String("recipeYield") ?? (r.TryGetProperty("recipeYield",out var y)&&y.ValueKind==JsonValueKind.Number ? y.GetRawText() : "");
-                var servingsMatch=Regex.Match(yieldText,@"\b\d+\b",RegexOptions.None,RegexLimit);
-                int? servings=int.TryParse(servingsMatch.Value,out var servingsValue)&&servingsValue is >0 and <=1000 ? servingsValue : null;
-                return new(script.Groups["data"].Value,String("name"),String("description"),instructions,servings,Minutes(String("prepTime")),Minutes(String("cookTime")),recipeLines);
+                var servings = r.TryGetProperty("recipeYield", out var yield) ? ParseServings(yield) : null;
+                return new(script.Groups["data"].Value,String("name"),String("description"),instructions,servings,Minutes(String("prepTime")),Minutes(String("cookTime")),recipeLines)
+                {
+                    ImageUrls = r.TryGetProperty("image", out var image) ? ImageUrls(image).Take(4).ToArray() : []
+                };
             } catch (JsonException) { }
         }
         throw new InvalidDataException(L.Text("UX.UnsupportedImport"));
     }
+    private static IEnumerable<string> ImageUrls(JsonElement image)
+    {
+        switch (image.ValueKind)
+        {
+            case JsonValueKind.String:
+                if (image.GetString() is { Length: > 0 and <= 4096 } url)
+                    yield return WebUtility.HtmlDecode(url);
+                break;
+            case JsonValueKind.Object:
+                foreach (var key in new[] { "contentUrl", "url", "@id" })
+                    if (image.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String)
+                        foreach (var candidate in ImageUrls(value))
+                            yield return candidate;
+                break;
+            case JsonValueKind.Array:
+                foreach (var element in image.EnumerateArray())
+                    if (element.ValueKind != JsonValueKind.Array)
+                        foreach (var candidate in ImageUrls(element))
+                            yield return candidate;
+                break;
+        }
+    }
+
+    internal static IEnumerable<string> OpenGraphImageUrls(string html)
+    {
+        const string pattern = """(?<name>[\w:-]+)\s*=\s*(?:"(?<value>[^"]*)"|'(?<value>[^']*)')""";
+        foreach (Match match in Regex.Matches(html, @"<meta\b[^>]{0,8192}>", RegexOptions.IgnoreCase, RegexLimit))
+        {
+            string? property = null, content = null;
+            foreach (Match attribute in Regex.Matches(match.Value, pattern, RegexOptions.IgnoreCase, RegexLimit))
+            {
+                var name = attribute.Groups["name"].Value;
+                var value = attribute.Groups["value"].Value;
+                if (name.Equals("property", StringComparison.OrdinalIgnoreCase)) property = value;
+                if (name.Equals("content", StringComparison.OrdinalIgnoreCase)) content = value;
+            }
+            if (property?.ToLowerInvariant() is "og:image" or "og:image:secure_url" &&
+                content is { Length: > 0 and <= 4096 })
+                yield return WebUtility.HtmlDecode(content);
+        }
+    }
+
+    private static int? ParseServings(JsonElement yield)
+    {
+        if (yield.ValueKind != JsonValueKind.Array)
+            return ParseServingValue(yield);
+
+        var counts = yield.EnumerateArray().Select(ParseServingValue).OfType<int>().Distinct().Take(2).ToArray();
+        return counts.Length == 1 ? counts[0] : null;
+    }
+
+    private static int? ParseServingValue(JsonElement value)
+    {
+        if (value.ValueKind == JsonValueKind.Number)
+            return value.TryGetInt32(out var count) && count is > 0 and <= 1000 ? count : null;
+        if (value.ValueKind != JsonValueKind.String)
+            return null;
+
+        var matches = Regex.Matches(Clean(value.GetString()!), @"[+\-−]?[0-9]+", RegexOptions.None, RegexLimit);
+        return matches.Count == 1 &&
+               int.TryParse(matches[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var servings) &&
+               servings is > 0 and <= 1000 ? servings : null;
+    }
+
     private static JsonElement? FindRecipe(JsonElement node) {
         if (node.ValueKind==JsonValueKind.Object) {
             if (node.TryGetProperty("@type",out var type) && ((type.ValueKind==JsonValueKind.String&&IsRecipe(type.GetString())) || (type.ValueKind==JsonValueKind.Array&&type.EnumerateArray().Any(t=>t.ValueKind==JsonValueKind.String&&IsRecipe(t.GetString()))))) return node;

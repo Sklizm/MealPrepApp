@@ -10,6 +10,7 @@ using MealPrepApp.Data;
 using MealPrepApp.Data.Repositories;
 using MealPrepApp.Models;
 using MealPrepApp.Services;
+using SkiaSharp;
 var connection=Environment.GetEnvironmentVariable("MEALPREP_TEST_CONNECTION")??throw new InvalidOperationException("Disposable database connection required.");
 var container=Environment.GetEnvironmentVariable("MEALPREP_TEST_CONTAINER")??"";
 if(!container.StartsWith("mealprep-api-test-",StringComparison.Ordinal))throw new InvalidOperationException("A disposable API test container is required.");
@@ -75,16 +76,55 @@ try{
  }
  var slotId=assistantContext.Categories.First().CategoryID;
  var recipeInput=new RecipeBundleInput(null,slotId,"Reviewed API recipe","Synthetic source","Heat water.",
-  1,2,2,[new RecipeIngredientInput{IngredientID=ingredient.IngredientId,UnitID=ml,Quantity=500}],null,"Keep",null,null);
+  1,2,2,[new RecipeIngredientInput{IngredientID=ingredient.IngredientId,UnitID=ml,Quantity=0.3333m}],null,"Keep",null,null);
  var recipeSave=new AiRecipeSave(Guid.NewGuid(),recipeInput,"Synthetic recipe provenance","import");
+ async Task CheckRecipeRejection(RecipeBundleInput rejected, string code)
+ {
+  using var response = await Send(HttpMethod.Post, "/v1/recipes/save", recipeSave with { Recipe = rejected }, a.Token);
+  using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+  Check(response.StatusCode == HttpStatusCode.BadRequest && problem.RootElement.GetProperty("errorCode").GetString() == code, code);
+ }
+ await CheckRecipeRejection(recipeInput with { Servings = null }, "RecipeServingsRequired");
+ await CheckRecipeRejection(recipeInput with
+ {
+  Ingredients = [recipeInput.Ingredients[0], new RecipeIngredientInput { IngredientID = ingredient.IngredientId, UnitID = litre, Quantity = 1 }]
+ }, "DuplicateRecipeIngredient");
+ await CheckRecipeRejection(recipeInput with { PhotoMode = "Set", ImageData = [1, 2, 3] }, "InvalidRecipePhoto");
+ using var sampleImage = new SKBitmap(640, 480);
+ sampleImage.Erase(SKColors.Green);
+ using var importedJpeg = sampleImage.Encode(SKEncodedImageFormat.Jpeg, 85);
+ recipeSave = recipeSave with { Recipe = recipeInput with { PhotoMode = "Set", ImageData = importedJpeg.ToArray() } };
  RecipeBundleResult recipe;
- using(var created=await Send(HttpMethod.Post,"/v1/recipes/save",recipeSave,a.Token))
-  recipe=await Read<RecipeBundleResult>(created);
+ using (var ignored = await Send(HttpMethod.Post, "/v1/recipes/save", recipeSave, a.Token))
+  Check(ignored.IsSuccessStatusCode, "recipe save completed before its response was discarded");
  using(var replay=await Send(HttpMethod.Post,"/v1/recipes/save",recipeSave,a.Token))
-  Check((await Read<RecipeBundleResult>(replay)).Id==recipe.Id,"reviewed recipe save replays without duplication");
+  recipe=await Read<RecipeBundleResult>(replay);
+ using (var matches = await Send(HttpMethod.Get, "/v1/recipes?search=Reviewed%20API%20recipe", null, a.Token))
+  Check((await Read<RecipeListItem[]>(matches)).Single().RecipeID == recipe.Id, "discarded recipe save response recovers one recipe");
+ using (var detail = await Send(HttpMethod.Get, $"/v1/recipes/{recipe.Id}", null, a.Token))
+ {
+  var rebuilt = await Read<RecipeFull>(detail);
+  Check(rebuilt.Ingredients.Single().Quantity == 0.3333m, "reopened recipe retains four decimal places");
+  Check(rebuilt.Ingredients.Single().Quantity * ServingCalculator.Factor(rebuilt.Servings, 4) == 0.6666m,
+   "reopened exact quantity scales without display rounding");
+ }
+ var recipeRepository = new RecipeRepository(new SqlConnectionFactory(connection));
+ var savedPhoto = await recipeRepository.GetRecipePhotoAsync(recipe.Id);
+ using var savedBitmap = SKBitmap.Decode(savedPhoto?.ImageData);
+ Check(savedPhoto?.ContentType == "image/jpeg" && savedBitmap.Width == 640 && savedBitmap.Height == 480,
+  "reviewed recipe and imported photo save together");
+ sampleImage.Erase(SKColors.Red);
+ using var differentJpeg = sampleImage.Encode(SKEncodedImageFormat.Jpeg, 85);
+ using (var changedPhoto = await Send(HttpMethod.Post, "/v1/recipes/save",
+  recipeSave with { Recipe = recipeSave.Recipe with { ImageData = differentJpeg.ToArray() } }, a.Token))
+  Check(changedPhoto.StatusCode == HttpStatusCode.Conflict, "retry cannot reuse the operation ID for a different recipe photo");
  var mealDate=today.AddDays(1);
  var applyPlan=new AiPlanApply(Guid.NewGuid(),null,[new AiPlanMeal(mealDate,slotId,recipe.Id,null,2,"fixture","")],[],
   new(){{recipe.Id,"0x"+Convert.ToHexString(recipe.Version)}},new(),new());
+ var unitMapping = assistantContext.UnitMap.FirstOrDefault(unit => unit.UnitID == ml);
+ using(var preview=await Send(HttpMethod.Post,"/v1/plans/preview",applyPlan,a.Token))
+  Check((await Read<AiPlanPreview>(preview)).Shopping.Any(line => line.IngredientId == ingredient.IngredientId &&
+   line.Required == 0.3333m * (unitMapping?.Multiplier ?? 1m)), "plan preview uses exact ingredient quantities");
  using(var stale=await Send(HttpMethod.Post,"/v1/plans/apply",
   applyPlan with{OperationId=Guid.NewGuid(),RecipeVersions=new(){{recipe.Id,"0x0000000000000000"}}},a.Token))
   Check(stale.StatusCode==HttpStatusCode.Conflict,"reviewed plan rejects stale recipe version");

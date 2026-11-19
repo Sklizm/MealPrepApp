@@ -38,7 +38,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     public IReadOnlyList<string> PurchaseFilters { get; }=new[]{PurchaseFilterIds.All,PurchaseFilterIds.ToBuy,PurchaseFilterIds.Purchased};
     [LocalizedProperty]
     public string ProgressText => L.Text("Shopping.Progress", Rows.Count(r=>r.IsPurchased), Rows.Count);
-    public string PlainText => L.Text("Text.ShoppingList") + $" ({StartDate:d} – {EndDate:d})" + Environment.NewLine + ProgressText + Environment.NewLine + string.Join(Environment.NewLine,Rows.Select(r=>$"[{(r.IsPurchased ? "x" : " ")}] {r.IngredientName}: {r.ToBuyQty:0.##} {r.UnitAbbreviation}"));
+    public string PlainText => L.Text("Text.ShoppingList") + $" ({StartDate:d} – {EndDate:d})" + Environment.NewLine + ProgressText + Environment.NewLine + string.Join(Environment.NewLine,Rows.Select(r=>$"[{(r.IsPurchased ? "x" : " ")}] {r.IngredientName}: {PresentationValues.Quantity(r.ToBuyQty)} {r.UnitAbbreviation}"));
     partial void OnPurchaseFilterChanged(string value)=>Regroup();
     partial void OnSelectedSnapshotChanged(ShoppingSnapshot? value)
     {
@@ -169,7 +169,7 @@ public sealed partial class ShoppingListViewModel : ViewModelBase, IAsyncLoadabl
     private Task ImportAll() => MutateAsync(async () => {
         var eligible = Rows.Where(r => r.CanImport).ToArray();
         if (eligible.Length == 0) return;
-        var review = string.Join(Environment.NewLine, eligible.Select(r => $"{r.IngredientName}: {r.ActualQuantity:0.####} {r.ActualUnit}"));
+        var review = string.Join(Environment.NewLine, eligible.Select(r => $"{r.IngredientName}: {PresentationValues.Quantity(r.ActualQuantity)} {r.ActualUnit}"));
         if (!await _dialog.ConfirmAsync(L.Message("Text.AddToPantry"), L.Message("UX.BulkImport", review))) return;
         foreach (var row in eligible) await ImportReviewed(row);
         NotificationContent = L.Message("Text.QuantityAddedToPantry");

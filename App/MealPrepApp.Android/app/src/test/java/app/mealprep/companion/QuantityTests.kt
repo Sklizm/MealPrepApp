@@ -14,6 +14,25 @@ class QuantityTests {
   assertEquals("1.2345",Quantities.validate("1.234500"));assertEquals("-0.1",Quantities.validate("-0.1",allowNegative=true));assertEquals("0",Quantities.validate("0",allowZero=true))
  }
  @Test fun regionalInputUsesLocaleDecimalSeparator(){val previous=Locale.getDefault();try{Locale.setDefault(Locale.forLanguageTag("ro-RO"));assertEquals("1.25",Quantities.input("1,25"))}finally{Locale.setDefault(previous)}}
+ @Test fun displayRoundsInTheDeviceRegionAndEditingKeepsFullPrecision() {
+  val previous = Quantities.deviceRegion
+  try {
+   for (tag in listOf("en-US", "ro-RO", "ru-RU")) {
+    Quantities.deviceRegion = Locale.forLanguageTag(tag)
+    val separator = if (tag == "en-US") "." else ","
+    assertEquals("1",Quantities.format("1"))
+    assertEquals("1${separator}5",Quantities.format("1.50"))
+    assertEquals("0${separator}33",Quantities.format("0.3333"))
+    assertEquals("< 0${separator}01",Quantities.format("0.0001"))
+    assertEquals("-(< 0${separator}01)",Quantities.format("-0.0001"))
+    assertEquals("101",Quantities.format("100.5",calories=true))
+    assertEquals("0.3333",Quantities.input(Quantities.editor("0.3333")))
+    assertNull(Quantities.date(null))
+    val ambiguous = if (tag == "en-US") "1,234" else "1.234"
+    assertThrows(IllegalArgumentException::class.java) { Quantities.input(ambiguous) }
+   }
+  } finally { Quantities.deviceRegion = previous }
+ }
  private fun batch(id:Int,unit:Int,quantity:String,expiry:String?)=StockBatch(id,1,unit,"Milk","Dairy","ml",quantity,null,expiry,1,"2026-11-11T09:00:00Z")
  @Test fun compatibleUnitsCombineWhilePiecesRemainSeparateAndExpiredStayVisible(){
   val groups=pantryGroups(listOf(batch(1,1,"200","2026-11-10"),batch(2,2,"1",null),batch(3,1,"100","2026-11-11"),batch(4,3,"2",null)),listOf(Threshold(1,1,"1200",1)),listOf(CatalogUnit(1,"ml","ml","Volume")),listOf(UnitMapping(1,1,"1"),UnitMapping(2,1,"1000")),LocalDate.parse("2026-11-11"))

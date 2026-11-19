@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:conv="using:Avalonia.Data.Converters" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels" xmlns:m="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services"
+ xmlns:images="using:MealPrepApp.Desktop.Controls" xmlns:conv="using:Avalonia.Data.Converters" xmlns:loc="using:MealPrepApp.Desktop.Localization" xmlns:vm="using:MealPrepApp.ViewModels" xmlns:m="using:MealPrepApp.Models" xmlns:services="using:MealPrepApp.Services"
  x:Class="MealPrepApp.Desktop.Views.AssistantWindow" x:DataType="vm:AssistantViewModel"
  Title="{loc:Loc Ai.Title}" Width="1100" Height="840" MinWidth="820" MinHeight="600" Background="{DynamicResource AppBackground}" WindowStartupLocation="CenterOwner">
  <Window.Styles>
@@ -19,6 +19,10 @@
   <StackPanel Grid.Row="1" Spacing="4">
    <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap"/>
    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
+   <WrapPanel>
+    <Button Content="{loc:Loc Ai.SignInAgain}" Command="{Binding ShowRequestCommand}" IsVisible="{Binding RequiresSignIn}" Classes="Secondary" Margin="0,0,8,0"/>
+    <Button Content="{loc:Loc Ai.RecoverPending}" Command="{Binding RecoverPendingCommand}" IsVisible="{Binding HasPending}" Classes="Secondary"/>
+   </WrapPanel>
    <ProgressBar IsIndeterminate="{DynamicResource MotionEnabled}" IsVisible="{Binding IsBusy}" Height="3"/>
   </StackPanel>
   <TabControl Grid.Row="2" Name="AssistantTabs" SelectedIndex="{Binding SelectedTab}" Padding="0">
@@ -57,23 +61,23 @@
           <DatePicker SelectedDate="{Binding StartDate}" AutomationProperties.Name="{loc:Loc Ai.WeekStart}"/>
          </StackPanel>
         </Grid>
-        <StackPanel Spacing="4">
+        <StackPanel Spacing="4" IsVisible="{Binding ShowsPrompt}">
          <TextBlock Text="{loc:Loc Ai.Prompt}" Classes="Muted"/>
          <TextBox Text="{Binding Prompt}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="96" MaxHeight="220" MaxLength="4000" AutomationProperties.Name="{loc:Loc Ai.Prompt}"/>
         </StackPanel>
         <StackPanel Spacing="6" IsVisible="{Binding IsTextImport}">
          <TextBlock Text="{loc:Loc Ai.Source}" Classes="Muted"/>
          <TextBox Text="{Binding Source}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" MaxHeight="200" MaxLength="200000" AutomationProperties.Name="{loc:Loc Ai.Source}"/>
-         <Button Content="{loc:Loc UX.ReviewImport}" Classes="Secondary" Command="{Binding ReviewImportCommand}" IsEnabled="{Binding Connected}"/>
+         <Button Content="{loc:Loc UX.ReviewImport}" Classes="Primary" Command="{Binding ReviewImportCommand}" IsEnabled="{Binding Connected}"/>
         </StackPanel>
         <Button Content="{loc:Loc Ai.Photo}" Classes="Secondary" Click="ChooseImage" IsVisible="{Binding IsImageRequest}" IsEnabled="{Binding Connected}"/>
         <WrapPanel>
-         <Button Content="{loc:Loc Ai.RunTask}" Classes="Primary" Command="{Binding GenerateCommand}" IsEnabled="{Binding Enabled}" Margin="0,0,8,0"/>
+         <Button Content="{loc:Loc Ai.RunTask}" Classes="Primary" Command="{Binding GenerateCommand}" IsEnabled="{Binding Enabled}" IsVisible="{Binding !IsTextImport}" Margin="0,0,8,0"/>
          <Button Content="{loc:Loc Ai.Cancel}" Classes="Link" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
         </WrapPanel>
        </StackPanel>
       </Border>
-      <Expander Header="{loc:Loc Ai.Preferences}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+      <Expander Header="{loc:Loc Ai.Preferences}" IsVisible="{Binding ShowsPreferences}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
        <StackPanel Spacing="10">
         <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
          <StackPanel Spacing="4"><TextBlock Text="{loc:Loc Ai.Servings}" Classes="Muted" TextWrapping="Wrap"/><NumericUpDown Value="{Binding Servings}" Minimum="1" Maximum="1000" AutomationProperties.Name="{loc:Loc Ai.Servings}"/></StackPanel>
@@ -82,19 +86,21 @@
         </Grid>
         <CheckBox Content="{loc:Loc Ai.Expiring}" IsChecked="{Binding PreferExpiring}"/>
         <CheckBox Content="{loc:Loc Ai.Leftovers}" IsChecked="{Binding UseLeftovers}"/>
-        <CheckBox Content="{loc:Loc Ai.NewDrafts}" IsChecked="{Binding AllowNewRecipes}"/>
+        <CheckBox Content="{loc:Loc Ai.NewDrafts}" IsVisible="{Binding IsPlanning}" IsChecked="{Binding AllowNewRecipes}"/>
         <TextBlock Text="{loc:Loc Ai.Exclusions}" Classes="Muted"/>
         <ListBox ItemsSource="{Binding AllIngredients}" SelectedItems="{Binding ExcludedIngredients}" SelectionMode="Multiple" MaxHeight="180" AutomationProperties.Name="{loc:Loc Ai.Exclusions}"/>
+        <StackPanel IsVisible="{Binding IsPlanning}" Spacing="4">
         <TextBlock Text="{loc:Loc Ai.Slots}" Classes="Muted"/>
         <ListBox ItemsSource="{Binding AllSlots}" SelectedItems="{Binding SelectedSlots}" SelectionMode="Multiple" MaxHeight="140" AutomationProperties.Name="{loc:Loc Ai.Slots}"/>
+        </StackPanel>
         <Button Content="{loc:Loc Ai.SavePreferences}" Classes="Secondary" Command="{Binding SavePreferencesCommand}" IsEnabled="{Binding Connected}"/>
        </StackPanel>
       </Expander>
       <Expander Header="{loc:Loc Ai.History}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
        <StackPanel Spacing="10">
-        <WrapPanel><Button Content="{loc:Loc Ai.Refresh}" Classes="Secondary" Command="{Binding RefreshCommand}" Margin="0,0,8,4"/><Button Content="{loc:Loc Ai.RecoverPending}" Classes="Secondary" Command="{Binding RecoverPendingCommand}" Margin="0,0,0,4"/></WrapPanel>
+        <WrapPanel><Button Content="{loc:Loc Ai.Refresh}" Classes="Secondary" Command="{Binding RefreshCommand}" Margin="0,0,8,4"/></WrapPanel>
         <ListBox ItemsSource="{Binding Jobs}" SelectedItem="{Binding SelectedJob}" MaxHeight="160">
-         <ListBox.ItemTemplate><DataTemplate x:DataType="m:AiJob"><StackPanel Orientation="Horizontal" Spacing="12"><TextBlock Text="{Binding CreatedAt}"/><TextBlock Text="{Binding Kind}"/><TextBlock Text="{Binding State}"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+         <ListBox.ItemTemplate><DataTemplate x:DataType="m:AiJob"><StackPanel Orientation="Horizontal" Spacing="12"><TextBlock Text="{loc:Number CreatedAt, Style=Event}"/><TextBlock Text="{Binding Kind}"/><TextBlock Text="{Binding State}"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
         </ListBox>
         <Button Content="{loc:Loc Ai.OpenResult}" Classes="Secondary" Command="{Binding OpenJobCommand}" IsEnabled="{Binding SelectedJob, Converter={StaticResource NotNullToBool}}"/>
        </StackPanel>
@@ -105,7 +111,7 @@
    <TabItem Header="{loc:Loc Ai.Suggestions}"><ScrollViewer><StackPanel Spacing="12" Margin="8">
     <TextBlock Text="{loc:Loc Ai.ReadinessHint}" TextWrapping="Wrap"/>
     <ItemsControl ItemsSource="{Binding Suggestions}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="m:AiSuggestion"><Border Classes="Card" Margin="0,4"><StackPanel Spacing="8"><TextBlock Text="{Binding Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Reason}" TextWrapping="Wrap"/><Button Content="{loc:Loc Ai.OpenRecipe}" Command="{CompiledBinding $parent[Window].((vm:AssistantViewModel)DataContext).OpenRecipeCommand}" CommandParameter="{Binding}"/></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-    <ItemsControl ItemsSource="{Binding Candidates}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="m:AiCandidate"><Border Classes="Card" Margin="0,4"><StackPanel Spacing="4"><TextBlock Text="{Binding Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Readiness.Status}"/><TextBlock Text="{Binding Nutrition.PerServingSummary}"/><ItemsControl ItemsSource="{Binding Readiness.Ingredients}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="m:IngredientShortage"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,10,0"/><TextBlock Text="{Binding Missing}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <ItemsControl ItemsSource="{Binding Candidates}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="m:AiCandidate"><Border Classes="Card" Margin="0,4"><StackPanel Spacing="4"><TextBlock Text="{Binding Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Readiness.Status}"/><TextBlock Text="{Binding Nutrition.PerServingSummary}"/><ItemsControl ItemsSource="{Binding Readiness.Ingredients}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="m:IngredientShortage"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,10,0"/><TextBlock Text="{loc:Number Missing}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
    </StackPanel></ScrollViewer></TabItem>
    <TabItem Header="{loc:Loc Ai.Recipes}">
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="0,12,0,0">
@@ -131,10 +137,22 @@
      <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding HasRecipeSelection}">
       <StackPanel Spacing="12" MaxWidth="1024" Margin="0,0,4,8">
        <TextBlock Text="{loc:Loc Ai.ReviewRecipe}" TextWrapping="Wrap"/>
-       <ContentControl Content="{Binding SelectedRecipe}">
+       <ContentControl Content="{Binding SelectedRecipe}" IsEnabled="{Binding SelectedRecipe.CanEdit, FallbackValue=True}">
         <ContentControl.ContentTemplate>
          <DataTemplate x:DataType="vm:AssistantRecipeRow">
           <StackPanel Spacing="12">
+           <Border Classes="Card" Padding="16" IsVisible="{Binding PhotoPreview, Converter={StaticResource NotNullToBool}}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+             <Border Width="192" Height="108" CornerRadius="8" ClipToBounds="True">
+              <images:RecipeImage Bytes="{Binding PhotoPreview}" Stretch="UniformToFill"
+                                  AutomationProperties.Name="{loc:Loc Text.Photo}"/>
+             </Border>
+             <StackPanel Spacing="8" VerticalAlignment="Center">
+              <TextBlock Text="{loc:Loc Ai.ImportedPhoto}" Classes="Header"/>
+              <Button Content="{loc:Loc Ai.SkipImportedPhoto}" Classes="Secondary" Command="{Binding SkipPhotoCommand}"/>
+             </StackPanel>
+            </Grid>
+           </Border>
            <Border Classes="Card" Padding="16">
             <StackPanel Spacing="10">
              <TextBlock Text="{loc:Loc Recipe.Details}" Classes="Header"/>
@@ -165,18 +183,20 @@
              <ItemsControl ItemsSource="{Binding Ingredients}">
               <ItemsControl.ItemTemplate>
                <DataTemplate x:DataType="vm:AssistantIngredientRow">
-                <Border Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                <Border Classes="assistant-ingredient" Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12" Margin="0,0,0,8">
                  <StackPanel Spacing="8">
                   <TextBlock Text="{Binding Original}" TextWrapping="Wrap" FontWeight="SemiBold" IsVisible="{Binding Original, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                  <TextBlock Text="{Binding ProblemText}" IsVisible="{Binding ProblemText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
                   <Grid ColumnDefinitions="*,*,112,112" ColumnSpacing="8">
                    <StackPanel Spacing="4"><TextBlock Text="{loc:Loc Ai.IngredientName}" Classes="Muted" TextWrapping="Wrap"/><TextBox Text="{Binding Name}" AutomationProperties.Name="{loc:Loc Ai.IngredientName}"/></StackPanel>
-                   <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{loc:Loc Ai.CatalogIngredient}" Classes="Muted" TextWrapping="Wrap"/><ComboBox ItemsSource="{Binding Ingredients}" SelectedItem="{Binding Ingredient}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Ai.CatalogIngredient}"/></StackPanel>
-                   <StackPanel Grid.Column="2" Spacing="4"><TextBlock Text="{loc:Loc Text.Quantity}" Classes="Muted"/><NumericUpDown Value="{Binding Quantity}" Minimum="0" Maximum="99999999" FormatString="0.####" AutomationProperties.Name="{loc:Loc Text.Quantity}"/></StackPanel>
+                   <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{loc:Loc Ai.CatalogIngredient}" Classes="Muted" TextWrapping="Wrap"/><ComboBox Classes="assistant-mapping" ItemsSource="{Binding Ingredients}" SelectedItem="{Binding Ingredient}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Ai.CatalogIngredient}"/></StackPanel>
+                   <StackPanel Grid.Column="2" Spacing="4"><TextBlock Text="{loc:Loc Text.Quantity}" Classes="Muted"/><TextBox Classes="assistant-quantity" Text="{Binding QuantityInput}" AutomationProperties.Name="{loc:Loc Text.Quantity}"/></StackPanel>
                    <StackPanel Grid.Column="3" Spacing="4"><TextBlock Text="{loc:Loc Text.Unit}" Classes="Muted"/><ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding Unit}" HorizontalAlignment="Stretch" AutomationProperties.Name="{loc:Loc Text.Unit}"/></StackPanel>
                   </Grid>
                   <TextBox Text="{Binding Notes}" Watermark="{loc:Loc Ai.Notes}" AutomationProperties.Name="{loc:Loc Ai.Notes}"/>
                   <Grid ColumnDefinitions="*,Auto">
                    <Button Content="{loc:Loc Ai.CreateIngredient}" Classes="Secondary" Command="{CompiledBinding $parent[Window].((vm:AssistantViewModel)DataContext).CreateIngredientCommand}" CommandParameter="{Binding}" IsVisible="{Binding Ingredient, Converter={x:Static conv:ObjectConverters.IsNull}}"/>
+                   <Button Content="{loc:Loc Ai.ClearIngredientMapping}" Classes="Secondary" Command="{Binding ClearIngredientMappingCommand}" IsVisible="{Binding Ingredient, Converter={StaticResource NotNullToBool}}"/>
                    <Button Grid.Column="1" Content="{loc:Loc Ai.Remove}" Classes="Link DestructiveLink" Command="{CompiledBinding $parent[Window].((vm:AssistantViewModel)DataContext).RemoveIngredientCommand}" CommandParameter="{Binding}"/>
                   </Grid>
                  </StackPanel>
@@ -202,14 +222,17 @@
       </StackPanel>
      </ScrollViewer>
      <Border Grid.Row="2" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,10,0,0" IsVisible="{Binding HasRecipeSelection}">
-      <Button Content="{loc:Loc Ai.SaveRecipe}" Classes="Primary" Command="{Binding SaveRecipeCommand}" HorizontalAlignment="Right" IsEnabled="{Binding !IsBusy}"/>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+       <TextBlock Text="{Binding SelectedRecipe.UnresolvedSummary}" IsVisible="{Binding SelectedRecipe.UnresolvedRows, Converter={StaticResource NonEmptyToBool}, FallbackValue=False}" Foreground="{DynamicResource Danger}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+      <Button Grid.Column="1" Content="{loc:Loc Ai.SaveRecipe}" Classes="Primary" Command="{Binding SaveRecipeCommand}" HorizontalAlignment="Right" IsVisible="{Binding SelectedRecipe.CanEdit, FallbackValue=False}" IsEnabled="{Binding CanSaveRecipe}"/>
+      </Grid>
      </Border>
     </Grid>
    </TabItem>
    <TabItem Header="{loc:Loc Ai.Plan}"><ScrollViewer><StackPanel Spacing="10" Margin="8">
     <TextBlock Text="{loc:Loc Ai.PlanHint}" TextWrapping="Wrap"/>
     <TextBlock Text="{loc:Loc Ai.ReplaceMeals}"/>
-    <ListBox ItemsSource="{Binding ExistingMeals}" SelectedItems="{Binding ReplaceMeals}" SelectionMode="Multiple" MaxHeight="160"><ListBox.ItemTemplate><DataTemplate x:DataType="m:MealPlanEntry"><WrapPanel><TextBlock Text="{Binding PlannedDate}" Margin="0,0,8,0"/><TextBlock Text="{Binding RecipeTitle}"/></WrapPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
+    <ListBox ItemsSource="{Binding ExistingMeals}" SelectedItems="{Binding ReplaceMeals}" SelectionMode="Multiple" MaxHeight="160"><ListBox.ItemTemplate><DataTemplate x:DataType="m:MealPlanEntry"><WrapPanel><TextBlock Text="{loc:Number PlannedDate, Style=Calendar}" Margin="0,0,8,0"/><TextBlock Text="{Binding RecipeTitle}"/></WrapPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
     <ItemsControl ItemsSource="{Binding Meals}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:AssistantMealRow"><Border Classes="Card" Margin="0,4"><StackPanel Spacing="6">
      <WrapPanel><DatePicker SelectedDate="{Binding Date}"/><ComboBox ItemsSource="{Binding Slots}" SelectedItem="{Binding Slot}" Margin="8,0"/><NumericUpDown Value="{Binding Portions}" Minimum="1" Maximum="1000" Width="100"/></WrapPanel>
      <ComboBox ItemsSource="{Binding Recipes}" SelectedItem="{Binding Recipe}" HorizontalAlignment="Stretch"/>
@@ -218,17 +241,40 @@
      <CheckBox Content="{loc:Loc Ai.Pin}" IsChecked="{Binding Pinned}"/>
      <Button Content="{loc:Loc Ai.Remove}" Command="{CompiledBinding $parent[Window].((vm:AssistantViewModel)DataContext).RemoveMealCommand}" CommandParameter="{Binding}"/>
     </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-    <WrapPanel><Button Content="{loc:Loc Ai.AddMeal}" Command="{Binding AddManualMealCommand}"/><Button Content="{loc:Loc Ai.PreviewPlan}" Command="{Binding PreviewPlanCommand}" Margin="8,0"/><Button Content="{loc:Loc Ai.ApplyPlan}" Command="{Binding ApplyPlanCommand}" Margin="8,0"/></WrapPanel>
-    <TextBlock Text="{loc:Loc Ai.PlanPreview}" Classes="Header"/>
-    <WrapPanel><TextBlock Text="{loc:Loc Ai.Cook}" Margin="0,0,8,0"/><TextBlock Text="{Binding Preview.CookingMinutes}"/><TextBlock Text="kcal" Margin="12,0,8,0"/><TextBlock Text="{Binding Preview.Calories}"/></WrapPanel>
-    <TextBlock Text="{loc:Loc Ai.NutritionIncomplete}" IsVisible="{Binding !Preview.NutritionComplete}" TextWrapping="Wrap"/>
-    <ItemsControl ItemsSource="{Binding Preview.Shopping}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="services:AiPlanShortage"><Grid ColumnDefinitions="2*,*,*,*"><TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding FromPantry}"/><TextBlock Grid.Column="2" Text="{Binding Missing}"/><TextBlock Grid.Column="3" Text="{Binding Unit}"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <WrapPanel><Button Content="{loc:Loc Ai.AddMeal}" Command="{Binding AddManualMealCommand}"/><Button Content="{loc:Loc Ai.PreviewPlan}" Command="{Binding PreviewPlanCommand}" Margin="8,0"/><Button Content="{loc:Loc Ai.ApplyPlan}" Command="{Binding ApplyPlanCommand}" IsEnabled="{Binding CanApplyPlan}" Margin="8,0"/></WrapPanel>
+    <TextBlock Text="{loc:Loc Ai.Error.StalePreview}" IsVisible="{Binding !CanApplyPlan}" Classes="Muted" TextWrapping="Wrap"/>
+    <StackPanel Spacing="6" IsVisible="{Binding Preview, Converter={StaticResource NotNullToBool}}">
+     <TextBlock Text="{loc:Loc Ai.PlanPreview}" Classes="Header"/>
+     <WrapPanel><TextBlock Text="{loc:Loc Ai.Cook}" Margin="0,0,8,0"/><TextBlock Text="{loc:Number Preview.CookingMinutes}"/><TextBlock Text="kcal" Margin="12,0,8,0"/><TextBlock Text="{loc:Number PreviewCalories, Style=Calories}"/></WrapPanel>
+     <TextBlock Text="{loc:Loc Ai.NutritionIncomplete}" IsVisible="{Binding !Preview.NutritionComplete}" TextWrapping="Wrap"/>
+     <StackPanel Spacing="4" IsVisible="{Binding Preview.Shopping.Length, Converter={StaticResource NonEmptyToBool}}">
+      <Grid ColumnDefinitions="2*,*,*,*,Auto" ColumnSpacing="8">
+       <TextBlock Text="{loc:Loc Text.Ingredient165}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+       <TextBlock Grid.Column="1" Text="{loc:Loc Text.Required}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+       <TextBlock Grid.Column="2" Text="{loc:Loc Ai.FromPantry}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+       <TextBlock Grid.Column="3" Text="{loc:Loc Ai.MissingAmount}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+       <TextBlock Grid.Column="4" Text="{loc:Loc Text.Unit}" Width="60" TextWrapping="Wrap" FontWeight="SemiBold"/>
+      </Grid>
+      <ItemsControl ItemsSource="{Binding Preview.Shopping}"><ItemsControl.ItemTemplate>
+       <DataTemplate x:DataType="services:AiPlanShortage">
+        <Grid ColumnDefinitions="2*,*,*,*,Auto" ColumnSpacing="8">
+         <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+         <TextBlock Grid.Column="1" Text="{loc:Number Required}"/>
+         <TextBlock Grid.Column="2" Text="{loc:Number FromPantry}"/>
+         <TextBlock Grid.Column="3" Text="{loc:Number Missing}"/>
+         <TextBlock Grid.Column="4" Text="{Binding Unit}" Width="60" TextWrapping="Wrap"/>
+        </Grid>
+       </DataTemplate>
+      </ItemsControl.ItemTemplate></ItemsControl>
+     </StackPanel>
+    </StackPanel>
    </StackPanel></ScrollViewer></TabItem>
    <TabItem Header="{loc:Loc Ai.Purchases}"><ScrollViewer><StackPanel Spacing="10" Margin="8">
     <TextBlock Text="{loc:Loc Ai.ReceiptHint}" TextWrapping="Wrap"/>
     <ItemsControl ItemsSource="{Binding Purchases}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:AssistantPurchaseRow"><Border Classes="Card" Margin="0,4"><StackPanel Spacing="8">
      <CheckBox IsChecked="{Binding Selected}" IsEnabled="{Binding !Accepted}" Content="{Binding Line.Original}"/>
-     <Grid ColumnDefinitions="2*,*,120" ColumnSpacing="8"><ComboBox ItemsSource="{Binding Line.Ingredients}" SelectedItem="{Binding Line.Ingredient}" HorizontalAlignment="Stretch"/><ComboBox Grid.Column="1" ItemsSource="{Binding Line.Units}" SelectedItem="{Binding Line.Unit}" HorizontalAlignment="Stretch"/><NumericUpDown Grid.Column="2" Value="{Binding Line.Quantity}" Minimum="0" Maximum="99999999" FormatString="0.####"/></Grid>
+     <Grid ColumnDefinitions="2*,*,120" ColumnSpacing="8"><ComboBox ItemsSource="{Binding Line.Ingredients}" SelectedItem="{Binding Line.Ingredient}" HorizontalAlignment="Stretch"/><ComboBox Grid.Column="1" ItemsSource="{Binding Line.Units}" SelectedItem="{Binding Line.Unit}" HorizontalAlignment="Stretch"/><TextBox Grid.Column="2" Text="{Binding Line.QuantityInput}" AutomationProperties.Name="{loc:Loc Text.Quantity}"/></Grid>
+     <TextBlock Text="{loc:Loc Ai.Error.QuantityField}" IsVisible="{Binding Line.HasInvalidQuantity}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"/>
      <WrapPanel><StackPanel><TextBlock Text="{loc:Loc Ai.PurchaseDate}"/><DatePicker SelectedDate="{Binding PurchasedOn}"/></StackPanel><StackPanel Margin="10,0"><TextBlock Text="{loc:Loc Ai.ExpiryDate}"/><DatePicker SelectedDate="{Binding ExpiresOn}"/></StackPanel></WrapPanel>
     </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
     <CheckBox Content="{loc:Loc Ai.ConfirmDuplicate}" IsChecked="{Binding ConfirmDuplicate}"/>

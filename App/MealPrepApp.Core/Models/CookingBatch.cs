@@ -4,7 +4,7 @@ public sealed class CookingBatch : LocalizedObservableObject
 {
     public decimal FreePortions=>Math.Max(0,RemainingPortions-ReservedPortions);
     [LocalizedProperty] public string PreparedSummary=>L.Text("UX.PreparedSummary",FreePortions,ExpiresOn is {} date?date.ToString("d"):L.Text("UX.UnknownExpiry"));
-    [LocalizedProperty] public string PreparedLabel=>$"{RecipeTitle} · {FreePortions:0.####}";
+    [LocalizedProperty] public string PreparedLabel=>$"{RecipeTitle} · {PresentationValues.Quantity(FreePortions)}";
     public int CookingBatchID { get; set; }
     public int? RecipeID { get; set; }
     public string RecipeTitle { get; set; } = "";

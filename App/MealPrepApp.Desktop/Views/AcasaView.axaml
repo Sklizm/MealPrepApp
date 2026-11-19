@@ -41,7 +41,7 @@
                                     <Button Classes="Link" Command="{Binding $parent[UserControl].DataContext.OpenMealCommand}" CommandParameter="{Binding}" HorizontalContentAlignment="Left"><TextBlock Text="{Binding RecipeTitle}" TextWrapping="Wrap"/></Button>
                                     <TextBlock Grid.Row="1" Text="{loc:Display CategoryName}" Classes="Muted"/>
                                     <StackPanel Grid.Column="1" Grid.RowSpan="2" Spacing="4">
-                                        <TextBlock Text="{loc:Format Count.Servings, AllocatedPortions}" Classes="Muted"/>
+                                        <TextBlock Text="{loc:Format Recipe.ServingsValue, AllocatedPortions, Style=Quantity}" Classes="Muted"/>
                                         <Button Content="{loc:Loc Text.Cook}" IsVisible="{Binding !IsPrepared}" Classes="Primary" Command="{Binding $parent[UserControl].DataContext.CookMealCommand}" CommandParameter="{Binding}"/>
                                         <Button Content="{loc:Loc UX.ConsumeLeftovers}" IsVisible="{Binding IsPrepared}" Classes="Secondary" Command="{Binding $parent[UserControl].DataContext.ConsumeMealCommand}" CommandParameter="{Binding}"/>
                                     </StackPanel>

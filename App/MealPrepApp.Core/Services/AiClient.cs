@@ -55,7 +55,35 @@ public sealed class AiClient(AiRepository identity) : IApiSession, IDisposable
         using var response = await _http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token);
         if (!response.IsSuccessStatusCode)
         {
-            var code = (int)response.StatusCode switch {401=>"SessionExpired",403=>"ConsentRequired",409=>"VersionConflict",429=>"QuotaExceeded",_=>"Unavailable"};
+            var status = (int)response.StatusCode;
+            var code = status switch
+            {
+                400 when path == "/v1/recipes/save" => "RecipeReviewRequired",
+                400 => "InvalidInput",
+                401 => "SessionExpired",
+                403 => "ConsentRequired",
+                404 => "NotFound",
+                409 => "VersionConflict",
+                429 => "QuotaExceeded",
+                503 => "StorageUnavailable",
+                _ => "Unavailable"
+            };
+            if (response.Content.Headers.ContentLength is not > 4096)
+            {
+                try
+                {
+                    await using var error = await response.Content.ReadAsStreamAsync(token);
+                    var bytes = new byte[4096];
+                    var length = await error.ReadAtLeastAsync(bytes, bytes.Length, false, token);
+                    using var document = JsonDocument.Parse(bytes.AsMemory(0, length));
+                    if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                        document.RootElement.TryGetProperty("errorCode", out var field) &&
+                        field.ValueKind == JsonValueKind.String)
+                        code = field.GetString() ?? code;
+                }
+                catch (JsonException) { }
+                catch (IOException) { }
+            }
             if ((int)response.StatusCode==401) Clear();
             throw new AiClientException(code,(int)response.StatusCode);
         }

@@ -34,14 +34,17 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     private IReadOnlyList<Ingredient> _allIngredients = Array.Empty<Ingredient>();
     private IReadOnlyList<Unit> _allUnits = Array.Empty<Unit>();
     private string _savedState = "";
-    private string Snapshot() => JsonSerializer.Serialize(new { Extra = ExtraSnapshot(), Title, Description, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, Category=SelectedCategory?.CategoryID, Rows=IngredientRows.Select(r=> new { Ingredient=r.SelectedIngredient?.IngredientID, Unit=r.SelectedUnit?.UnitID, r.Quantity, r.Notes, r.IngredientText }) });
+    private string Snapshot() => JsonSerializer.Serialize(new { Extra = ExtraSnapshot(), Title, Description, Instructions, PrepTimeMinutes, CookTimeMinutes, Servings, Category=SelectedCategory?.CategoryID, Rows=IngredientRows.Select(r=> new { Ingredient=r.SelectedIngredient?.IngredientID, Unit=r.SelectedUnit?.UnitID, r.Quantity, r.QuantityInput, r.Notes, r.IngredientText }) });
     public bool IsDirty => Snapshot() != _savedState;
     public async Task<bool> CanLeaveAsync()
     {
         if (IsBusy) return false;
         if (!IsDirty) return true;
         var decision=await _dialog.ChooseLeaveAsync();
-        if(decision==LeaveDecision.Discard) { _recovery?.Delete(); return true; }
+        if(decision==LeaveDecision.Discard) {
+            if (!HasPendingSave && !MustRestorePendingSave) _recovery?.Delete();
+            return true;
+        }
         if(decision==LeaveDecision.Stay) return false;
         await SaveDraft();
         return !HasError && !IsDirty;
@@ -60,6 +63,28 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     public string ScreenTitle => IsEdit ? L.Text("Text.EditRecipe") : IsDraft ? L.Text("Text.EditDraft") : L.Text("Recipe.New");
 
     public ObservableCollection<Category> Categories { get; } = new();
+    public event Action<RecipeIngredientRowViewModel>? IngredientFocusRequested;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UnresolvedSummary))]
+    private int _unresolvedRows;
+    [LocalizedProperty] public string UnresolvedSummary => L.Text("Ai.UnresolvedRows", UnresolvedRows);
+
+    private static int ValidateIngredientRows(IEnumerable<RecipeIngredientRowViewModel> rows)
+    {
+        var duplicates = rows.Where(row => row.SelectedIngredient is not null)
+            .GroupBy(row => row.SelectedIngredient!.IngredientID)
+            .Where(group => group.Count() > 1).Select(group => group.Key).ToHashSet();
+        var unresolved = 0;
+        foreach (var row in rows)
+        {
+            row.ReviewIssue = row.SelectedIngredient is null || row.SelectedUnit is null ? L.Message("Ai.Error.MappingRequired")
+                : duplicates.Contains(row.SelectedIngredient.IngredientID) ? L.Message("Ingredient.Duplicate", row.SelectedIngredient.Name)
+                : !row.IsComplete ? L.Message("Ai.Error.QuantityField") : null;
+            if (row.ReviewIssue is not null) unresolved++;
+        }
+        return unresolved;
+    }
+
     public ObservableCollection<RecipeIngredientRowViewModel> IngredientRows { get; } = new();
 
     [ObservableProperty]
@@ -109,6 +134,9 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
     {
         ClearError();
         IsBusy = true;
+        var recovery = _recovery?.Read();
+        CanRestoreRecovery = recovery is not null;
+        MustRestorePendingSave = recovery?.PendingBundle is not null;
         try
         {
             // Lookup lists feed the category dropdown and every ingredient row's pickers.
@@ -129,7 +157,6 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
             OnPropertyChanged(nameof(ScreenTitle));
             OnPropertyChanged(nameof(IsDraft));
             _savedState=Snapshot();
-            CanRestoreRecovery = _recovery?.Read() is not null;
             if (RestoreOnLoad) RestoreRecovery();
         }
         catch (AppDbException ex)
@@ -301,83 +328,111 @@ public sealed partial class ReteteEditorViewModel : ViewModelBase, IAsyncLoadabl
         if(IsBusy)return;
         ClearError();
 
-        if (string.IsNullOrWhiteSpace(Title))
+        if (MustRestorePendingSave)
         {
-            ErrorContent = L.Message("Text.ARecipeTitleIsRequired");
+            ErrorContent = L.Message("Ai.Error.PendingReview");
             return;
         }
+        if (_pendingBundle is null && !ValidateSaveFields()) return;
 
-        if (string.IsNullOrWhiteSpace(Instructions))
-        {
-            ErrorContent = L.Message("Text.InstructionsAreRequired");
-            return;
-        }
-
-        if(PrepTimeMinutes is <0 || CookTimeMinutes is <0 || Servings is <=0)
-        {ErrorContent = L.Message("Text.TimesMustBeZeroOrPositiveAndServingsMustBePositive");return;}
-        if (IngredientRows.Any(r => !r.IsComplete))
-        {
-            ErrorContent = L.Message("Text.CompleteEachIngredientRowIngredientUnitQuantityOrRemoveIt");
-            return;
-        }
-
-        // The DB allows an ingredient only once per recipe (UQ_RecipeIngredients_Recipe_Ingr).
-        // Catch a repeated ingredient here with a clear message instead of letting the save
-        // fail with a raw duplicate-key error (rows are all IsComplete, so SelectedIngredient is set).
-        var duplicate = IngredientRows
-            .GroupBy(r => r.SelectedIngredient!.IngredientID)
-            .FirstOrDefault(g => g.Count() > 1);
-        if (duplicate is not null)
-        {
-            var name = duplicate.First().SelectedIngredient!.Name;
-            ErrorContent = L.Message("Ingredient.Duplicate", name);
-            return;
-        }
-
-        var inputs = IngredientRows.Select(r => r.ToInput()).ToList();
-        var categoryId = SelectedCategory?.CategoryID;
         var userId = _session.CurrentUserId;
-
         IsBusy = true;
         try
         {
-            if (_saveFingerprint is not null && await _recipes.GetSavedOperationAsync(userId,_saveOperation) is { } previous) { RecipeId=previous.Id; _rowVersion=previous.Version; }
-            var input = new RecipeBundleInput(RecipeId, categoryId, Title.Trim(), Trimmed(Description), Instructions.Trim(),
-                PrepTimeMinutes, CookTimeMinutes, Servings, inputs, IsEdit ? _rowVersion : null, PhotoMode,
-                PhotoMode == "Set" ? PhotoBytes : null, PhotoMode == "Set" ? _thumbnailBytes : null);
-            var result = await _recipes.SaveBundleAsync(userId, OperationForSave(input), input);
-            var recipeId = result.Id; RecipeId = recipeId; _rowVersion = result.Version; PhotoMode = "Keep";
-            _recovery?.Delete();
+            if (_pendingBundle is null)
+            {
+                // Older recovery records carry only the operation fingerprint and ID.
+                if (_saveFingerprint is not null && await _recipes.GetSavedOperationAsync(userId, _saveOperation) is { } previous)
+                {
+                    RecipeId = previous.Id;
+                    _rowVersion = previous.Version;
+                }
+                var input = new RecipeBundleInput(RecipeId, SelectedCategory?.CategoryID, Title.Trim(), Trimmed(Description), Instructions.Trim(),
+                    PrepTimeMinutes, CookTimeMinutes, Servings, IngredientRows.Select(row => row.ToInput()).ToArray(),
+                    IsEdit ? _rowVersion : null, PhotoMode, PhotoMode == "Set" ? PhotoBytes : null, PhotoMode == "Set" ? _thumbnailBytes : null);
+                AssignSaveOperation(input);
+                _pendingBundle = input;
+                _pendingSnapshot = Snapshot();
+                HasPendingSave = true;
+                SaveRecoveryNow();
+                if (RecoverySaveFailed)
+                {
+                    ClearPendingSave();
+                    ErrorContent = L.Message("UX.RecoverySaveFailed");
+                    return;
+                }
+            }
 
+            var sent = _pendingBundle;
+            var result = await _recipes.SaveBundleAsync(userId, _saveOperation, sent);
+            var newerChanges = _pendingSnapshot is not null && _pendingSnapshot != Snapshot();
+            RecipeId = result.Id;
+            _rowVersion = result.Version;
+            if (PhotoMode == sent.PhotoMode && (PhotoMode != "Set" || (PhotoBytes ?? []).AsSpan().SequenceEqual(sent.ImageData)))
+                PhotoMode = "Keep";
+            ClearPendingSave();
+            if (newerChanges)
+            {
+                SaveRecoveryNow();
+                NotificationContent = L.Message("Ai.Recovered");
+                return;
+            }
+
+            _recovery?.Delete();
             if (DraftId.HasValue)
                 await _drafts.DeleteDraftAsync(DraftId.Value, userId);
 
-            _savedState=Snapshot();
-            IsBusy=false;
-            await NavigateToDetailAsync(recipeId);
+            _savedState = Snapshot();
+            IsBusy = false;
+            await NavigateToDetailAsync(result.Id);
         }
         catch (AppDbException ex) when (ex.ErrorNumber == 50004)
         {
+            ClearPendingSave();
+            SaveRecoveryNow();
             if (await _dialog.ConfirmAsync(L.Message("Text.EditingConflict"),
                     L.Message("Message.Join", L.Message("Text.TheRecipeChangedInAnotherSessionReloadTheCurrentVersion"), L.Message("Text.YourUnsavedChangesWillBeLost")), L.Message("Text.Reload"), destructive: true))
             {
                 await ReloadAsync();
             }
         }
-        catch (AppDbException ex)
+        catch (AppDbException ex) when (ex.IsKnown)
         {
+            ClearPendingSave();
+            SaveRecoveryNow();
             ErrorContent = ex.LocalizedMessage;
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            if (HasPendingSave) ErrorContent = L.Message("Ai.Error.PendingReview");
+        }
         catch (Exception ex)
         {
             AppDiagnostics.Record(ex);
-            ErrorContent = L.Message("Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
+            ErrorContent = L.Message(HasPendingSave ? "Ai.Error.PendingReview" : "Text.TheOperationCouldNotBeCompletedCheckTheAppLog");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private bool ValidateSaveFields()
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+            ErrorContent = L.Message("Text.ARecipeTitleIsRequired");
+        else if (string.IsNullOrWhiteSpace(Instructions))
+            ErrorContent = L.Message("Text.InstructionsAreRequired");
+        else if (PrepTimeMinutes is < 0 || CookTimeMinutes is < 0 || Servings is <= 0)
+            ErrorContent = L.Message("Text.TimesMustBeZeroOrPositiveAndServingsMustBePositive");
+        else
+        {
+            UnresolvedRows = ValidateIngredientRows(IngredientRows);
+            if (IngredientRows.FirstOrDefault(row => row.ReviewIssue is not null) is not { } first) return true;
+            ErrorContent = first.ReviewIssue;
+            IngredientFocusRequested?.Invoke(first);
+        }
+        return false;
     }
 
     [RelayCommand]

@@ -18,6 +18,10 @@ namespace MealPrepApp.ViewModels.Retete;
 public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable, IDisposable
 {
     private const int PageSize = 40;
+    public int? LastOpenedRecipeId { get; set; }
+    public double ListOffset { get; set; }
+    public (string Filter, string Search, int Category, string Sort, int Page) ListQuery =>
+        (ActiveFilter, SearchTerm, SelectedCategory?.CategoryID ?? 0, SortOrder, PageNumber);
 
     /// <summary>Category-filter sentinel: id 0 means "all categories".</summary>
     private static readonly Category AllCategories = new() { CategoryID = 0, Name = "Toate categoriile" };
@@ -227,7 +231,12 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
             HasNextPage = rows.Count > 0 && page * PageSize < rows[0].TotalCount;
 
             Recipes.Clear();
-            foreach (var row in rows) { if(filter==RecipeFilterIds.Favorites)row.IsFavorite=true; Recipes.Add(row); }
+            foreach (var row in rows)
+            {
+                if (filter == RecipeFilterIds.Favorites) row.IsFavorite = true;
+                row.CanManage = row.UserID == userId;
+                Recipes.Add(row);
+            }
 
             _loaded = true;
         }
@@ -326,6 +335,7 @@ public sealed partial class ReteteListViewModel : ViewModelBase, IAsyncLoadable,
         if (item is null)
             return Task.CompletedTask;
 
+        LastOpenedRecipeId = item.RecipeID;
         var detail = _services.GetRequiredService<ReteteDetailViewModel>();
         detail.RecipeId = item.RecipeID;
         return _navigation.NavigateToAsync(detail);

@@ -218,13 +218,28 @@ public sealed partial class RegressionTests
         try
         {
             window.UpdateLayout(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            var strip = view.FindControl<ScrollViewer>("CategoryStrip")!;
+            Assert.True(strip.IsVisible);
+            Assert.False(view.FindControl<Border>("FridgePanel")!.IsVisible);
+            Assert.InRange(strip.Bounds.Height, 1, 70);
+            var compactCategory = strip.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.CommandParameter, "Produse"));
+            compactCategory.Focus();
+            window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("Produse", vm.SelectedCategory);
+            Assert.InRange(view.GetVisualDescendants().OfType<ListBoxItem>().Count(), 1, 40);
+
+            window.Height = 800;
+            window.UpdateLayout(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            Assert.False(strip.IsVisible);
             var grid=view.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.UniformGrid>().Single();
             Assert.Equal(4,grid.Columns);
             Assert.All(view.GetVisualDescendants().OfType<FridgeFoodIllustration>(), food=>Assert.Equal(36,food.Height));
             Assert.InRange(view.GetVisualDescendants().OfType<ListBoxItem>().Count(),1,40);
             void AssertTileAlignment()
             {
-                var tiles = view.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("food")).ToArray();
+                var tiles = view.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("food") && b.IsEffectivelyVisible).ToArray();
                 double CenterX(Control control) => control.TranslatePoint(new Point(control.Bounds.Width/2,0), window)!.Value.X;
                 foreach(var tile in tiles)
                 {
@@ -250,7 +265,7 @@ public sealed partial class RegressionTests
                 var shelf = count.FindAncestorOfType<ScrollViewer>()!;
                 Assert.InRange(count.TranslatePoint(new Point(0,count.Bounds.Height),shelf)!.Value.Y,0,shelf.Bounds.Height+1);
             }
-            var category=view.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.CommandParameter,"Produse"));
+            var category=view.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.CommandParameter,"Produse") && b.IsEffectivelyVisible);
             var food = category.GetVisualDescendants().OfType<FridgeFoodIllustration>().Single();
             var beforeSelection = food.TranslatePoint(default, window);
             category.Focus(); window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None); window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None); Dispatcher.UIThread.RunJobs();

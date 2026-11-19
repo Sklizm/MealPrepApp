@@ -26,9 +26,9 @@
             <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Rows}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" IsVisible="{Binding Rows.Count, Converter={StaticResource NonEmptyToBool}}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="{loc:Loc Text.Ingredient165}" Binding="{Binding IngredientName}" Width="*"/>
-                    <DataGridTextColumn Header="{loc:Loc Text.Required}" Binding="{Binding NeededQty, StringFormat={}{0:0.##}}" Width="110"/>
-                    <DataGridTextColumn Header="{loc:Loc Text.InPantry}" Binding="{Binding OnHandQty, StringFormat={}{0:0.##}}" Width="110"/>
-                    <DataGridTextColumn Header="{loc:Loc Text.ToBuy}" Binding="{Binding ToBuyQty, StringFormat={}{0:0.##}}" Width="120"/>
+                    <DataGridTextColumn Header="{loc:Loc Text.Required}" Binding="{loc:Number NeededQty}" Width="110"/>
+                    <DataGridTextColumn Header="{loc:Loc Text.InPantry}" Binding="{loc:Number OnHandQty}" Width="110"/>
+                    <DataGridTextColumn Header="{loc:Loc Text.ToBuy}" Binding="{loc:Number ToBuyQty}" Width="120"/>
                     <DataGridTextColumn Header="{loc:Loc Text.Unit169}" Binding="{Binding UnitAbbreviation}" Width="100"/>
                 </DataGrid.Columns>
             </DataGrid>

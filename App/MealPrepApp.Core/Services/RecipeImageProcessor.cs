@@ -6,14 +6,46 @@ public sealed record ProcessedRecipeImage(byte[] Image, byte[] Thumbnail);
 
 public static class RecipeImageProcessor
 {
+    internal const int MaximumInputBytes = 10 * 1024 * 1024;
+    public const int MaximumImportedPhotoBytes = 384 * 1024;
+
     public static async Task<ProcessedRecipeImage> LoadAsync(string path)
     {
         await using var file = File.OpenRead(path);
-        if (file.Length > 10 * 1024 * 1024)
+        if (file.Length > MaximumInputBytes)
             throw new InvalidOperationException(L.Text("Text.TheImageExceeds10Mib"));
         using var stream = new MemoryStream();
         await file.CopyToAsync(stream);
-        using var data = SKData.CreateCopy(stream.ToArray());
+        using var normalized = Decode(stream.ToArray());
+        return new(Encode(normalized, 2048, 85), Encode(normalized, 320, 75));
+    }
+
+    public static ProcessedRecipeImage ProcessImportedPhoto(byte[] bytes)
+    {
+        using var image = Decode(bytes);
+        const double aspect = 16d / 9;
+        var width = Math.Min(image.Width, (int)Math.Round(image.Height * aspect));
+        var height = Math.Min(image.Height, Math.Max(1, (int)Math.Round(image.Width / aspect)));
+        var x = (image.Width - width) / 2;
+        var y = (image.Height - height) / 2;
+        using var crop = new SKBitmap();
+        if (!image.ExtractSubset(crop, new SKRectI(x, y, x + width, y + height)))
+            throw new InvalidOperationException(L.Text("Text.TheImageCouldNotBeResized"));
+
+        var main = Encode(image, 2048, 85);
+        for (var edge = 2048; main.Length > MaximumImportedPhotoBytes && edge >= 320; edge = edge * 3 / 4)
+            main = Encode(image, edge, 72);
+
+        if (main.Length > MaximumImportedPhotoBytes)
+            throw new InvalidOperationException(L.Text("Text.TheImageCouldNotBeResized"));
+        return new(main, Encode(crop, 320, 75));
+    }
+
+    private static SKBitmap Decode(byte[] bytes)
+    {
+        if (bytes.Length > MaximumInputBytes)
+            throw new InvalidOperationException(L.Text("Text.TheImageExceeds10Mib"));
+        using var data = SKData.CreateCopy(bytes);
         using var codec = SKCodec.Create(data)
             ?? throw new InvalidOperationException(L.Text("Text.InvalidImageFormat"));
         var info = codec.Info;
@@ -22,8 +54,7 @@ public static class RecipeImageProcessor
         using var decoded = new SKBitmap(info.Width, info.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         if (codec.GetPixels(decoded.Info, decoded.GetPixels()) != SKCodecResult.Success)
             throw new InvalidOperationException(L.Text("Text.TheImageCouldNotBeDecoded"));
-        using var normalized = Orient(decoded, codec.EncodedOrigin);
-        return new(Encode(normalized, 2048, 85), Encode(normalized, 320, 75));
+        return Orient(decoded, codec.EncodedOrigin);
     }
 
     private static SKBitmap Orient(SKBitmap image, SKEncodedOrigin origin)

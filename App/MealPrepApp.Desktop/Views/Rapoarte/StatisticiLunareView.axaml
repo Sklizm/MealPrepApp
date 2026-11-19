@@ -45,44 +45,50 @@
             <StackPanel Spacing="16">
                 <Border Classes="Card"><StackPanel Spacing="8">
                     <TextBlock Text="{loc:Loc UX.RecordedActivity}" Classes="Header"/>
+                    <TextBlock Text="{loc:Loc Report.ActivityUnavailable}" Classes="Muted" IsVisible="{Binding !HasRecordedActivity}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8" IsVisible="{Binding HasRecordedActivity}">
                     <WrapPanel>
-                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.PlannedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.PlannedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
-                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.CookedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.CookedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
-                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.ConsumedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.ConsumedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
-                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.DiscardedPortions}" Classes="Muted"/><TextBlock Text="{Binding ActivityReport.Summary.DiscardedPortions, FallbackValue=0}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.PlannedPortions}" Classes="Muted"/><TextBlock Text="{loc:Number ActivityReport.Summary.PlannedPortions}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.CookedPortions}" Classes="Muted"/><TextBlock Text="{loc:Number ActivityReport.Summary.CookedPortions}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.ConsumedPortions}" Classes="Muted"/><TextBlock Text="{loc:Number ActivityReport.Summary.ConsumedPortions}" Classes="StatNumber"/></StackPanel>
+                        <StackPanel Margin="0,0,24,8"><TextBlock Text="{loc:Loc UX.DiscardedPortions}" Classes="Muted"/><TextBlock Text="{loc:Number ActivityReport.Summary.DiscardedPortions}" Classes="StatNumber"/></StackPanel>
                     </WrapPanel>
                     <TextBlock Text="{loc:Loc UX.ActivityHint}" Classes="Muted" TextWrapping="Wrap"/>
-                    <TextBlock Text="{loc:Loc UX.StockWaste}" FontWeight="SemiBold"/>
-                    <ItemsControl ItemsSource="{Binding ActivityReport.Waste}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:WasteQuantity"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{Binding Quantity}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-                    <TextBlock Text="{loc:Loc UX.UpcomingShortages}" FontWeight="SemiBold"/>
-                    <ItemsControl ItemsSource="{Binding UpcomingShortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:ShoppingListRow"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{Binding ToBuyQty}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-                    <TextBlock Text="{loc:Loc UX.MealRepetition}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{loc:Loc UX.StockWaste}" FontWeight="SemiBold" IsVisible="{Binding HasWaste}"/>
+                    <TextBlock Text="{loc:Loc Report.NoWaste}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding !HasWaste}"/>
+                    <ItemsControl ItemsSource="{Binding ActivityReport.Waste}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:WasteQuantity"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{loc:Number Quantity}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    <TextBlock Text="{loc:Loc UX.MealRepetition}" FontWeight="SemiBold" IsVisible="{Binding HasRepetition}"/>
+                    <TextBlock Text="{loc:Loc Report.NoRepeatedMeals}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding !HasRepetition}"/>
                     <ItemsControl ItemsSource="{Binding ActivityReport.Repetition}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:MealRepetition"><WrapPanel><TextBlock Text="{Binding RecipeTitle}" Margin="0,0,8,0"/><TextBlock Text="{Binding PlannedMeals}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    </StackPanel>
+                    <TextBlock Text="{loc:Loc UX.UpcomingShortages}" FontWeight="SemiBold" IsVisible="{Binding UpcomingShortages.Count, Converter={StaticResource NonEmptyToBool}}"/>
+                    <TextBlock Text="{loc:Loc Report.NoShortages}" Classes="Muted" TextWrapping="Wrap" IsVisible="{Binding UpcomingShortages.Count, Converter={StaticResource EmptyToBool}}"/>
+                    <ItemsControl ItemsSource="{Binding UpcomingShortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:ShoppingListRow"><WrapPanel><TextBlock Text="{Binding IngredientName}" Margin="0,0,8,0"/><TextBlock Text="{loc:Number ToBuyQty}" Margin="0,0,4,0"/><TextBlock Text="{Binding UnitAbbreviation}"/></WrapPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
                 </StackPanel></Border>
                 <!-- Headline KPI tiles -->
-                <UniformGrid Rows="1" Columns="3" Margin="0,0,-16,0">
+                <UniformGrid Rows="1" Columns="3" Margin="0,0,-16,0" IsVisible="{Binding Stats, Converter={StaticResource NotNullToBool}}">
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.TotalMealsPlanned, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="{loc:Number Stats.TotalMealsPlanned}" Classes="StatNumber"/>
                             <TextBlock Text="{loc:Loc Text.PlannedMeals}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.DistinctRecipes, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="{loc:Number Stats.DistinctRecipes}" Classes="StatNumber"/>
                             <TextBlock Text="{loc:Loc Text.DistinctRecipes}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Classes="StatCard">
                         <StackPanel>
-                            <TextBlock Text="{Binding Stats.DistinctIngredients, FallbackValue=0}" Classes="StatNumber"/>
+                            <TextBlock Text="{loc:Number Stats.DistinctIngredients}" Classes="StatNumber"/>
                             <TextBlock Text="{loc:Loc Text.DistinctIngredients}" Classes="Muted" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </UniformGrid>
                 <!-- Per-slot breakdown -->
-                <TextBlock Text="{loc:Loc Text.ByMealCategory}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0"/>
-                <ItemsControl ItemsSource="{Binding SlotCounts}">
+                <TextBlock IsVisible="{Binding HasPlannedMeals}" Text="{loc:Loc Text.ByMealCategory}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}" Margin="0,8,0,0"/>
+                <ItemsControl ItemsSource="{Binding SlotCounts}" IsVisible="{Binding HasPlannedMeals}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>
@@ -102,7 +108,7 @@
                 </ItemsControl>
                 <!-- Top recipes + top ingredients side by side -->
                 <StackPanel Spacing="24" Margin="0,8,0,0">
-                    <StackPanel Grid.Column="0" Spacing="8">
+                    <StackPanel Grid.Column="0" Spacing="8" IsVisible="{Binding TopRecipes.Count, Converter={StaticResource NonEmptyToBool}}">
                         <TextBlock Text="{loc:Loc Text.Top5PlannedRecipes}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
                         <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopRecipes}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>
@@ -112,7 +118,7 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="8">
+                    <StackPanel Grid.Column="2" Spacing="8" IsVisible="{Binding TopIngredients.Count, Converter={StaticResource NonEmptyToBool}}">
                         <TextBlock Text="{loc:Loc Text.Top10IngredientsUsed}" FontWeight="SemiBold" FontSize="{StaticResource FontSizeHeader}"/>
                         <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TopIngredients}" IsReadOnly="True" CanUserResizeColumns="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="180">
                             <DataGrid.Columns>

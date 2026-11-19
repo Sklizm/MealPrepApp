@@ -64,7 +64,7 @@ cp=[work/'java',android,*module_jars,*android_jars]
 common=[jdk/'java','-Xmx1536m','-cp',os.pathsep.join(map(str,compiler_cp)),'org.jetbrains.kotlin.cli.jvm.K2JVMCompiler','-no-stdlib','-no-reflect','-jvm-target','17']
 run('kotlin-main',[*common,'-Xplugin='+str(serialization),'-Xplugin='+str(compose),'-classpath',os.pathsep.join(map(str,cp)),'-d',work/'main',*sorted((repo/'app/src/main/java').rglob('*.kt')),*sorted((repo/'app/build/room-cached/kotlin').rglob('*.kt'))])
 (work/'tests').mkdir(exist_ok=True)
-run('kotlin-tests',[*common,'-Xplugin='+str(serialization),'-classpath',os.pathsep.join(map(str,[work/'main',*cp])),'-d',work/'tests',*sorted((repo/'app/src/test/java').rglob('*.kt'))])
+run('kotlin-tests',[*common,'-Xfriend-paths='+str(work/'main'),'-Xplugin='+str(serialization),'-classpath',os.pathsep.join(map(str,[work/'main',*cp])),'-d',work/'tests',*sorted((repo/'app/src/test/java').rglob('*.kt'))])
 (work/'android-tests').mkdir(exist_ok=True)
 run('kotlin-android-tests', [*common, '-Xplugin='+str(serialization), '-Xplugin='+str(compose), '-classpath', os.pathsep.join(map(str,[work/'main',*cp])), '-d', work/'android-tests', *sorted((repo/'app/src/androidTest/java').rglob('*.kt'))])
 

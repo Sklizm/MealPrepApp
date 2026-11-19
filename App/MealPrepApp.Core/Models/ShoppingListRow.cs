@@ -9,8 +9,8 @@ public sealed partial class ShoppingListRow : LocalizedObservableObject
 {
     public int ItemID { get; set; }
     public string CategoryName { get; set; }="Fără categorie";
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] [NotifyPropertyChangedFor(nameof(PurchasedSummary))] private bool _isPurchased;
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] [NotifyPropertyChangedFor(nameof(ImportLabel))] private bool _isImported;
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] [NotifyPropertyChangedFor(nameof(PurchasedSummary), nameof(NeedsImportMapping))] private bool _isPurchased;
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] [NotifyPropertyChangedFor(nameof(ImportLabel), nameof(NeedsImportMapping))] private bool _isImported;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] private bool _isSaving;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanImport))] private bool _saveFailed;
     public int SnapshotID { get; set; }
@@ -25,8 +25,9 @@ public sealed partial class ShoppingListRow : LocalizedObservableObject
     public decimal ActualQuantity => PurchasedQuantity ?? ToBuyQty;
     public string ActualUnit => string.IsNullOrEmpty(PurchasedUnitAbbreviation) ? UnitAbbreviation : PurchasedUnitAbbreviation;
     [ObservableProperty] private bool _hasConflict;
-    [LocalizedProperty] public string RequiredSummary => L.Text("UX.RequiredSummary", ToBuyQty, UnitAbbreviation);
-    [LocalizedProperty] public string PurchasedSummary => IsPurchased ? L.Text("UX.PurchasedSummary", ActualQuantity, ActualUnit) : "";
+    [LocalizedProperty] public string RequiredSummary => L.Text("UX.RequiredSummary", PresentationValues.Quantity(ToBuyQty), UnitAbbreviation);
+    [LocalizedProperty] public string PurchasedSummary => IsPurchased ? L.Text("UX.PurchasedSummary", PresentationValues.Quantity(ActualQuantity), ActualUnit) : "";
+    public bool NeedsImportMapping => IsPurchased && !IsImported && !HasMapping;
     public bool HasMapping => IngredientID.HasValue && (PurchasedUnitID ?? UnitID).HasValue;
     [LocalizedProperty]
     public string ImportLabel => IsImported ? L.Text("Text.AddedToPantry") : L.Text("Text.AddToPantry");

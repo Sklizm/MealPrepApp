@@ -43,6 +43,7 @@ public static class ApiHost
     var limit=context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
     if(limit is {IsReadOnly:false}) {
      if(context.Request.Path=="/v1/ai/uploads")limit.MaxRequestBodySize=8388608;
+     else if(context.Request.Path=="/v1/recipes/save")limit.MaxRequestBodySize=2*1024*1024;
      else if(context.Request.Path.StartsWithSegments("/v1/ai/jobs")||context.Request.Path.StartsWithSegments("/v1/recipes"))limit.MaxRequestBodySize=1048576;
     }
     await next();

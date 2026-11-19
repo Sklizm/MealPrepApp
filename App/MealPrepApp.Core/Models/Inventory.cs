@@ -3,7 +3,7 @@ namespace MealPrepApp.Models;
 
 public sealed class InventoryBatch : LocalizedObservableObject
 {
-    [LocalizedProperty] public string QuantitySummary => $"{RemainingQuantity:0.####} {UnitAbbreviation}";
+    [LocalizedProperty] public string QuantitySummary => $"{PresentationValues.Quantity(RemainingQuantity)} {UnitAbbreviation}";
     [LocalizedProperty] public string ExpirySummary => ExpiresOn is { } expiry ? L.Text("UX.ExpiresDate",expiry) : L.Text("UX.UnknownExpiry");
     public bool IsExpired => ExpiresOn?.Date < DateTime.Today;
     public int BatchID { get; set; }

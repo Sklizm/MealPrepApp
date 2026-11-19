@@ -77,4 +77,6 @@ sql -i migrations/20261111_companion.sql
 # Additive assistant upgrade and its retry/ownership invariants.
 sql -i migrations/20261113_assistant.sql
 sql -i migrations/20261113_assistant.sql
+sql -i migrations/20261119_recipe_import_photos.sql
+sql -i migrations/20261119_recipe_import_photos.sql
 sql -i /tests/assistant-regression.sql

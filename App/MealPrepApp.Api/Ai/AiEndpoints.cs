@@ -58,9 +58,11 @@ public static class AiEndpoints
         api.MapPost("/recipes/import-preview",async(ImportPreviewRequest input,IngredientRepository ingredients,LookupRepository lookups,CancellationToken token)=>{
             if(string.IsNullOrWhiteSpace(input.Source)||input.Source.Length>200000)return Results.BadRequest();
             var catalog=await ingredients.GetIngredientsAsync(cancellationToken:token);var units=await lookups.GetUnitsAsync(token);
-            var parsed=Uri.TryCreate(input.Source.Trim(),UriKind.Absolute,out var uri)?RecipeImportParser.ParseStructuredPage(await RecipePageFetcher.FetchAsync(uri,token),catalog,units):RecipeImportParser.ParsePaste(input.Source,catalog,units);
+            var (parsed, photo) = Uri.TryCreate(input.Source.Trim(), UriKind.Absolute, out var uri)
+                ? await RecipeLinkImporter.ReviewAsync(uri, catalog, units, token)
+                : (RecipeImportParser.ParsePaste(input.Source, catalog, units), null);
             var recipe=new AiRecipe(parsed.Title??"",parsed.Description??"",parsed.Instructions,parsed.Servings,parsed.PrepMinutes,parsed.CookMinutes,null,
-                parsed.Ingredients.Select(i=>new AiIngredient(i.Original,i.IngredientText,i.Quantity,i.IngredientID,i.UnitID,units.FirstOrDefault(u=>u.UnitID==i.UnitID)?.Abbreviation)).ToArray(),input.Source);
+                parsed.Ingredients.Select(i=>new AiIngredient(i.Original,i.IngredientText,i.Quantity,i.IngredientID,i.UnitID,units.FirstOrDefault(u=>u.UnitID==i.UnitID)?.Abbreviation)).ToArray(),input.Source,photo);
             return Results.Ok(recipe);
         });
         api.MapPost("/plans/preview", async (AiPlanApply request,ClaimsPrincipal user,AiService service,RecipeRepository recipes,NutritionRepository nutrition,CancellationToken token)=>{
@@ -78,11 +80,23 @@ public static class AiEndpoints
         api.MapPost("/recipes/save", async (AiRecipeSave request, ClaimsPrincipal user, AiDomainRepository domain) => {
             var r = request.Recipe;
             if (request.OperationId == Guid.Empty || r is null || string.IsNullOrWhiteSpace(r.Title) || r.Title.Length >150 || string.IsNullOrWhiteSpace(r.Instructions) || r.Instructions.Length>60000 ||
-                r.Description?.Length>12000 || r.Servings is not (>0 and <=1000) || r.PrepTimeMinutes is <0 or >10080 || r.CookTimeMinutes is <0 or >10080 ||
+                r.Description?.Length>12000 || r.PrepTimeMinutes is <0 or >10080 || r.CookTimeMinutes is <0 or >10080 ||
                 r.Ingredients is null || r.Ingredients.Count is <1 or >300 || r.Ingredients.Any(i => i.IngredientID<=0 || i.UnitID<=0 || !AiValidation.Quantity(i.Quantity) || i.Notes?.Length>255) ||
-                r.Ingredients.Select(i=>i.IngredientID).Distinct().Count()!=r.Ingredients.Count || r.PhotoMode is not ("Keep" or "Delete") || r.ImageData is not null || r.ThumbnailData is not null)
+                r.PhotoMode is not ("Keep" or "Delete" or "Set") || r.ThumbnailData is not null ||
+                (r.PhotoMode == "Set" ? r.ImageData is not { Length: > 0 and <= RecipeImageProcessor.MaximumImportedPhotoBytes } : r.ImageData is not null))
                 return Results.BadRequest();
+            if (r.Servings is not (> 0 and <= 1000))
+                return Results.BadRequest(new { errorCode = "RecipeServingsRequired" });
+            if (r.Ingredients.Select(i => i.IngredientID).Distinct().Count() != r.Ingredients.Count)
+                return Results.BadRequest(new { errorCode = "DuplicateRecipeIngredient" });
             if(request.Source?.Length>200000||request.SourceKind.Length>30)return Results.BadRequest();
+            if (r.ImageData is { } image)
+            {
+                ProcessedRecipeImage photo;
+                try { photo = RecipeImageProcessor.ProcessImportedPhoto(image); }
+                catch (InvalidOperationException) { return Results.BadRequest(new { errorCode = "InvalidRecipePhoto" }); }
+                request = request with { Recipe = r with { ImageData = photo.Image, ThumbnailData = photo.Thumbnail } };
+            }
             return Results.Ok(await domain.SaveRecipeAsync(User(user), request));
         });
         api.MapPost("/ingredients", async (AddReviewedIngredient request, ClaimsPrincipal user, AiDomainRepository domain) => {
@@ -111,8 +125,19 @@ public sealed class AiDomainRepository(Data.IDbConnectionFactory factory) : Inve
     public async Task<RecipeBundleResult> SaveRecipeAsync(int userId,AiRecipeSave request)
     {
         var r=request.Recipe;
-        var json=await ExecuteScalarProcAsync<string>("sp_SaveReviewedRecipe",new{UserID=userId,OperationID=request.OperationId,r.RecipeID,r.CategoryID,r.Title,r.Description,r.Instructions,r.PrepTimeMinutes,r.CookTimeMinutes,r.Servings,
-            IngredientsJson=System.Text.Json.JsonSerializer.Serialize(r.Ingredients),r.ExpectedVersion,r.PhotoMode,SourceText=request.Source,request.SourceKind});
+        var parameters = new Dapper.DynamicParameters(new
+        {
+            UserID = userId, OperationID = request.OperationId, r.RecipeID, r.CategoryID, r.Title, r.Description,
+            r.Instructions, r.PrepTimeMinutes, r.CookTimeMinutes, r.Servings,
+            IngredientsJson = System.Text.Json.JsonSerializer.Serialize(r.Ingredients), r.ExpectedVersion, r.PhotoMode,
+            SourceText = request.Source, request.SourceKind
+        });
+        if (r.ImageData is not null)
+        {
+            parameters.Add("ImageData", r.ImageData);
+            parameters.Add("ThumbnailData", r.ThumbnailData);
+        }
+        var json = await ExecuteScalarProcAsync<string>("sp_SaveReviewedRecipe", parameters);
         return AiJson.Read<RecipeBundleResult>(json);
     }
 }

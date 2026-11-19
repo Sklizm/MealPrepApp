@@ -39,7 +39,15 @@ class VisualTests {
     val inNavigation = hasAnyAncestor(hasTestTag("companion-navigation"))
     for ((page, label) in destinations) {
      val text = compose.activity.getString(label)
-     compose.onNode(hasText(text) and inNavigation).performClick().assertIsSelected()
+     val navLabel = compose.activity.getString(R.string.navigation)
+     val compact = compose.onAllNodes(hasText(navLabel) and hasTestTag("companion-navigation"))
+      .fetchSemanticsNodes().isNotEmpty()
+     if (compact) {
+      compose.onNode(hasText(navLabel) and hasTestTag("companion-navigation")).performClick()
+      compose.onNode(hasText(text) and hasClickAction() and hasAnyAncestor(isDialog())).performClick()
+      compose.onNode(hasText(text) and hasNoClickAction()).assertExists()
+     } else {
+      compose.onNode(hasText(text) and inNavigation).performClick().assertIsSelected()
      compose.waitForIdle()
      val labels = destinations.map { (_, id) ->
       compose.onNode(hasText(compose.activity.getString(id)) and inNavigation, useUnmergedTree = true)
@@ -51,6 +59,7 @@ class VisualTests {
      }
      assertTrue("Navigation labels have different baselines: $labels", labels.max() - labels.min() <= 1f)
      assertTrue("Navigation icons have different top edges: $icons", icons.max() - icons.min() <= 1f)
+     }
      val bitmap=InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot();try{File(target,"$page-$language-$theme.png").outputStream().use{bitmap.compress(Bitmap.CompressFormat.PNG,100,it)}}finally{bitmap.recycle()}
     }
    }

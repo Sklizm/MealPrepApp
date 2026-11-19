@@ -25,6 +25,67 @@ public sealed class EditorRecoveryTests
             await editor.SaveCommand.ExecuteAsync(null);Assert.True(editor.HasError);Assert.Null(editor.RecipeId);editor.Dispose();
         } finally {if(Directory.Exists(directory))Directory.Delete(directory,true);}
     }
+    private sealed class InterruptedRecipeSave : RecipeRepository
+    {
+        public List<(Guid Operation, RecipeBundleInput Input)> Requests { get; } = [];
+        public InterruptedRecipeSave() : base(new RedesignSamples.NoDatabase()) { }
+
+        public override Task<RecipeBundleResult> SaveBundleAsync(int userId, Guid operationId, RecipeBundleInput input)
+        {
+            Requests.Add((operationId, input));
+            if (Requests.Count == 1) throw new IOException("Fixture response was lost.");
+            return Task.FromResult(new RecipeBundleResult(42, [1, 2, 3]));
+        }
+    }
+
+    [Fact]
+    public async Task RecipeRecoveryReplaysTheOriginalPayloadBeforeSavingNewEdits()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var store = new EditorRecoveryService(Path.Combine(directory, "editor.json"));
+        var repository = new InterruptedRecipeSave();
+        try
+        {
+            using var services = RedesignSamples.Services(configure: registrations =>
+            {
+                registrations.AddSingleton(store);
+                registrations.AddSingleton<LookupRepository>(new Lookups());
+                registrations.AddSingleton<IngredientRepository>(new Ingredients());
+                registrations.AddSingleton<RecipeRepository>(repository);
+            });
+            using var scope = services.CreateScope();
+            scope.ServiceProvider.GetRequiredService<ISessionService>().SignIn(1, "Recovery fixture");
+            var editor = scope.ServiceProvider.GetRequiredService<ReteteEditorViewModel>();
+            await editor.LoadAsync();
+            editor.Title = "Original save";
+            editor.Instructions = "Cook.";
+            editor.AddIngredientRowCommand.Execute(null);
+            var row = Assert.Single(editor.IngredientRows);
+            row.SelectedIngredient = new Ingredient { IngredientID = 1, Name = "Rice" };
+            row.SelectedUnit = new Unit { UnitID = 1, Abbreviation = "g" };
+            row.Quantity = 0.3333m;
+
+            await editor.SaveCommand.ExecuteAsync(null);
+            Assert.True(editor.HasPendingSave);
+            var pending = store.Read()!;
+            Assert.Equal("Original save", pending.PendingBundle?.Title);
+            Assert.Equal(repository.Requests[0].Operation, pending.SaveOperation);
+
+            editor.Title = "Newer draft title";
+            await editor.SaveCommand.ExecuteAsync(null);
+            Assert.Equal(2, repository.Requests.Count);
+            Assert.Equal(repository.Requests[0], repository.Requests[1]);
+            Assert.Equal(0.3333m, repository.Requests[1].Input.Ingredients.Single().Quantity);
+            Assert.Equal(42, editor.RecipeId);
+            Assert.Equal("Newer draft title", editor.Title);
+            Assert.True(editor.IsDirty);
+            Assert.False(editor.HasPendingSave);
+            Assert.Null(store.Read()?.PendingBundle);
+            editor.Dispose();
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
     [Fact] public void RecoveryIgnoresAnOlderDelayedWriteAndAccountStoresAreSeparate() {
         var dir=Path.Combine(Path.GetTempPath(),Guid.NewGuid().ToString());var one=new EditorRecoveryService(Path.Combine(dir,"one.json"));var two=new EditorRecoveryService(Path.Combine(dir,"two.json"));
         try {

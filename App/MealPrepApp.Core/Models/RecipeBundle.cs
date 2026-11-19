@@ -7,4 +7,4 @@ public sealed record RecipeBundleResult(int Id, byte[] Version);
 public sealed record EditorRecovery(int? RecipeID, int? DraftID, int? CategoryID, string Title,
     string? Description, string Instructions, int? PrepTimeMinutes, int? CookTimeMinutes,
     int? Servings, DraftIngredientInput[] Rows, byte[] RowVersion, string PhotoMode,
-    byte[]? Photo, byte[]? Thumbnail, string SourceText, Guid SaveOperation, string? SaveFingerprint = null);
+    byte[]? Photo, byte[]? Thumbnail, string SourceText, Guid SaveOperation, string? SaveFingerprint = null, string[]? QuantityInputs = null, string?[]? OriginalIngredientText = null, RecipeBundleInput? PendingBundle = null, string? PendingSnapshot = null);

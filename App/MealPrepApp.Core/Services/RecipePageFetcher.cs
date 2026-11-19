@@ -22,9 +22,23 @@ public static class RecipePageFetcher
             uri.Host.Equals("localhost",StringComparison.OrdinalIgnoreCase) || uri.Host.EndsWith(".localhost",StringComparison.OrdinalIgnoreCase) ||
             (IPAddress.TryParse(uri.IdnHost.Trim('[',']'),out var ip)&&!IsPublicAddress(ip))) throw new InvalidDataException(L.Text("UX.PublicHttpsOnly"));
     }
-    public static async Task<string> FetchAsync(Uri uri,CancellationToken cancellationToken=default) {
+    public static async Task<string> FetchAsync(Uri uri, CancellationToken cancellationToken = default) =>
+        (await FetchDocumentAsync(uri, cancellationToken)).Html;
+
+    public static async Task<(Uri Uri, string Html)> FetchDocumentAsync(Uri uri, CancellationToken token)
+    {
+        var result = await FetchBytesAsync(uri, 2 * 1024 * 1024, TimeSpan.FromSeconds(12), token);
+        return (result.Uri, Encoding.UTF8.GetString(result.Bytes));
+    }
+
+    internal static async Task<byte[]> FetchImageAsync(Uri uri, CancellationToken token) =>
+        (await FetchBytesAsync(uri, RecipeImageProcessor.MaximumInputBytes, TimeSpan.FromSeconds(5), token)).Bytes;
+
+    private static async Task<(Uri Uri, byte[] Bytes)> FetchBytesAsync(
+        Uri uri, int maximumBytes, TimeSpan timeLimit, CancellationToken cancellationToken)
+    {
         ValidateUri(uri);
-        using var timeout=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); timeout.CancelAfter(TimeSpan.FromSeconds(12));
+        using var timeout=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); timeout.CancelAfter(timeLimit);
         using var handler=new SocketsHttpHandler { AllowAutoRedirect=false,UseProxy=false,UseCookies=false,AutomaticDecompression=DecompressionMethods.GZip|DecompressionMethods.Deflate,
             ConnectCallback=async (context,token)=> {
                 var addresses=await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host,token);
@@ -46,11 +60,11 @@ public static class RecipePageFetcher
                 uri=new Uri(uri,location); continue;
             }
             response.EnsureSuccessStatusCode();
-            if (response.Content.Headers.ContentLength>2*1024*1024) throw new InvalidDataException(L.Text("UX.ImportTooLarge"));
+            if (response.Content.Headers.ContentLength>maximumBytes) throw new InvalidDataException(L.Text("UX.ImportTooLarge"));
             await using var source=await response.Content.ReadAsStreamAsync(timeout.Token); using var target=new MemoryStream();
             var buffer=new byte[8192]; int count;
-            while ((count=await source.ReadAsync(buffer,timeout.Token))>0) { if (target.Length+count>2*1024*1024) throw new InvalidDataException(L.Text("UX.ImportTooLarge")); await target.WriteAsync(buffer.AsMemory(0,count),timeout.Token); }
-            return Encoding.UTF8.GetString(target.ToArray());
+            while ((count=await source.ReadAsync(buffer,timeout.Token))>0) { if (target.Length+count>maximumBytes) throw new InvalidDataException(L.Text("UX.ImportTooLarge")); await target.WriteAsync(buffer.AsMemory(0,count),timeout.Token); }
+            return (uri, target.ToArray());
         }
         throw new InvalidDataException(L.Text("UX.UnsupportedImport"));
     }

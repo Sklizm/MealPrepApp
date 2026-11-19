@@ -18,7 +18,7 @@
      <TextBlock Grid.Column="2" Text="{Binding Batch.UnitAbbreviation}" VerticalAlignment="Center" Margin="8,0"/>
     </Grid>
    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-   <ItemsControl ItemsSource="{Binding Shortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:IngredientShortage"><StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="{Binding Name}"/><TextBlock Text="{loc:Format UX.ShortageAmount, Missing}" Foreground="{DynamicResource Danger}"/></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+   <ItemsControl ItemsSource="{Binding Shortages}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="models:IngredientShortage"><StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="{Binding Name}"/><TextBlock Text="{loc:Format UX.ShortageAmount, Missing, Style=Quantity}" Foreground="{DynamicResource Danger}"/></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
    <CheckBox IsVisible="{Binding NeedsReview}" IsChecked="{Binding AcceptIncompleteDeductions}" Content="{loc:Loc UX.AcceptIncompleteDeductions}"/>
    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasError}"/>
   </StackPanel></ScrollViewer>

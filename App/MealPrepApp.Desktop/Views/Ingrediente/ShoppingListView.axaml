@@ -53,7 +53,7 @@
                                                             <TextBlock Text="{Binding IngredientName}"/>
                                                             <TextBlock Text="{Binding RequiredSummary}" Classes="Muted"/>
                                                             <TextBlock Text="{Binding PurchasedSummary}" Classes="Muted"/>
-                                                            <TextBlock Text="{loc:Loc UX.OptionalMapping}" IsVisible="{Binding !HasMapping}" Classes="Muted" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{loc:Loc UX.MappingNeededForImport}" IsVisible="{Binding NeedsImportMapping}" Classes="Muted" TextWrapping="Wrap"/>
 
                                                         </StackPanel>
                                                     </CheckBox>

@@ -68,6 +68,21 @@
                     <TextBlock Grid.Row="2" Text="{loc:Loc Text.SelectAProductToSeeItsCategory}" Classes="Muted FridgeHint" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 </Grid>
             </Border>
+            <ScrollViewer x:Name="CategoryStrip" IsVisible="False" HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled" Padding="0,0,0,4">
+                <ItemsControl ItemsSource="{Binding Categories}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FridgeCategory">
+                            <Button Classes="food" Classes.selected="{Binding IsSelected}" Padding="10,6"
+                                    Command="{Binding $parent[UserControl].DataContext.SelectCategoryCommand}"
+                                    CommandParameter="{Binding Name}" AutomationProperties.Name="{Binding AccessibleName}">
+                                <TextBlock Text="{loc:Display Name}" FontWeight="SemiBold"/>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
             <Grid x:Name="StockPanel" Grid.Column="2" RowDefinitions="Auto,Auto,*">
                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                     <TextBlock Text="{loc:Display CategoryTitle}" Classes="Header" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
@@ -92,7 +107,7 @@
                                         <TextBlock Text="{Binding Item.IngredientName}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                         <StackPanel Grid.Row="1" Spacing="2" Margin="0,4,8,0">
                                             <TextBlock Text="{loc:Display Item.CategoryName}" Classes="Muted" FontSize="11"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{Binding Item.Quantity, StringFormat='{}{0:0.##}'}"/><TextBlock Text="{Binding Item.UnitAbbreviation}"/></StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{loc:Number Item.Quantity}"/><TextBlock Text="{Binding Item.UnitAbbreviation}"/></StackPanel>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Grid.RowSpan="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" IsEnabled="{Binding !$parent[UserControl].DataContext.IsBusy}">
                                             <Button Content="{loc:Loc Text.Edit}" Classes="Secondary" Padding="8,4" Command="{Binding $parent[UserControl].DataContext.EditItemCommand}" CommandParameter="{Binding Item}"/>

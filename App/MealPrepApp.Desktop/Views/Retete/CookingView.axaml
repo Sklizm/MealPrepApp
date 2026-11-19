@@ -10,8 +10,9 @@
    </WrapPanel>
   </StackPanel></Border>
   <WrapPanel>
-   <TextBlock Text="{loc:Loc Text.Servings}" VerticalAlignment="Center" Margin="0,0,8,8"/>
-   <NumericUpDown Value="{Binding Session.Servings}" Minimum="1" Maximum="1000" FormatString="0.##" Width="110" IsEnabled="{Binding Session.CanScale}" AutomationProperties.Name="{loc:Loc Text.CookingServings}" Margin="0,0,16,8"/>
+   <TextBlock Text="{loc:Loc Text.Servings}" IsVisible="{Binding Session.CanScale}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+   <NumericUpDown Value="{Binding Session.Servings}" Minimum="1" Maximum="1000" FormatString="0.####" Width="110" IsVisible="{Binding Session.CanScale}" AutomationProperties.Name="{loc:Loc Text.CookingServings}" Margin="0,0,16,8"/>
+   <TextBlock Text="{loc:Loc Recipe.ServingsUnknown}" IsVisible="{Binding !Session.CanScale}" VerticalAlignment="Center" Margin="0,0,8,8"/>
    <Button Content="{loc:Loc UX.FinishCooking}" Classes="Primary" Command="{Binding FinishCookingCommand}" Margin="0,0,0,8"/>
   </WrapPanel>
   <TextBlock Text="{Binding Notification}" IsVisible="{Binding Notification, Converter={StaticResource NotNullToBool}}" Foreground="{DynamicResource ActionPrimary}" TextWrapping="Wrap"/>
@@ -21,14 +22,14 @@
    <StackPanel Spacing="8">
     <TextBlock Text="{loc:Loc Text.CheckmarksAreTemporaryPantryStockOnlyChangesThroughYourExplicitAction}" Classes="Muted" TextWrapping="Wrap"/>
     <ItemsControl ItemsSource="{Binding Session.Ingredients}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="services:CookingIngredient">
-     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,6"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,12,0"/><TextBlock Text="{Binding Quantity, StringFormat='{}{0:0.####}'}" Margin="0,0,6,0"/><TextBlock Text="{Binding Unit}"/></WrapPanel></CheckBox>
+     <CheckBox IsChecked="{Binding IsChecked}" Margin="0,6"><WrapPanel><TextBlock Text="{Binding Name}" Margin="0,0,12,0"/><TextBlock Text="{loc:Number Quantity}" Margin="0,0,6,0"/><TextBlock Text="{Binding Unit}"/></WrapPanel></CheckBox>
     </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
    </StackPanel>
   </Expander>
   <TextBlock Text="{loc:Loc UX.Timers}" Classes="Header"/>
   <WrapPanel>
    <TextBox Text="{Binding Session.TimerName}" Watermark="{loc:Loc UX.TimerName}" Width="160" MaxLength="80" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc UX.TimerName}"/>
-   <NumericUpDown Value="{Binding Session.TimerMinutes}" Minimum="1" Maximum="1440" FormatString="0.##" Width="110" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.TimerDurationInMinutes}"/>
+   <NumericUpDown Value="{Binding Session.TimerMinutes}" Minimum="1" Maximum="1440" FormatString="0.####" Width="110" Margin="0,0,8,8" AutomationProperties.Name="{loc:Loc Text.TimerDurationInMinutes}"/>
    <Button Content="{loc:Loc Text.Start}" Classes="Primary" Command="{Binding Session.StartTimerCommand}" Margin="0,0,8,8"/>
   </WrapPanel>
   <TextBlock Text="{loc:Loc UX.TimerRunningRequirement}" Classes="Muted" TextWrapping="Wrap"/>

@@ -88,7 +88,7 @@ AS BEGIN
   IF @@ROWCOUNT>0 EXEC dbo.sp_WriteAudit NULL,N'ASSISTANT_SESSION_CANCEL',N'AssistantJob',NULL;
  END;
  COMMIT;
- IF @Action=N'list' SELECT TOP(30) JobID,UserID,SessionID,Kind,State,Version,CAST(NULL AS NVARCHAR(MAX)) AS WorkJson,ResultJson,ErrorCode,CreatedAt,ExpiresAt,InputTokens,OutputTokens FROM dbo.AssistantJobs WHERE UserID=@UserID AND ExpiresAt>SYSUTCDATETIME() ORDER BY CreatedAt DESC;
+ IF @Action=N'list' SELECT TOP(30) JobID,UserID,SessionID,Kind,State,Version,CAST(NULL AS NVARCHAR(MAX)) AS WorkJson,CAST(NULL AS NVARCHAR(MAX)) AS ResultJson,ErrorCode,CreatedAt,ExpiresAt,InputTokens,OutputTokens FROM dbo.AssistantJobs WHERE UserID=@UserID AND ExpiresAt>SYSUTCDATETIME() ORDER BY CreatedAt DESC;
  ELSE IF @Action=N'usage' SELECT COUNT(*) AS Requests,COALESCE(SUM(CONVERT(BIGINT,InputTokens)),0) AS InputTokens,COALESCE(SUM(CONVERT(BIGINT,OutputTokens)),0) AS OutputTokens FROM dbo.AssistantJobs WHERE UserID=@UserID AND CreatedAt>=DATEADD(DAY,-30,SYSUTCDATETIME());
  ELSE SELECT JobID,UserID,SessionID,Kind,State,Version,CASE WHEN @Action IN(N'claim',N'get') THEN WorkJson ELSE NULL END AS WorkJson,ResultJson,ErrorCode,CreatedAt,ExpiresAt,InputTokens,OutputTokens FROM dbo.AssistantJobs WHERE JobID=@JobID AND UserID=@UserID;
  END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK;THROW;END CATCH;
@@ -222,16 +222,19 @@ AS BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE dbo.sp_SaveReviewedRecipe @UserID INT,@OperationID UNIQUEIDENTIFIER,@RecipeID INT=NULL,@CategoryID INT=NULL,@Title NVARCHAR(150),@Description NVARCHAR(MAX)=NULL,@Instructions NVARCHAR(MAX),
- @PrepTimeMinutes INT=NULL,@CookTimeMinutes INT=NULL,@Servings INT=NULL,@IngredientsJson NVARCHAR(MAX),@ExpectedVersion BINARY(8)=NULL,@PhotoMode NVARCHAR(10)=N'Keep',@SourceText NVARCHAR(MAX)=NULL,@SourceKind NVARCHAR(30)=N'reviewed'
+ @PrepTimeMinutes INT=NULL,@CookTimeMinutes INT=NULL,@Servings INT=NULL,@IngredientsJson NVARCHAR(MAX),@ExpectedVersion BINARY(8)=NULL,@PhotoMode NVARCHAR(10)=N'Keep',@SourceText NVARCHAR(MAX)=NULL,@SourceKind NVARCHAR(30)=N'reviewed',
+ @ImageData VARBINARY(MAX)=NULL,@ThumbnailData VARBINARY(MAX)=NULL
 AS BEGIN
  SET NOCOUNT ON;SET XACT_ABORT ON;
- DECLARE @Request NVARCHAR(MAX)=(SELECT N'save-reviewed-recipe' AS kind,@RecipeID AS recipe,@CategoryID AS category,@Title AS title,@Description AS description,@Instructions AS instructions,@PrepTimeMinutes AS prep,@CookTimeMinutes AS cook,@Servings AS servings,JSON_QUERY(@IngredientsJson) AS ingredients,@ExpectedVersion AS version,@PhotoMode AS photo,@SourceText AS source,@SourceKind AS sourceKind FOR JSON PATH,WITHOUT_ARRAY_WRAPPER),@Result NVARCHAR(MAX);
+ DECLARE @Request NVARCHAR(MAX)=(SELECT N'save-reviewed-recipe' AS kind,@RecipeID AS recipe,@CategoryID AS category,@Title AS title,@Description AS description,@Instructions AS instructions,@PrepTimeMinutes AS prep,@CookTimeMinutes AS cook,@Servings AS servings,JSON_QUERY(@IngredientsJson) AS ingredients,@ExpectedVersion AS version,@PhotoMode AS photo,@SourceText AS source,@SourceKind AS sourceKind,
+  CONVERT(VARCHAR(64),HASHBYTES('SHA2_256',@ImageData),2) AS imageHash,
+  CONVERT(VARCHAR(64),HASHBYTES('SHA2_256',@ThumbnailData),2) AS thumbnailHash FOR JSON PATH,WITHOUT_ARRAY_WRAPPER),@Result NVARCHAR(MAX);
  BEGIN TRY BEGIN TRAN;
  EXEC dbo.sp_BeginClientOperation @UserID,@OperationID,@Request,@Result OUTPUT;
  IF @Result IS NULL
  BEGIN
   DECLARE @Inner UNIQUEIDENTIFIER=CONVERT(UNIQUEIDENTIFIER,HASHBYTES('MD5',CONVERT(NVARCHAR(36),@OperationID)+N':recipe-bundle'));
-  EXEC dbo.sp_SaveRecipeBundle @UserID=@UserID,@OperationID=@Inner,@RecipeID=@RecipeID,@CategoryID=@CategoryID,@Title=@Title,@Description=@Description,@Instructions=@Instructions,@PrepTimeMinutes=@PrepTimeMinutes,@CookTimeMinutes=@CookTimeMinutes,@Servings=@Servings,@IngredientsJson=@IngredientsJson,@ExpectedVersion=@ExpectedVersion,@PhotoMode=@PhotoMode,@ResultOutput=@Result OUTPUT,@SuppressResult=1;
+  EXEC dbo.sp_SaveRecipeBundle @UserID=@UserID,@OperationID=@Inner,@RecipeID=@RecipeID,@CategoryID=@CategoryID,@Title=@Title,@Description=@Description,@Instructions=@Instructions,@PrepTimeMinutes=@PrepTimeMinutes,@CookTimeMinutes=@CookTimeMinutes,@Servings=@Servings,@IngredientsJson=@IngredientsJson,@ExpectedVersion=@ExpectedVersion,@PhotoMode=@PhotoMode,@ImageData=@ImageData,@ThumbnailData=@ThumbnailData,@ResultOutput=@Result OUTPUT,@SuppressResult=1;
   SET @RecipeID=JSON_VALUE(@Result,'$.id');
   IF @SourceText IS NOT NULL
   BEGIN

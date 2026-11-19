@@ -73,6 +73,11 @@ content can be submitted explicitly for AI assistance. Map every ingredient and 
 resolve quantities, and check instructions before saving. New ingredients require a
 separate explicit action. Reviewed recipe source text is stored with the recipe.
 
+Recipe links can also attach the page's recipe photo. The import previews the photo
+and prepares a resized JPEG and a cropped thumbnail. Skip the photo in review to
+save just the recipe. If the website blocks the image or provides an unsupported
+format, the recipe text remains available.
+
 For plans, choose the start date, servings, meal slots, ingredient exclusions, maximum
 cooking time, variety, and leftover preferences. Existing meals are preserved unless
 selected for replacement. Cooked or consumed entries cannot be replaced. Pinned

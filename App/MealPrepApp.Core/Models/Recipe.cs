@@ -10,6 +10,7 @@ public sealed partial class RecipeListItem : LocalizedObservableObject
 {
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(FavoriteButtonLabel))] private bool _isFavorite;
     [LocalizedProperty] public string FavoriteButtonLabel => L.Text(IsFavorite ? "Text.RemoveFromFavorites" : "Text.AddToFavorites");
+    public bool CanManage { get; set; }
     public int RecipeID { get; set; }
     public string Title { get; set; } = "";
     public int UserID { get; set; }
@@ -29,7 +30,9 @@ public sealed partial class RecipeListItem : LocalizedObservableObject
     public int TotalCount { get; set; }
     public ReadinessStatus Readiness { get; set; }
     public int ShortageCount { get; set; }
-    [LocalizedProperty] public string TimingSummary => L.Text("UX.TotalTime", TotalMinutes, Servings);
+    [LocalizedProperty] public string TimingSummary => L.Text("UX.TotalTime",
+        PrepTimeMinutes.HasValue && CookTimeMinutes.HasValue ? PresentationValues.Quantity(TotalMinutes) : L.Text("Value.Unknown"),
+        PresentationValues.Quantity(Servings));
     public int TotalMinutes => (PrepTimeMinutes ?? 0) + (CookTimeMinutes ?? 0);
 }
 

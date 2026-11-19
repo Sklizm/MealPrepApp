@@ -44,5 +44,35 @@ public sealed class AssistantTests
     [Fact] public async Task DisabledConfigurationNeverContactsAProvider(){var calls=0;var handler=new Handler(_=>{calls++;return new(HttpStatusCode.OK);});var provider=new GeminiProvider(new(),new HttpClient(handler));await Assert.ThrowsAsync<AiProviderException>(()=>provider.GenerateAsync(Work(),null,CancellationToken.None));Assert.Equal(0,calls);}
     [Fact] public async Task QuotaErrorsNeverTriggerPaidFallbackOrAutomaticRetry(){var calls=0;var provider=new GeminiProvider(new(){Enabled=true,FreeTierVerified=true,ApiKey="synthetic"},new HttpClient(new Handler(_=>{calls++;return new(HttpStatusCode.TooManyRequests); })));var e=await Assert.ThrowsAsync<AiProviderException>(()=>provider.GenerateAsync(Work(),null,CancellationToken.None));Assert.Equal("QuotaExceeded",e.Code);Assert.Equal(1,calls);}
     [Fact] public async Task ProviderRequestOmitsIdentityAndUsesStructuredOutput(){string? body=null;var handler=new Handler(request=>{Assert.Equal("generativelanguage.googleapis.com",request.RequestUri!.Host);Assert.True(request.Headers.Contains("x-goog-api-key"));body=request.Content!.ReadAsStringAsync().Result;return new(HttpStatusCode.OK){Content=new StringContent("{\"candidates\":[{\"finishReason\":\"STOP\",\"content\":{\"parts\":[{\"text\":\"{\\\"suggestions\\\":[],\\\"recipes\\\":[],\\\"meals\\\":[],\\\"purchases\\\":[],\\\"warnings\\\":[]}\"}]}}],\"usageMetadata\":{\"promptTokenCount\":12,\"candidatesTokenCount\":4}}",Encoding.UTF8,"application/json")};});var result=await new GeminiProvider(new(){Enabled=true,FreeTierVerified=true,ApiKey="synthetic"},new HttpClient(handler)).GenerateAsync(Work(),null,CancellationToken.None);Assert.Contains("responseJsonSchema",body);Assert.DoesNotContain("databaseId",body);Assert.DoesNotContain("userId",body);Assert.DoesNotContain("apiKey",body);Assert.Equal(12,result.InputTokens);}
+    [Fact]
+    public async Task RecipeReviewIdentifiesDuplicateCatalogMappingsAndRetainsOriginalRows()
+    {
+        using var api = new AiClient(new MealPrepApp.Data.Repositories.AiRepository(new RedesignSamples.NoDatabase()));
+        using var assistant = new MealPrepApp.ViewModels.AssistantViewModel(api, new SessionService());
+        var soy = new Ingredient { IngredientID = 1, Name = "Soy sauce" };
+        var recipe = new MealPrepApp.ViewModels.AssistantRecipeRow { Title = "Fixture", Instructions = "Mix.", Servings = 6 };
+        var duplicate = new MealPrepApp.ViewModels.AssistantIngredientRow
+        {
+            Original = "3 tablespoons Worcestershire sauce", Ingredient = soy,
+            Unit = new Unit { UnitID = 1 }, Quantity = 3
+        };
+        recipe.Ingredients.Add(duplicate);
+        recipe.Ingredients.Add(new() { Ingredient = soy, Unit = new Unit { UnitID = 2 }, Quantity = 2 });
+        assistant.SelectedRecipe = recipe;
+
+        await assistant.SaveRecipeCommand.ExecuteAsync(null);
+
+        var error = Assert.IsType<LocalizedMessage>(assistant.ErrorContent);
+        Assert.Equal("Ai.Error.DuplicateRecipeIngredient", error.Key);
+        Assert.Equal("Soy sauce", Assert.Single(error.Arguments));
+        Assert.Equal(2, recipe.Ingredients.Count);
+
+        duplicate.ClearIngredientMappingCommand.Execute(null);
+        Assert.Null(duplicate.Ingredient);
+        Assert.Equal("3 tablespoons Worcestershire sauce", duplicate.Original);
+        Assert.Equal(3m, duplicate.Quantity);
+        Assert.Equal(1, duplicate.Unit!.UnitID);
+    }
+
     private sealed class Handler(Func<HttpRequestMessage,HttpResponseMessage> respond):HttpMessageHandler{protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)=>Task.FromResult(respond(request));}
 }

@@ -9,9 +9,35 @@ class AssistantTests{
  @Test fun exactDecimalsAcceptApiStringsAndDurableNumbers(){
   val fromNumber=WireJson.decodeFromString<ALine>("""{"name":"Rice","quantity":0.125}""")
   val fromString=WireJson.decodeFromString<ALine>("""{"name":"Rice","quantity":"0.125"}""")
-  assertEquals("0.125",fromNumber.quantity);assertEquals(fromNumber,fromString)
+  assertEquals("0.125",fromNumber.quantity);assertEquals(fromNumber,fromString.copy(localId=fromNumber.localId))
  }
  @Test fun proposalUnknownMappingsStayUnresolved(){val result=WireJson.decodeFromString<AProposal>("""{"recipes":[{"title":"Recipe","instructions":"Cook","ingredients":[{"original":"a little rice","name":"Rice","quantity":null,"ingredientId":null,"unitId":null}]}]}""");assertNull(result.recipes[0].ingredients[0].quantity);assertNull(result.recipes[0].ingredients[0].unitId)}
+ @Test fun reviewDistinguishesMissingServingsFromDuplicateCatalogMappings() {
+  val first = ALine(name = "Sauce", ingredientId = 1, unitId = 1, quantity = "2")
+  val second = ALine(name = "Seasoning", ingredientId = 1, unitId = 2, quantity = "1")
+  val recipe = ARecipe(title = "Fixture", instructions = "Mix.", servings = null, ingredients = listOf(first, second))
+  assertEquals(R.string.ai_recipe_servings_required, recipe.reviewProblem())
+  assertEquals(R.string.ai_recipe_duplicate_ingredient, recipe.copy(servings = 6).reviewProblem())
+  assertNull(recipe.copy(servings = 6, ingredients = listOf(first, second.copy(ingredientId = 2))).reviewProblem())
+ }
+ @Test fun localRowIdentityAndQuantityTextSurviveRemovalAndRecovery() {
+  val oldRegion = Quantities.deviceRegion
+  try {
+   Quantities.deviceRegion = java.util.Locale.forLanguageTag("ro-RO")
+   val first = ALine(ingredientId=1,unitId=1,quantity="1.0001")
+   val second = ALine(ingredientId=2,unitId=1,quantity="2",quantityText="1,5")
+   val third = ALine(ingredientId=3,unitId=1,quantity="3",quantityText="1.500")
+   val draft = ARecipeDraft(ARecipe(ingredients=listOf(first,second,third)))
+   val after = draft.copy(recipe=draft.recipe.copy(ingredients=draft.recipe.ingredients.drop(1)))
+   val saved = WireJson.decodeFromString<ARecipeDraft>(WireJson.encodeToString(after))
+   assertEquals(draft.localId,saved.localId)
+   assertEquals(second.localId,saved.recipe.ingredients.first().localId)
+   assertEquals("1.5",saved.recipe.ingredients.first().reviewQuantity())
+   assertEquals("1.0001",first.reviewQuantity())
+   assertEquals(mapOf(third.localId to R.string.invalid_quantity),saved.recipe.rowProblems())
+  } finally { Quantities.deviceRegion = oldRegion }
+ }
+
  @Test fun pendingOperationAndRecipeIdentitySurviveProcessRecovery(){
   val r=ARecipeDraft(ARecipe(title="Rice"),recipeId=42,version="AAAAAAAB",publishedId=42)
   val pending=APending("/v1/recipes/save","{\"operationId\":\"stable\"}","recipe",0)
